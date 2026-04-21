@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//Users/borjaescalante/.nvm/**)",
+      "Read(//Users/borjaescalante/**)",
+      "Bash(command -v node)",
+      "Bash(/usr/local/bin/node --version)",
+      "Bash(/opt/homebrew/bin/node --version)",
+      "Bash(~/.nvm/nvm.sh)"
+    ]
+  }
+}

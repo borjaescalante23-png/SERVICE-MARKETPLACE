@@ -1,0 +1,215 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String    @id @default(uuid())
+  email             String    @unique
+  password          String
+  firstName         String
+  lastName          String
+  phone             String?
+  avatarUrl         String?
+  role              String    @default("CLIENT")
+  isActive          Boolean   @default(true)
+  isVerified        Boolean   @default(false)
+  emailVerifiedAt   DateTime?
+  lastLoginAt       DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  professionalProfile ProfessionalProfile?
+  clientBookings      Booking[]            @relation("ClientBookings")
+  sentMessages        Message[]            @relation("SentMessages")
+  reviews             Review[]             @relation("ClientReviews")
+  flagEvents          FraudEvent[]
+  refreshTokens       RefreshToken[]
+}
+
+model ProfessionalProfile {
+  id                  String    @id @default(uuid())
+  userId              String    @unique
+  user                User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bio                 String?
+  verificationStatus  String    @default("PENDING")
+  verifiedAt          DateTime?
+  rejectionReason     String?
+  avgRating           Float     @default(0)
+  totalReviews        Int       @default(0)
+  acceptanceRate      Float     @default(0)
+  cancellationRate    Float     @default(0)
+  punctualityScore    Float     @default(0)
+  completedJobs       Int       @default(0)
+  isVisible           Boolean   @default(false)
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  services            Service[]
+  bookings            Booking[]              @relation("ProfessionalBookings")
+  experienceEntries   ExperienceEntry[]
+  documents           VerificationDocument[]
+}
+
+model ExperienceEntry {
+  id                  String              @id @default(uuid())
+  professionalId      String
+  professional        ProfessionalProfile @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  title               String
+  description         String
+  serviceCategory     String
+  approximateDate     String
+  images              ExperienceImage[]
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+}
+
+model ExperienceImage {
+  id              String          @id @default(uuid())
+  experienceId    String
+  experience      ExperienceEntry @relation(fields: [experienceId], references: [id], onDelete: Cascade)
+  fileUrl         String
+  originalName    String
+  createdAt       DateTime        @default(now())
+}
+
+model VerificationDocument {
+  id              String              @id @default(uuid())
+  professionalId  String
+  professional    ProfessionalProfile @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  type            String
+  fileUrl         String
+  originalName    String
+  status          String              @default("PENDING")
+  reviewNote      String?
+  reviewedAt      DateTime?
+  createdAt       DateTime            @default(now())
+}
+
+model Service {
+  id              String              @id @default(uuid())
+  professionalId  String
+  professional    ProfessionalProfile @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  name            String
+  description     String
+  category        String
+  price           Float
+  duration        Int
+  isActive        Boolean             @default(true)
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  bookings        Booking[]
+}
+
+model Booking {
+  id                  String              @id @default(uuid())
+  clientId            String
+  client              User                @relation("ClientBookings", fields: [clientId], references: [id])
+  professionalId      String
+  professional        ProfessionalProfile @relation("ProfessionalBookings", fields: [professionalId], references: [id])
+  serviceId           String
+  service             Service             @relation(fields: [serviceId], references: [id])
+  status              String              @default("PENDING")
+  paymentStatus       String              @default("PENDING")
+  address             String
+  scheduledAt         DateTime
+  startedAt           DateTime?
+  completedAt         DateTime?
+  cancelledAt         DateTime?
+  cancellationReason  String?
+  cancelledBy         String?
+  totalAmount         Float
+  platformFee         Float
+  professionalAmount  Float
+  clientNotes         String?
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+
+  escrow              EscrowTransaction?
+  review              Review?
+  messages            Message[]
+  dispute             Dispute?
+}
+
+model EscrowTransaction {
+  id                  String    @id @default(uuid())
+  bookingId           String    @unique
+  booking             Booking   @relation(fields: [bookingId], references: [id])
+  amount              Float
+  status              String    @default("HELD")
+  heldAt              DateTime  @default(now())
+  releasedAt          DateTime?
+  refundedAt          DateTime?
+  releaseScheduledAt  DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+}
+
+model Review {
+  id                  String    @id @default(uuid())
+  bookingId           String    @unique
+  booking             Booking   @relation(fields: [bookingId], references: [id])
+  clientId            String
+  client              User      @relation("ClientReviews", fields: [clientId], references: [id])
+  rating              Int
+  comment             String
+  isVerified          Boolean   @default(true)
+  qualityScore        Int?
+  punctualityScore    Int?
+  communicationScore  Int?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+}
+
+model Message {
+  id          String    @id @default(uuid())
+  bookingId   String
+  booking     Booking   @relation(fields: [bookingId], references: [id])
+  senderId    String
+  sender      User      @relation("SentMessages", fields: [senderId], references: [id])
+  content     String
+  isFlagged   Boolean   @default(false)
+  flagReason  String?
+  isRead      Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+}
+
+model Dispute {
+  id          String    @id @default(uuid())
+  bookingId   String    @unique
+  booking     Booking   @relation(fields: [bookingId], references: [id])
+  openedBy    String
+  reason      String
+  description String
+  status      String    @default("OPEN")
+  resolution  String?
+  resolvedAt  DateTime?
+  resolvedBy  String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model FraudEvent {
+  id          String    @id @default(uuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+  eventType   String
+  description String
+  metadata    String?
+  severity    String    @default("LOW")
+  createdAt   DateTime  @default(now())
+}
+
+model RefreshToken {
+  id          String    @id @default(uuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token       String    @unique
+  expiresAt   DateTime
+  createdAt   DateTime  @default(now())
+}
