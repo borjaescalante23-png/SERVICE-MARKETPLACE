@@ -12,6 +12,18 @@ import reviewRoutes from './routes/review.routes';
 import messageRoutes from './routes/message.routes';
 import serviceRoutes from './routes/service.routes';
 import adminRoutes from './routes/admin.routes';
+import notificationRoutes from './routes/notification.routes';
+import kycRoutes from './routes/kyc.routes';
+import stripeConnectRoutes from './routes/stripe-connect.routes';
+import availabilityRoutes from './routes/availability.routes';
+let matchRoutes: any = null;
+let opportunityRoutes: any = null;
+try {
+  matchRoutes = require('./routes/match.routes').default;
+  opportunityRoutes = require('./routes/opportunity.routes').default;
+} catch {
+  // AI agent routes unavailable until prisma db push is run
+}
 
 const app = express();
 
@@ -32,6 +44,8 @@ app.use(rateLimit({
   message: { error: 'Demasiadas solicitudes. Inténtalo más tarde.' },
 }));
 
+app.use('/api/bookings/webhook/stripe', express.raw({ type: 'application/json' }));
+app.use('/api/stripe/webhook/connect', express.raw({ type: 'application/json' }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
@@ -48,6 +62,12 @@ app.use('/api', reviewRoutes);
 app.use('/api', messageRoutes);
 app.use('/api/services', serviceRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/kyc', kycRoutes);
+app.use('/api/stripe', stripeConnectRoutes);
+app.use('/api/professionals', availabilityRoutes);
+if (matchRoutes) app.use('/api', matchRoutes);
+if (opportunityRoutes) app.use('/api/opportunities', opportunityRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ error: 'Ruta no encontrada' });

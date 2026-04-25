@@ -127,6 +127,63 @@ export async function logout(req: AuthRequest, res: Response): Promise<void> {
   res.json({ message: 'Sesión cerrada correctamente' });
 }
 
+export async function uploadAvatar(req: AuthRequest, res: Response): Promise<void> {
+  const file = req.file;
+  if (!file) {
+    res.status(400).json({ error: 'Imagen requerida' });
+    return;
+  }
+
+  const avatarUrl = `/uploads/avatars/${file.filename}`;
+  const user = await prisma.user.update({
+    where: { id: req.user!.userId },
+    data: { avatarUrl },
+    select: { id: true, avatarUrl: true },
+  });
+
+  res.json(user);
+}
+
+export async function changePassword(req: AuthRequest, res: Response): Promise<void> {
+  const { currentPassword, newPassword, confirmPassword } = req.body;
+
+  if (!currentPassword || !newPassword || !confirmPassword) {
+    res.status(400).json({ error: 'Todos los campos son obligatorios' });
+    return;
+  }
+
+  if (newPassword !== confirmPassword) {
+    res.status(400).json({ error: 'Las contraseñas no coinciden' });
+    return;
+  }
+
+  const strongPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+  if (!strongPassword.test(newPassword)) {
+    res.status(400).json({ error: 'La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un número' });
+    return;
+  }
+
+  const user = await prisma.user.findUnique({ where: { id: req.user!.userId } });
+  if (!user) {
+    res.status(404).json({ error: 'Usuario no encontrado' });
+    return;
+  }
+
+  const valid = await bcrypt.compare(currentPassword, user.password);
+  if (!valid) {
+    res.status(401).json({ error: 'La contraseña actual es incorrecta' });
+    return;
+  }
+
+  const hashed = await bcrypt.hash(newPassword, 12);
+  await prisma.user.update({ where: { id: user.id }, data: { password: hashed } });
+
+  // Invalidate all refresh tokens after password change
+  await prisma.refreshToken.deleteMany({ where: { userId: user.id } });
+
+  res.json({ message: 'Contraseña actualizada correctamente. Inicia sesión de nuevo.' });
+}
+
 export async function me(req: AuthRequest, res: Response): Promise<void> {
   const user = await prisma.user.findUnique({
     where: { id: req.user!.userId },

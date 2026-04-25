@@ -3,15 +3,17 @@ import { z } from 'zod';
 import prisma from '../utils/prisma';
 import { AuthRequest } from '../middleware/auth.middleware';
 import { recalculateProfessionalStats, checkVisibilityEligibility } from '../services/professional.service';
-import { MIN_EXPERIENCE_ENTRIES } from '../config/constants';
+import { MIN_EXPERIENCE_ENTRIES, PLATFORM_CITY } from '../config/constants';
 import path from 'path';
+import { analyzeDocument } from '../services/ai-verification.service';
 
 const experienceSchema = z.object({
   title: z.string().min(3).max(100),
   description: z.string().min(10).max(500),
   serviceCategory: z.enum([
     'HAIRDRESSING', 'BEAUTY', 'CLEANING', 'CHEF', 'HANDYMAN',
-    'PERSONAL_TRAINER', 'MASSAGE', 'CHILDCARE', 'ELDERCARE', 'PET_CARE', 'TUTORING', 'OTHER',
+    'PERSONAL_TRAINER', 'MASSAGE', 'CHILDCARE', 'ELDERCARE', 'PET_CARE',
+    'TUTORING', 'PLUMBING', 'ELECTRICIAN', 'GARDENING', 'OTHER',
   ]),
   approximateDate: z.string().min(4).max(50),
 });
@@ -114,6 +116,36 @@ export async function deleteExperienceEntry(req: AuthRequest, res: Response): Pr
   res.json({ message: 'Entrada eliminada' });
 }
 
+export async function deleteDocument(req: AuthRequest, res: Response): Promise<void> {
+  const { docId } = req.params;
+
+  const profile = await prisma.professionalProfile.findUnique({
+    where: { userId: req.user!.userId },
+  });
+
+  if (!profile) {
+    res.status(404).json({ error: 'Perfil no encontrado' });
+    return;
+  }
+
+  const doc = await prisma.verificationDocument.findFirst({
+    where: { id: docId, professionalId: profile.id },
+  });
+
+  if (!doc) {
+    res.status(404).json({ error: 'Documento no encontrado' });
+    return;
+  }
+
+  if (!['PENDING', 'UNDER_REVIEW'].includes(doc.status)) {
+    res.status(400).json({ error: 'Solo puedes eliminar documentos pendientes o en revisión' });
+    return;
+  }
+
+  await prisma.verificationDocument.delete({ where: { id: docId } });
+  res.json({ message: 'Documento eliminado' });
+}
+
 export async function uploadDocument(req: AuthRequest, res: Response): Promise<void> {
   const { type } = req.body;
   const validTypes = ['NATIONAL_ID', 'PASSPORT', 'DRIVING_LICENSE', 'PROFESSIONAL_CERTIFICATE', 'WORK_EVIDENCE', 'REFERENCE'];
@@ -138,11 +170,13 @@ export async function uploadDocument(req: AuthRequest, res: Response): Promise<v
     return;
   }
 
+  const fileUrl = `/uploads/documents/${file.filename}`;
+
   const doc = await prisma.verificationDocument.create({
     data: {
       professionalId: profile.id,
       type: type as any,
-      fileUrl: `/uploads/documents/${file.filename}`,
+      fileUrl,
       originalName: file.originalname,
     },
   });
@@ -154,27 +188,56 @@ export async function uploadDocument(req: AuthRequest, res: Response): Promise<v
     });
   }
 
+  analyzeDocument(fileUrl, type).then(async (result) => {
+    await prisma.verificationDocument.update({
+      where: { id: doc.id },
+      data: { aiAnalysis: JSON.stringify(result) },
+    });
+  }).catch(() => {});
+
   res.status(201).json(doc);
 }
 
 export async function getProfessionals(req: AuthRequest, res: Response): Promise<void> {
-  const { category, minRating, page = '1', limit = '12' } = req.query;
+  const { category, minRating, minPrice, maxPrice, search, page = '1', limit = '12' } = req.query;
+  // city param ignored — platform is Barcelona-only
 
-  const pageNum = parseInt(page as string);
-  const limitNum = parseInt(limit as string);
+  const pageNum = Math.max(1, parseInt(page as string) || 1);
+  const limitNum = Math.min(100, Math.max(1, parseInt(limit as string) || 12));
   const skip = (pageNum - 1) * limitNum;
 
-  const where: any = {
-    verificationStatus: 'APPROVED',
-    isVisible: true,
-  };
+  const isProdList = process.env.NODE_ENV === 'production';
+  const where: any = isProdList
+    ? { verificationStatus: 'APPROVED', isVisible: true }
+    : {};  // dev: show all professionals
+
+  // Always restrict to Barcelona metropolitan area
+  where.OR = [
+    { city: { contains: PLATFORM_CITY } },
+    { city: null },  // include professionals without city set (dev mode)
+  ];
 
   if (minRating) {
     where.avgRating = { gte: parseFloat(minRating as string) };
   }
 
-  if (category) {
-    where.services = { some: { category: category as any, isActive: true } };
+  if (search) {
+    const term = search as string;
+    where.user = {
+      OR: [
+        { firstName: { contains: term } },
+        { lastName: { contains: term } },
+      ],
+    };
+  }
+
+  const serviceFilter: any = { isActive: true };
+  if (category) serviceFilter.category = category as any;
+  if (minPrice) serviceFilter.price = { ...serviceFilter.price, gte: parseFloat(minPrice as string) };
+  if (maxPrice) serviceFilter.price = { ...serviceFilter.price, lte: parseFloat(maxPrice as string) };
+
+  if (category || minPrice || maxPrice) {
+    where.services = { some: serviceFilter };
   }
 
   const [professionals, total] = await Promise.all([
@@ -212,7 +275,7 @@ export async function getProfessionalById(req: AuthRequest, res: Response): Prom
       services: { where: { isActive: true } },
       experienceEntries: { include: { images: true } },
       bookings: {
-        where: { status: 'COMPLETED' },
+        where: { status: { in: ['COMPLETED', 'AUTO_COMPLETED'] } },
         include: {
           review: { select: { rating: true, comment: true, createdAt: true } },
           client: { select: { firstName: true, avatarUrl: true } },
@@ -223,7 +286,8 @@ export async function getProfessionalById(req: AuthRequest, res: Response): Prom
     },
   });
 
-  if (!professional || !professional.isVisible) {
+  const isProd = process.env.NODE_ENV === 'production';
+  if (!professional || (isProd && !professional.isVisible)) {
     res.status(404).json({ error: 'Profesional no encontrado' });
     return;
   }

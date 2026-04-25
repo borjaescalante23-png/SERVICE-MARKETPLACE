@@ -1,4 +1,22 @@
 export const PLATFORM_FEE_PERCENTAGE = 0.15;
+
+// ── Geographic restriction: Barcelona only ──
+export const PLATFORM_CITY = 'Barcelona';
+export const PLATFORM_COUNTRY = 'España';
+export const PLATFORM_COUNTRY_CODE = 'ES';
+export const BARCELONA_CENTER = { lat: 41.3851, lng: 2.1734 };
+export const BARCELONA_BOUNDS = {
+  MIN_LAT: 41.25,
+  MAX_LAT: 41.55,
+  MIN_LNG: 1.90,
+  MAX_LNG: 2.35,
+};
+export function isWithinBarcelona(lat: number, lng: number): boolean {
+  return (
+    lat >= BARCELONA_BOUNDS.MIN_LAT && lat <= BARCELONA_BOUNDS.MAX_LAT &&
+    lng >= BARCELONA_BOUNDS.MIN_LNG && lng <= BARCELONA_BOUNDS.MAX_LNG
+  );
+}
 export const ESCROW_AUTO_RELEASE_HOURS = parseInt(process.env.ESCROW_RELEASE_HOURS || '24');
 export const MIN_EXPERIENCE_ENTRIES = 2;
 export const MIN_EXPERIENCE_IMAGES_PER_ENTRY = 1;

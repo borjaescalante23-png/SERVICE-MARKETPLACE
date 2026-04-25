@@ -1,10 +1,14 @@
 export type Role = 'CLIENT' | 'PROFESSIONAL' | 'ADMIN';
+export type ProfessionalLevel = 'VERIFIED' | 'PRO' | 'ELITE';
+export type ServiceMode = 'PRESENTIAL' | 'REMOTE' | 'BOTH';
+export type NotificationPriority = 'HIGH' | 'MEDIUM' | 'LOW';
 export type VerificationStatus = 'PENDING' | 'UNDER_REVIEW' | 'APPROVED' | 'REJECTED' | 'SUSPENDED';
-export type BookingStatus = 'PENDING' | 'ACCEPTED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED' | 'DISPUTED';
+export type BookingStatus = 'PENDING' | 'ACCEPTED' | 'IN_PROGRESS' | 'COMPLETED_BY_PROVIDER' | 'COMPLETED' | 'AUTO_COMPLETED' | 'CANCELLED' | 'DISPUTED';
 export type PaymentStatus = 'PENDING' | 'HELD_IN_ESCROW' | 'RELEASED' | 'REFUNDED' | 'DISPUTED';
 export type ServiceCategory =
   | 'HAIRDRESSING' | 'BEAUTY' | 'CLEANING' | 'CHEF' | 'HANDYMAN'
-  | 'PERSONAL_TRAINER' | 'MASSAGE' | 'CHILDCARE' | 'ELDERCARE' | 'PET_CARE' | 'TUTORING' | 'OTHER';
+  | 'PERSONAL_TRAINER' | 'MASSAGE' | 'CHILDCARE' | 'ELDERCARE' | 'PET_CARE'
+  | 'TUTORING' | 'PLUMBING' | 'ELECTRICIAN' | 'GARDENING' | 'OTHER';
 
 export interface User {
   id: string;
@@ -15,6 +19,9 @@ export interface User {
   avatarUrl?: string;
   isVerified: boolean;
   createdAt: string;
+  language?: string;
+  notifSettings?: string;
+  theme?: string;
   professionalProfile?: ProfessionalProfile;
 }
 
@@ -30,10 +37,30 @@ export interface ProfessionalProfile {
   cancellationRate: number;
   completedJobs: number;
   isVisible: boolean;
+  level: ProfessionalLevel;
+  city?: string;
+  country?: string;
+  serviceMode: ServiceMode;
+  kycStatus?: string;
+  stripeConnectId?: string;
+  stripeConnectStatus?: string;
+  selfieUrl?: string;
   user?: { firstName: string; lastName: string; avatarUrl?: string; createdAt?: string };
   services?: Service[];
   experienceEntries?: ExperienceEntry[];
   documents?: VerificationDocument[];
+}
+
+export interface AppNotification {
+  id: string;
+  userId: string;
+  type: string;
+  title: string;
+  body: string;
+  data?: string;
+  isRead: boolean;
+  priority: NotificationPriority;
+  createdAt: string;
 }
 
 export interface ExperienceEntry {
@@ -71,6 +98,29 @@ export interface Service {
   professionalId: string;
 }
 
+export interface DisputeAIAnalysis {
+  id: string;
+  resolution: 'FULL_REFUND' | 'PARTIAL_REFUND' | 'RELEASE_PAYMENT';
+  confidence: number;
+  reasoning: string;
+  partialAmount?: number;
+  executedAt?: string;
+}
+
+export interface Dispute {
+  id: string;
+  bookingId: string;
+  openedBy: string;
+  reason: string;
+  description: string;
+  status: string;
+  resolution?: string;
+  resolvedAt?: string;
+  resolvedBy?: string;
+  createdAt: string;
+  aiAnalysis?: DisputeAIAnalysis;
+}
+
 export interface Booking {
   id: string;
   clientId: string;
@@ -82,7 +132,10 @@ export interface Booking {
   scheduledAt: string;
   startedAt?: string;
   completedAt?: string;
+  completedByProviderAt?: string;
+  autoReleaseAt?: string;
   cancelledAt?: string;
+  providerEvidenceNote?: string;
   totalAmount: number;
   platformFee: number;
   professionalAmount: number;
@@ -94,6 +147,7 @@ export interface Booking {
   review?: Review;
   escrow?: EscrowTransaction;
   messages?: Message[];
+  dispute?: Dispute;
 }
 
 export interface Review {
@@ -150,6 +204,9 @@ export const CATEGORY_LABELS: Record<ServiceCategory, string> = {
   ELDERCARE: 'Cuidado de Mayores',
   PET_CARE: 'Cuidado de Mascotas',
   TUTORING: 'Tutorías',
+  PLUMBING: 'Fontanería',
+  ELECTRICIAN: 'Electricista',
+  GARDENING: 'Jardinería',
   OTHER: 'Otros',
 };
 
@@ -158,13 +215,16 @@ export const CATEGORY_ICONS: Record<ServiceCategory, string> = {
   BEAUTY: '💅',
   CLEANING: '🧹',
   CHEF: '👨‍🍳',
-  HANDYMAN: '🔧',
+  HANDYMAN: '🛠️',
   PERSONAL_TRAINER: '💪',
   MASSAGE: '🧘',
   CHILDCARE: '👶',
   ELDERCARE: '👴',
   PET_CARE: '🐾',
   TUTORING: '📚',
+  PLUMBING: '🚰',
+  ELECTRICIAN: '⚡',
+  GARDENING: '🌿',
   OTHER: '⭐',
 };
 
@@ -172,7 +232,9 @@ export const BOOKING_STATUS_LABELS: Record<BookingStatus, string> = {
   PENDING: 'Pendiente',
   ACCEPTED: 'Aceptada',
   IN_PROGRESS: 'En Progreso',
+  COMPLETED_BY_PROVIDER: 'Completado por proveedor',
   COMPLETED: 'Completada',
+  AUTO_COMPLETED: 'Completada automáticamente',
   CANCELLED: 'Cancelada',
   DISPUTED: 'En Disputa',
 };

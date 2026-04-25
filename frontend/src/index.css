@@ -20,3 +20,17 @@
     overflow: hidden;
   }
 }
+
+@media print {
+  nav, footer, .print\:hidden { display: none !important; }
+  body { background: white !important; color: black !important; }
+  .bg-white { background: white !important; }
+  .dark\:bg-gray-900, .dark\:bg-gray-800 { background: white !important; }
+  .text-white { color: black !important; }
+  .border { border-color: #e5e7eb !important; }
+}
+
+/* Map fullscreen fix for mobile (iOS Safari safe-area) */
+.map-fullscreen-wrapper {
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}

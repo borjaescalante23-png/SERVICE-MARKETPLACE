@@ -36,7 +36,7 @@ export async function createReview(req: AuthRequest, res: Response): Promise<voi
     return;
   }
 
-  if (booking.status !== 'COMPLETED') {
+  if (!['COMPLETED', 'AUTO_COMPLETED'].includes(booking.status)) {
     res.status(400).json({
       error: 'Solo se puede reseñar un servicio completado',
       message: 'Las reseñas solo están disponibles para servicios finalizados y pagados.',
@@ -44,7 +44,7 @@ export async function createReview(req: AuthRequest, res: Response): Promise<voi
     return;
   }
 
-  if (booking.paymentStatus !== 'RELEASED') {
+  if (!['RELEASED', 'HELD_IN_ESCROW'].includes(booking.paymentStatus)) {
     res.status(400).json({
       error: 'El pago debe estar procesado para dejar una reseña',
     });
@@ -78,8 +78,8 @@ export async function getProfessionalReviews(req: AuthRequest, res: Response): P
   const { professionalId } = req.params;
   const { page = '1', limit = '10' } = req.query;
 
-  const pageNum = parseInt(page as string);
-  const limitNum = parseInt(limit as string);
+  const pageNum = Math.max(1, parseInt(page as string) || 1);
+  const limitNum = Math.min(100, Math.max(1, parseInt(limit as string) || 10));
 
   const [reviews, total] = await Promise.all([
     prisma.review.findMany({

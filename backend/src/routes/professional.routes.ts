@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import {
   getMyProfile, updateBio, addExperienceEntry, deleteExperienceEntry,
-  uploadDocument, getProfessionals, getProfessionalById,
+  uploadDocument, deleteDocument, getProfessionals, getProfessionalById,
 } from '../controllers/professional.controller';
 import { authenticate, requireRole } from '../middleware/auth.middleware';
 import { uploadDocument as multerDoc, uploadExperience } from '../utils/upload';
@@ -30,5 +30,6 @@ router.post(
   multerDoc.single('file'),
   uploadDocument
 );
+router.delete('/me/documents/:docId', authenticate, requireRole('PROFESSIONAL'), deleteDocument);
 
 export default router;
