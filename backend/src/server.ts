@@ -76,8 +76,12 @@ async function main() {
 
   // Escrow auto-release every hour
   setInterval(async () => {
-    const released = await processAutoReleases();
-    if (released > 0) console.log(`💰 Auto-liberados ${released} pagos en escrow`);
+    try {
+      const released = await processAutoReleases();
+      if (released > 0) console.log(`💰 Auto-liberados ${released} pagos en escrow`);
+    } catch (err) {
+      console.error('Escrow auto-release error:', err);
+    }
   }, 60 * 60 * 1000);
 
   // Opportunity agent every 2 hours (lazy import — only fails if DB not migrated)
@@ -111,6 +115,14 @@ async function main() {
     console.log(`📊 Prisma Studio: npx prisma studio`);
   });
 }
+
+process.on('unhandledRejection', (reason) => {
+  console.error('Unhandled rejection:', reason);
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught exception:', err);
+});
 
 main().catch(async (e) => {
   console.error(e);

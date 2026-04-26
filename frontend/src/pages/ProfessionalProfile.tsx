@@ -2,10 +2,10 @@ import { useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { professionalsApi, bookingsApi } from '../services/api';
-import { CATEGORY_LABELS, CATEGORY_ICONS } from '../types';
+import { CATEGORY_LABELS, CATEGORY_IMAGES } from '../types';
 import StarRating from '../components/common/StarRating';
 import LevelBadge from '../components/common/LevelBadge';
-import AddressMapPicker, { type AddressResult } from '../components/AddressMapPicker';
+import AddressForm, { type StructuredAddress } from '../components/AddressForm';
 import Lightbox from '../components/Lightbox';
 import { availabilityApi } from '../services/api';
 import {
@@ -18,29 +18,7 @@ import toast from 'react-hot-toast';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
-interface ConfirmedAddress {
-  formatted: string;
-  street: string;
-  city: string;
-  postalCode: string;
-  lat: number;
-  lng: number;
-  housingType: 'casa' | 'piso';
-  floor: string;
-  door: string;
-}
-
-function buildAddressString(a: ConfirmedAddress): string {
-  // Use street+city for a cleaner, precise address; fall back to formatted
-  const base = a.street && a.city
-    ? `${a.street}, ${a.city}${a.postalCode ? ` ${a.postalCode}` : ''}`
-    : (a.formatted || 'Dirección no especificada');
-  const s = base.length < 10 ? `Dirección: ${base}` : base;
-  if (a.housingType === 'piso') {
-    return `${s} — Piso ${a.floor}${a.door ? ` Puerta ${a.door}` : ''}`;
-  }
-  return s;
-}
+type ConfirmedAddress = StructuredAddress;
 
 export default function ProfessionalProfile() {
   const { id } = useParams<{ id: string }>();
@@ -50,7 +28,6 @@ export default function ProfessionalProfile() {
 
   const [selectedService, setSelectedService] = useState<string>('');
   const [confirmedAddr, setConfirmedAddr] = useState<ConfirmedAddress | null>(null);
-  const [showMap, setShowMap] = useState(false);
   const [scheduledAt, setScheduledAt] = useState('');
   const [notes, setNotes] = useState('');
   const [booking, setBooking] = useState(false);
@@ -91,7 +68,7 @@ export default function ProfessionalProfile() {
     if (!user) { navigate('/login'); return; }
     if (user.role === 'ADMIN') { toast.error('Los administradores no pueden realizar reservas'); return; }
 
-    if (!confirmedAddr) { toast.error('Selecciona la dirección del servicio en el mapa'); return; }
+    if (!confirmedAddr) { toast.error('Selecciona la dirección del servicio'); return; }
     if (!scheduledAt) { toast.error('Selecciona una fecha y hora para el servicio'); return; }
     if (!selectedService) { toast.error('Selecciona un servicio'); return; }
 
@@ -100,7 +77,7 @@ export default function ProfessionalProfile() {
       toast.error('La fecha debe ser futura'); return;
     }
 
-    const addressStr = buildAddressString(confirmedAddr);
+    const addressStr = confirmedAddr.formatted || `${confirmedAddr.street} ${confirmedAddr.number}, ${confirmedAddr.city}`;
 
     setBooking(true);
     try {
@@ -214,7 +191,7 @@ export default function ProfessionalProfile() {
                   >
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
-                        <span>{CATEGORY_ICONS[entry.serviceCategory]}</span>
+                        <img src={CATEGORY_IMAGES[entry.serviceCategory]} alt="" className="w-5 h-5 rounded-lg object-cover flex-shrink-0" />
                         <span className="font-medium text-gray-900 dark:text-white text-sm truncate">{entry.title}</span>
                       </div>
                       <div className="flex items-center gap-2 mt-1 flex-wrap">
@@ -399,16 +376,16 @@ export default function ProfessionalProfile() {
                     <MapPin size={12} />Dirección del servicio
                   </p>
 
-                  {confirmedAddr && !showMap ? (
+                  {confirmedAddr ? (
                     <div className="flex items-start gap-2 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl">
                       <MapPin size={14} className="text-green-500 flex-shrink-0 mt-0.5" />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm text-green-800 dark:text-green-300 font-medium">
-                          {confirmedAddr.street || confirmedAddr.formatted.split(',')[0]}
+                          {confirmedAddr.street} {confirmedAddr.number}
                         </p>
                         <div className="flex flex-wrap items-center gap-2 mt-0.5">
-                          {confirmedAddr.city && (
-                            <span className="text-xs text-green-600 dark:text-green-500">{confirmedAddr.city}</span>
+                          {confirmedAddr.neighborhood && (
+                            <span className="text-xs text-green-600 dark:text-green-500">{confirmedAddr.neighborhood}</span>
                           )}
                           {confirmedAddr.postalCode && (
                             <span className="text-[10px] font-bold text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-900/40 px-1.5 py-0.5 rounded">
@@ -416,34 +393,22 @@ export default function ProfessionalProfile() {
                             </span>
                           )}
                           <span className="text-xs text-green-600 dark:text-green-500 capitalize">
-                            {confirmedAddr.housingType === 'piso' ? `Piso ${confirmedAddr.floor}${confirmedAddr.door ? ` · ${confirmedAddr.door}` : ''}` : 'Casa / Chalet'}
+                            {confirmedAddr.housingType === 'piso'
+                              ? `Piso ${confirmedAddr.floor}${confirmedAddr.door ? ` · ${confirmedAddr.door}` : ''}${confirmedAddr.staircase ? ` Esc.${confirmedAddr.staircase}` : ''}`
+                              : 'Casa / Chalet'}
                           </span>
                         </div>
                       </div>
                       <button
-                        type="button" onClick={() => setShowMap(true)}
+                        type="button"
+                        onClick={() => setConfirmedAddr(null)}
                         className="flex-shrink-0 px-2 py-1 text-xs font-medium text-green-700 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/30 rounded-lg transition-colors"
                       >
                         Cambiar
                       </button>
                     </div>
                   ) : (
-                    <AddressMapPicker
-                      onConfirm={(result) => {
-                        setConfirmedAddr({
-                          formatted: result.formatted,
-                          street: result.street,
-                          city: result.city,
-                          postalCode: result.postalCode,
-                          lat: result.lat,
-                          lng: result.lng,
-                          housingType: result.housingType,
-                          floor: result.floor,
-                          door: result.door,
-                        });
-                        setShowMap(false);
-                      }}
-                    />
+                    <AddressForm onConfirm={setConfirmedAddr} />
                   )}
                 </div>
 

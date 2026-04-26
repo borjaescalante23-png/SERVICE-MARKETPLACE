@@ -39,7 +39,12 @@ export default function BookingDetail() {
     queryKey: ['booking', bookingId],
     queryFn: () => bookingsApi.getById(bookingId!).then(r => r.data),
     enabled: !!bookingId,
-    refetchInterval: 8000,
+    refetchInterval: (query) => {
+      const status = query.state.data?.status;
+      // Solo refrescar automáticamente si el booking está en curso o tiene mensajes activos
+      if (status === 'IN_PROGRESS' || status === 'ACCEPTED') return 10000;
+      return false;
+    },
   });
 
   async function action(key: string, fn: () => Promise<any>, successMsg: string) {

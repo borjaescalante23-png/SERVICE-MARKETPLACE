@@ -18,6 +18,7 @@ const registerSchema = z.object({
   firstName: z.string().min(1),
   lastName: z.string().min(1),
   role: z.enum(['CLIENT', 'PROFESSIONAL']).default('CLIENT'),
+  isProvider: z.boolean().optional(),
 });
 
 const loginSchema = z.object({
@@ -32,7 +33,7 @@ export async function register(req: Request, res: Response): Promise<void> {
     return;
   }
 
-  const { email, password, firstName, lastName, role } = parsed.data;
+  const { email, password, firstName, lastName, role, isProvider: wantsProvider } = parsed.data;
 
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) {
@@ -41,14 +42,13 @@ export async function register(req: Request, res: Response): Promise<void> {
   }
 
   const hashed = await bcrypt.hash(password, 12);
+  const isProvider = wantsProvider || role === 'PROFESSIONAL';
   const user = await prisma.user.create({
-    data: { email, password: hashed, firstName, lastName, role },
+    data: { email, password: hashed, firstName, lastName, role, isProvider },
   });
 
-  if (role === 'PROFESSIONAL') {
-    await prisma.professionalProfile.create({
-      data: { userId: user.id },
-    });
+  if (isProvider) {
+    await prisma.professionalProfile.create({ data: { userId: user.id } });
   }
 
   const payload = { userId: user.id, role: user.role, email: user.email };
@@ -59,7 +59,7 @@ export async function register(req: Request, res: Response): Promise<void> {
   res.status(201).json({
     accessToken,
     refreshToken,
-    user: { id: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName, role: user.role },
+    user: { id: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName, role: user.role, isProvider: user.isProvider },
   });
 }
 
@@ -94,7 +94,7 @@ export async function login(req: Request, res: Response): Promise<void> {
   res.json({
     accessToken,
     refreshToken,
-    user: { id: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName, role: user.role },
+    user: { id: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName, role: user.role, isProvider: user.isProvider },
   });
 }
 
@@ -189,7 +189,7 @@ export async function me(req: AuthRequest, res: Response): Promise<void> {
     where: { id: req.user!.userId },
     select: {
       id: true, email: true, firstName: true, lastName: true, role: true,
-      phone: true, avatarUrl: true, isVerified: true, createdAt: true,
+      phone: true, avatarUrl: true, isVerified: true, isProvider: true, createdAt: true,
       professionalProfile: {
         select: {
           id: true, verificationStatus: true, avgRating: true, totalReviews: true,
@@ -205,4 +205,25 @@ export async function me(req: AuthRequest, res: Response): Promise<void> {
   }
 
   res.json(user);
+}
+
+export async function toggleProvider(req: AuthRequest, res: Response): Promise<void> {
+  const user = await prisma.user.findUnique({ where: { id: req.user!.userId } });
+  if (!user) { res.status(404).json({ error: 'Usuario no encontrado' }); return; }
+
+  const newValue = !user.isProvider;
+  const updated = await prisma.user.update({
+    where: { id: user.id },
+    data: { isProvider: newValue, role: newValue ? 'PROFESSIONAL' : 'CLIENT' },
+    select: { id: true, email: true, firstName: true, lastName: true, role: true, isProvider: true, avatarUrl: true, isVerified: true, createdAt: true },
+  });
+
+  if (newValue) {
+    const existing = await prisma.professionalProfile.findUnique({ where: { userId: user.id } });
+    if (!existing) {
+      await prisma.professionalProfile.create({ data: { userId: user.id } });
+    }
+  }
+
+  res.json(updated);
 }

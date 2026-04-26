@@ -4,6 +4,9 @@ import { transferToProvider } from './stripe-connect.service';
 import { notifyPaymentReleased } from './notification.service';
 
 export async function holdEscrow(bookingId: string, amount: number): Promise<void> {
+  const existing = await prisma.escrowTransaction.findUnique({ where: { bookingId } });
+  if (existing) return;
+
   const releaseScheduledAt = new Date();
   releaseScheduledAt.setHours(releaseScheduledAt.getHours() + ESCROW_AUTO_RELEASE_HOURS);
 
@@ -24,6 +27,13 @@ export async function holdEscrow(bookingId: string, amount: number): Promise<voi
 
 export async function releaseEscrow(bookingId: string): Promise<void> {
   const escrow = await prisma.escrowTransaction.findUnique({ where: { bookingId } });
+
+  if (!escrow) {
+    await prisma.booking.update({ where: { id: bookingId }, data: { paymentStatus: 'RELEASED' } });
+    return;
+  }
+
+  if (escrow.status === 'RELEASED') return;
 
   await prisma.escrowTransaction.update({
     where: { bookingId },
@@ -51,10 +61,14 @@ export async function releaseEscrow(bookingId: string): Promise<void> {
 }
 
 export async function refundEscrow(bookingId: string): Promise<void> {
-  await prisma.escrowTransaction.update({
-    where: { bookingId },
-    data: { status: 'REFUNDED', refundedAt: new Date() },
-  });
+  const escrow = await prisma.escrowTransaction.findUnique({ where: { bookingId } });
+
+  if (escrow && escrow.status === 'HELD') {
+    await prisma.escrowTransaction.update({
+      where: { bookingId },
+      data: { status: 'REFUNDED', refundedAt: new Date() },
+    });
+  }
 
   await prisma.booking.update({
     where: { id: bookingId },
@@ -63,10 +77,14 @@ export async function refundEscrow(bookingId: string): Promise<void> {
 }
 
 export async function partialRefundEscrow(bookingId: string, refundAmount: number): Promise<void> {
-  await prisma.escrowTransaction.update({
-    where: { bookingId },
-    data: { status: 'REFUNDED', refundedAt: new Date() },
-  });
+  const escrow = await prisma.escrowTransaction.findUnique({ where: { bookingId } });
+
+  if (escrow && escrow.status === 'HELD') {
+    await prisma.escrowTransaction.update({
+      where: { bookingId },
+      data: { status: 'REFUNDED', refundedAt: new Date() },
+    });
+  }
 
   await prisma.booking.update({
     where: { id: bookingId },

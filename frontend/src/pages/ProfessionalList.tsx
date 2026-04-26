@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { professionalsApi } from '../services/api';
-import { ProfessionalProfile, CATEGORY_LABELS, CATEGORY_ICONS, ServiceCategory } from '../types';
+import { ProfessionalProfile, CATEGORY_LABELS, CATEGORY_IMAGES, ServiceCategory } from '../types';
 import StarRating from '../components/common/StarRating';
 import LevelBadge from '../components/common/LevelBadge';
 import { CheckCircle, Briefcase, Search, SlidersHorizontal, MapPin, X } from 'lucide-react';
@@ -107,7 +107,7 @@ export default function ProfessionalList() {
           >
             <option value="">{t('pros.all_categories')}</option>
             {categories.map(c => (
-              <option key={c} value={c}>{CATEGORY_ICONS[c]} {CATEGORY_LABELS[c]}</option>
+              <option key={c} value={c}>{CATEGORY_LABELS[c]}</option>
             ))}
           </select>
 
@@ -220,8 +220,13 @@ export default function ProfessionalList() {
                 {pro.services && pro.services.length > 0 && (
                   <div className="flex flex-wrap gap-1 mb-4">
                     {pro.services.slice(0, 2).map(s => (
-                      <span key={s.id} className="text-xs px-2 py-1 bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 rounded-full">
-                        {CATEGORY_ICONS[s.category]} {CATEGORY_LABELS[s.category]}
+                      <span key={s.id} className="inline-flex items-center gap-1.5 text-xs px-2 py-1 bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 rounded-full">
+                        <img
+                          src={CATEGORY_IMAGES[s.category]}
+                          alt=""
+                          className="w-4 h-4 rounded-full object-cover flex-shrink-0"
+                        />
+                        {CATEGORY_LABELS[s.category]}
                       </span>
                     ))}
                     {pro.services.length > 2 && (

@@ -17,6 +17,7 @@ model User {
   avatarUrl         String?
   role              String    @default("CLIENT")
   isActive          Boolean   @default(true)
+  isProvider        Boolean   @default(false)
   isVerified        Boolean   @default(false)
   emailVerifiedAt   DateTime?
   lastLoginAt       DateTime?

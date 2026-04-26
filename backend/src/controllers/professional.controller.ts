@@ -233,8 +233,10 @@ export async function getProfessionals(req: AuthRequest, res: Response): Promise
 
   const serviceFilter: any = { isActive: true };
   if (category) serviceFilter.category = category as any;
-  if (minPrice) serviceFilter.price = { ...serviceFilter.price, gte: parseFloat(minPrice as string) };
-  if (maxPrice) serviceFilter.price = { ...serviceFilter.price, lte: parseFloat(maxPrice as string) };
+  const priceRange: any = {};
+  if (minPrice) priceRange.gte = parseFloat(minPrice as string);
+  if (maxPrice) priceRange.lte = parseFloat(maxPrice as string);
+  if (Object.keys(priceRange).length > 0) serviceFilter.price = priceRange;
 
   if (category || minPrice || maxPrice) {
     where.services = { some: serviceFilter };

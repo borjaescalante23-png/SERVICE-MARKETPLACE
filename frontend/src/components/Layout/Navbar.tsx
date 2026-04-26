@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useI18n } from '../../i18n';
-import { LogOut, LayoutDashboard, Shield, Menu, X, Zap, Sun, Moon, Settings, Sparkles, TrendingUp } from 'lucide-react';
+import { LogOut, LayoutDashboard, Shield, Menu, X, Zap, Sun, Moon, Settings, Sparkles, TrendingUp, Briefcase } from 'lucide-react';
 import toast from 'react-hot-toast';
 import NotificationCenter from '../common/NotificationCenter';
 
@@ -73,6 +73,16 @@ export default function Navbar() {
                   >
                     <TrendingUp size={15} />
                     Oportunidades
+                  </Link>
+                )}
+
+                {user.role === 'CLIENT' && (
+                  <Link
+                    to="/dashboard"
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20 hover:bg-primary-100 dark:hover:bg-primary-900/40 border border-primary-200 dark:border-primary-800 transition-colors"
+                  >
+                    <Briefcase size={14} />
+                    Hazte profesional
                   </Link>
                 )}
 
@@ -178,6 +188,16 @@ export default function Navbar() {
                 >
                   <Shield size={16} />
                   Admin
+                </Link>
+              )}
+              {user.role === 'CLIENT' && (
+                <Link
+                  to="/dashboard"
+                  onClick={() => setMobileOpen(false)}
+                  className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-semibold text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800"
+                >
+                  <Briefcase size={16} />
+                  Hazte profesional
                 </Link>
               )}
               <Link

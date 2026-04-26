@@ -7,8 +7,7 @@ import { Navigate } from 'react-router-dom';
 export default function Dashboard() {
   const { user } = useAuth();
   if (!user) return <Navigate to="/login" replace />;
-  if (user.role === 'CLIENT') return <ClientDashboard />;
-  if (user.role === 'PROFESSIONAL') return <ProfessionalDashboard />;
   if (user.role === 'ADMIN') return <AdminDashboard />;
-  return null;
+  if (user.isProvider) return <ProfessionalDashboard />;
+  return <ClientDashboard />;
 }

@@ -1,15 +1,38 @@
 import { Link } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { bookingsApi } from '../../services/api';
-import { Booking, BOOKING_STATUS_LABELS } from '../../types';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { bookingsApi, authApi } from '../../services/api';
+import { Booking, BOOKING_STATUS_LABELS, CATEGORY_LABELS, CATEGORY_IMAGES, ServiceCategory } from '../../types';
 import Badge from '../../components/common/Badge';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { Plus, Calendar } from 'lucide-react';
+import { Plus, Calendar, Briefcase } from 'lucide-react';
 import { useI18n } from '../../i18n';
+import { useAuth } from '../../contexts/AuthContext';
+import { useState } from 'react';
+import toast from 'react-hot-toast';
+
+const CATEGORIES = Object.keys(CATEGORY_IMAGES) as ServiceCategory[];
 
 export default function ClientDashboard() {
   const { t } = useI18n();
+  const { refreshUser } = useAuth();
+  const qc = useQueryClient();
+  const [activatingProvider, setActivatingProvider] = useState(false);
+
+  async function handleBecomeProvider() {
+    setActivatingProvider(true);
+    try {
+      await authApi.toggleProvider();
+      await refreshUser();
+      qc.invalidateQueries({ queryKey: ['my-bookings'] });
+      toast.success('Modo proveedor activado. Completa tu perfil para empezar.');
+    } catch {
+      toast.error('Error al activar el modo proveedor');
+    } finally {
+      setActivatingProvider(false);
+    }
+  }
+
   const { data: bookings = [], isLoading } = useQuery({
     queryKey: ['my-bookings'],
     queryFn: () => bookingsApi.list().then(r => r.data),
@@ -20,7 +43,7 @@ export default function ClientDashboard() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('client.title')}</h1>
         <Link
           to="/professionals"
@@ -29,6 +52,34 @@ export default function ClientDashboard() {
           <Plus size={16} />
           {t('client.new_booking')}
         </Link>
+      </div>
+
+      {/* What do you need today? */}
+      <div className="mb-10">
+        <h2 className="text-base font-semibold text-gray-700 dark:text-gray-300 mb-4">¿Qué necesitas hoy?</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+          {CATEGORIES.map(cat => (
+            <Link
+              key={cat}
+              to={`/professionals?category=${cat}`}
+              className="group relative rounded-2xl overflow-hidden block shadow-sm hover:shadow-lg transition-shadow"
+            >
+              <div className="relative h-28 sm:h-36 bg-gray-200 dark:bg-gray-800">
+                <img
+                  src={CATEGORY_IMAGES[cat]}
+                  alt={CATEGORY_LABELS[cat]}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  loading="lazy"
+                  onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-black/10" />
+                <div className="absolute bottom-0 left-0 right-0 p-2.5">
+                  <span className="text-white text-xs font-bold block truncate">{CATEGORY_LABELS[cat]}</span>
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
       </div>
 
       {isLoading ? (
@@ -63,6 +114,26 @@ export default function ClientDashboard() {
           )}
         </div>
       )}
+
+      {/* Become provider CTA */}
+      <div className="mt-10 p-5 bg-gray-50 dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <div className="w-10 h-10 bg-primary-50 dark:bg-primary-900/30 rounded-xl flex items-center justify-center flex-shrink-0">
+            <Briefcase size={18} className="text-primary-600" />
+          </div>
+          <div>
+            <p className="font-semibold text-gray-900 dark:text-white text-sm">¿Quieres ofrecer tus servicios?</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Activa el modo proveedor para empezar a ganar dinero</p>
+          </div>
+        </div>
+        <button
+          onClick={handleBecomeProvider}
+          disabled={activatingProvider}
+          className="flex-shrink-0 px-5 py-2.5 bg-primary-600 text-white text-sm font-semibold rounded-xl hover:bg-primary-700 disabled:opacity-50 transition-colors"
+        >
+          {activatingProvider ? 'Activando...' : 'Activar modo proveedor'}
+        </button>
+      </div>
     </div>
   );
 }

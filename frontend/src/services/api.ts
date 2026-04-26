@@ -3,6 +3,7 @@ import axios, { AxiosError } from 'axios';
 const api = axios.create({
   baseURL: '/api',
   headers: { 'Content-Type': 'application/json' },
+  timeout: 10000,
 });
 
 api.interceptors.request.use((config) => {
@@ -46,6 +47,7 @@ export const authApi = {
   me: () => api.get('/auth/me'),
   changePassword: (data: { currentPassword: string; newPassword: string; confirmPassword: string }) =>
     api.patch('/auth/password', data),
+  toggleProvider: () => api.patch('/auth/provider'),
 };
 
 export const availabilityApi = {

@@ -40,10 +40,11 @@ export function sanitizeMessageContent(content: string): { clean: string; flagge
 
   for (const pattern of SENSITIVE_DATA_PATTERNS) {
     pattern.lastIndex = 0;
-    if (pattern.test(content)) {
+    if (pattern.test(clean)) {
       flagged = true;
       reason = 'Datos sensibles detectados';
-      clean = content.replace(pattern, '[DATOS OCULTOS]');
+      pattern.lastIndex = 0;
+      clean = clean.replace(pattern, '[DATOS OCULTOS]');
     }
   }
 

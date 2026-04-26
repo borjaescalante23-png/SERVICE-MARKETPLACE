@@ -16,6 +16,7 @@ export interface User {
   firstName: string;
   lastName: string;
   role: Role;
+  isProvider: boolean;
   avatarUrl?: string;
   isVerified: boolean;
   createdAt: string;
@@ -226,6 +227,24 @@ export const CATEGORY_ICONS: Record<ServiceCategory, string> = {
   ELECTRICIAN: '⚡',
   GARDENING: '🌿',
   OTHER: '⭐',
+};
+
+export const CATEGORY_IMAGES: Record<ServiceCategory, string> = {
+  HAIRDRESSING:     'https://images.pexels.com/photos/10318038/pexels-photo-10318038.jpeg?auto=compress&cs=tinysrgb&w=800&h=533&fit=crop',
+  BEAUTY:           'https://images.pexels.com/photos/12115045/pexels-photo-12115045.jpeg?auto=compress&cs=tinysrgb&w=800&h=533&fit=crop',
+  CLEANING:         'https://images.pexels.com/photos/9462192/pexels-photo-9462192.jpeg?auto=compress&cs=tinysrgb&w=800&h=533&fit=crop',
+  CHEF:             'https://images.pexels.com/photos/36430249/pexels-photo-36430249.jpeg?auto=compress&cs=tinysrgb&w=800&h=533&fit=crop',
+  HANDYMAN:         'https://images.pexels.com/photos/5691544/pexels-photo-5691544.jpeg?auto=compress&cs=tinysrgb&w=800&h=533&fit=crop',
+  PERSONAL_TRAINER: 'https://images.pexels.com/photos/4587383/pexels-photo-4587383.jpeg?auto=compress&cs=tinysrgb&w=800&h=533&fit=crop',
+  MASSAGE:          'https://images.pexels.com/photos/6629607/pexels-photo-6629607.jpeg?auto=compress&cs=tinysrgb&w=800&h=533&fit=crop',
+  CHILDCARE:        'https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=800&q=85&auto=format&fit=crop',
+  ELDERCARE:        'https://images.pexels.com/photos/29372722/pexels-photo-29372722.jpeg?auto=compress&cs=tinysrgb&w=800&h=533&fit=crop',
+  PET_CARE:         'https://images.pexels.com/photos/6235650/pexels-photo-6235650.jpeg?auto=compress&cs=tinysrgb&w=800&h=533&fit=crop',
+  TUTORING:         'https://images.pexels.com/photos/10222299/pexels-photo-10222299.jpeg?auto=compress&cs=tinysrgb&w=800&h=533&fit=crop',
+  PLUMBING:         'https://images.pexels.com/photos/29226620/pexels-photo-29226620.jpeg?auto=compress&cs=tinysrgb&w=800&h=533&fit=crop',
+  ELECTRICIAN:      'https://images.pexels.com/photos/32497160/pexels-photo-32497160.jpeg?auto=compress&cs=tinysrgb&w=800&h=533&fit=crop',
+  GARDENING:        'https://images.pexels.com/photos/16442678/pexels-photo-16442678.jpeg?auto=compress&cs=tinysrgb&w=800&h=533&fit=crop',
+  OTHER:            'https://images.unsplash.com/photo-1560472355-536de3962603?w=800&q=85&auto=format&fit=crop',
 };
 
 export const BOOKING_STATUS_LABELS: Record<BookingStatus, string> = {

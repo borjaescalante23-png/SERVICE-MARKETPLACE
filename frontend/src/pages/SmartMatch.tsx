@@ -1,7 +1,7 @@
 import { useState, type JSX } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { matchApi } from '../services/api';
-import { CATEGORY_LABELS, CATEGORY_ICONS, ServiceCategory } from '../types';
+import { CATEGORY_LABELS, ServiceCategory } from '../types';
 import { useNavigate } from 'react-router-dom';
 import { Sparkles, MapPin, Calendar, DollarSign, Star, Shield, Zap, ChevronRight } from 'lucide-react';
 
@@ -67,7 +67,7 @@ export default function SmartMatch() {
               <option value="">Selecciona una categoría</option>
               {CATEGORIES.map(cat => (
                 <option key={cat} value={cat}>
-                  {CATEGORY_ICONS[cat]} {CATEGORY_LABELS[cat]}
+                  {CATEGORY_LABELS[cat]}
                 </option>
               ))}
             </select>

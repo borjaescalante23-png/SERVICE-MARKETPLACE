@@ -104,6 +104,17 @@ export default function ProfessionalDashboard() {
     }
   }
 
+  async function handleDeleteService(id: string) {
+    if (!confirm('¿Eliminar este servicio?')) return;
+    try {
+      await servicesApi.delete(id);
+      toast.success('Servicio eliminado');
+      qc.invalidateQueries({ queryKey: ['my-profile'] });
+    } catch (err: any) {
+      toast.error(err?.response?.data?.error || 'Error al eliminar');
+    }
+  }
+
   async function handleCreateService(e: React.FormEvent) {
     e.preventDefault();
     setAddingService(true);
@@ -405,13 +416,22 @@ export default function ProfessionalDashboard() {
       {activeTab === 'services' && (
         <div className="space-y-4">
           {profile?.services?.map((s: any) => (
-            <div key={s.id} className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 p-4 flex justify-between items-start">
-              <div>
-                <p className="font-medium text-gray-900 dark:text-white">{s.name}</p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">{s.description}</p>
+            <div key={s.id} className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 p-4 flex justify-between items-start gap-3">
+              <div className="flex-1 min-w-0">
+                <p className="font-medium text-gray-900 dark:text-white truncate">{s.name}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2">{s.description}</p>
                 <p className="text-xs text-gray-400 mt-1">{CATEGORY_LABELS[s.category]} · {s.duration}min</p>
               </div>
-              <p className="font-bold text-primary-600">{s.price}€</p>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <p className="font-bold text-primary-600">{s.price}€</p>
+                <button
+                  onClick={() => handleDeleteService(s.id)}
+                  className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                  title="Eliminar servicio"
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
             </div>
           ))}
 
@@ -430,7 +450,7 @@ export default function ProfessionalDashboard() {
                   <select value={newService.category} onChange={e => setNewService(p => ({...p, category: e.target.value as ServiceCategory}))} className="col-span-1 px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white">
                     {Object.keys(CATEGORY_LABELS).map(c => <option key={c} value={c}>{CATEGORY_LABELS[c as ServiceCategory]}</option>)}
                   </select>
-                  <input type="number" value={newService.price} onChange={e => setNewService(p => ({...p, price: e.target.value}))} required placeholder={t('profdash.service_price_placeholder')} min="1" className="px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-500" />
+                  <input type="number" value={newService.price} onChange={e => setNewService(p => ({...p, price: e.target.value}))} required placeholder={t('profdash.service_price_placeholder')} min="25" className="px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-500" />
                   <input type="number" value={newService.duration} onChange={e => setNewService(p => ({...p, duration: e.target.value}))} required placeholder={t('profdash.service_duration_placeholder')} min="15" className="px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-500" />
                 </div>
                 {pricingHint && (
