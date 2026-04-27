@@ -95,7 +95,7 @@ async function detectLowCompetition(): Promise<void> {
   const categories = [
     'PLUMBING','ELECTRICIAN','GARDENING','CLEANING','HANDYMAN',
     'CHEF','HAIRDRESSING','BEAUTY','MASSAGE','PERSONAL_TRAINER',
-    'CHILDCARE','ELDERCARE','PET_CARE','TUTORING','OTHER',
+    'CHILDCARE','ELDERCARE','PET_CARE','TUTORING',
   ];
 
   for (const category of categories) {

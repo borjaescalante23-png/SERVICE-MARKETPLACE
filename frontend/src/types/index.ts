@@ -8,7 +8,7 @@ export type PaymentStatus = 'PENDING' | 'HELD_IN_ESCROW' | 'RELEASED' | 'REFUNDE
 export type ServiceCategory =
   | 'HAIRDRESSING' | 'BEAUTY' | 'CLEANING' | 'CHEF' | 'HANDYMAN'
   | 'PERSONAL_TRAINER' | 'MASSAGE' | 'CHILDCARE' | 'ELDERCARE' | 'PET_CARE'
-  | 'TUTORING' | 'PLUMBING' | 'ELECTRICIAN' | 'GARDENING' | 'OTHER';
+  | 'TUTORING' | 'PLUMBING' | 'ELECTRICIAN' | 'GARDENING';
 
 export interface User {
   id: string;
@@ -208,7 +208,6 @@ export const CATEGORY_LABELS: Record<ServiceCategory, string> = {
   PLUMBING: 'Fontanería',
   ELECTRICIAN: 'Electricista',
   GARDENING: 'Jardinería',
-  OTHER: 'Otros',
 };
 
 export const CATEGORY_ICONS: Record<ServiceCategory, string> = {
@@ -226,7 +225,6 @@ export const CATEGORY_ICONS: Record<ServiceCategory, string> = {
   PLUMBING: '🚰',
   ELECTRICIAN: '⚡',
   GARDENING: '🌿',
-  OTHER: '⭐',
 };
 
 export const CATEGORY_IMAGES: Record<ServiceCategory, string> = {
@@ -244,7 +242,6 @@ export const CATEGORY_IMAGES: Record<ServiceCategory, string> = {
   PLUMBING:         'https://images.pexels.com/photos/29226620/pexels-photo-29226620.jpeg?auto=compress&cs=tinysrgb&w=800&h=533&fit=crop',
   ELECTRICIAN:      'https://images.pexels.com/photos/32497160/pexels-photo-32497160.jpeg?auto=compress&cs=tinysrgb&w=800&h=533&fit=crop',
   GARDENING:        'https://images.pexels.com/photos/16442678/pexels-photo-16442678.jpeg?auto=compress&cs=tinysrgb&w=800&h=533&fit=crop',
-  OTHER:            'https://images.unsplash.com/photo-1560472355-536de3962603?w=800&q=85&auto=format&fit=crop',
 };
 
 export const BOOKING_STATUS_LABELS: Record<BookingStatus, string> = {

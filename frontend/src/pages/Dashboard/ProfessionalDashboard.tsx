@@ -25,11 +25,18 @@ export default function ProfessionalDashboard() {
   const [showServiceForm, setShowServiceForm] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [pricingHint, setPricingHint] = useState<{ min: number; max: number; suggested: number; message: string } | null>(null);
+  const [bio, setBio] = useState('');
+  const [savingBio, setSavingBio] = useState(false);
+  const [savingMode, setSavingMode] = useState(false);
 
   useEffect(() => {
     if (!showServiceForm) return;
     servicesApi.getPricing(newService.category).then(r => setPricingHint(r.data)).catch(() => setPricingHint(null));
   }, [newService.category, showServiceForm]);
+
+  useEffect(() => {
+    if (profile?.bio) setBio(profile.bio);
+  }, [profile?.bio]);
 
   const { data: profile, isLoading } = useQuery({
     queryKey: ['my-profile'],
@@ -101,6 +108,33 @@ export default function ProfessionalDashboard() {
       form.reset();
     } catch (err: any) {
       toast.error(err?.response?.data?.error || 'Error al añadir experiencia');
+    }
+  }
+
+  async function handleSaveBio() {
+    if (!bio.trim()) return;
+    setSavingBio(true);
+    try {
+      await professionalsApi.updateProfile({ bio: bio.trim() });
+      toast.success('Bio guardada');
+      qc.invalidateQueries({ queryKey: ['my-profile'] });
+    } catch {
+      toast.error('Error al guardar la bio');
+    } finally {
+      setSavingBio(false);
+    }
+  }
+
+  async function handleServiceMode(mode: string) {
+    setSavingMode(true);
+    try {
+      await professionalsApi.updateProfile({ serviceMode: mode });
+      toast.success('Modo de servicio actualizado');
+      qc.invalidateQueries({ queryKey: ['my-profile'] });
+    } catch {
+      toast.error('Error al actualizar');
+    } finally {
+      setSavingMode(false);
     }
   }
 
@@ -267,42 +301,156 @@ export default function ProfessionalDashboard() {
       {/* Tab content */}
       {activeTab === 'overview' && (
         <div className="space-y-6">
-          {/* Profile photo */}
-          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6">
-            <h3 className="font-semibold text-gray-900 dark:text-white mb-1 flex items-center gap-2">
-              <Camera size={16} className="text-primary-600" />
-              {t('profdash.photo_title')}
-              <span className="text-xs font-normal text-red-500 ml-1">{t('profdash.photo_required')}</span>
-            </h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">{t('profdash.photo_desc')}</p>
-            <div className="flex items-center gap-4">
-              <div className="w-20 h-20 rounded-2xl bg-gray-100 dark:bg-gray-800 border-2 border-dashed border-gray-200 dark:border-gray-700 flex items-center justify-center overflow-hidden flex-shrink-0">
-                {profile?.user?.avatarUrl ? (
-                  <img src={profile.user.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
-                ) : (
-                  <User size={28} className="text-gray-300" />
-                )}
-              </div>
-              <div>
-                <label className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-xl cursor-pointer transition-colors ${
-                  profile?.user?.avatarUrl
-                    ? 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
-                    : 'bg-primary-600 text-white hover:bg-primary-700'
-                }`}>
-                  {uploadingAvatar ? t('common.uploading') : profile?.user?.avatarUrl ? t('profdash.change_photo') : t('profdash.upload_photo')}
-                  <input type="file" className="hidden" accept="image/*" onChange={handleAvatarUpload} disabled={uploadingAvatar} />
-                </label>
-                {!profile?.user?.avatarUrl && (
-                  <p className="text-xs text-amber-600 mt-2 flex items-center gap-1">
-                    <AlertCircle size={12} />
-                    {t('profdash.no_photo_warning')}
+
+          {/* Completion checklist */}
+          {(() => {
+            const hasPhoto = !!profile?.user?.avatarUrl;
+            const hasBio = !!(profile?.bio && profile.bio.length > 10);
+            const expCount = (profile?.experienceEntries || []).filter((e: any) => e.images?.length > 0).length;
+            const hasExp = expCount >= 2;
+            const hasDoc = (profile?.documents || []).some((d: any) => ['NATIONAL_ID', 'PASSPORT', 'DRIVING_LICENSE'].includes(d.type));
+            const hasSvc = (profile?.services || []).length > 0;
+            const kycOk = kycStatus === 'APPROVED';
+            const stripeOk = stripeStatus === 'ACTIVE';
+            const steps = [
+              { ok: hasPhoto, label: 'Foto de perfil', action: null },
+              { ok: hasBio, label: 'Descripción / bio', action: null },
+              { ok: hasExp, label: `Mínimo 2 trabajos con fotos (${expCount}/2)`, action: () => setActiveTab('experience') },
+              { ok: hasDoc, label: 'Documento de identidad', action: () => setActiveTab('documents') },
+              { ok: hasSvc, label: 'Al menos 1 servicio creado', action: () => setActiveTab('services') },
+              { ok: kycOk, label: 'Verificación KYC', action: () => window.location.href = '/kyc' },
+              { ok: stripeOk, label: 'Cuenta de cobros Stripe', action: () => window.location.href = '/stripe/onboarding' },
+            ];
+            const done = steps.filter(s => s.ok).length;
+            const allDone = done === steps.length;
+            return (
+              <div className={`rounded-2xl border p-5 ${allDone ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800' : 'bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-800'}`}>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                    <CheckCircle size={16} className={allDone ? 'text-green-500' : 'text-gray-300'} />
+                    Completa tu perfil
+                  </h3>
+                  <span className={`text-sm font-bold px-2.5 py-1 rounded-full ${allDone ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400' : 'bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-400'}`}>
+                    {done}/{steps.length}
+                  </span>
+                </div>
+                <div className="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-1.5 mb-4">
+                  <div className="bg-primary-500 h-1.5 rounded-full transition-all" style={{ width: `${(done / steps.length) * 100}%` }} />
+                </div>
+                <div className="space-y-2">
+                  {steps.map((s, i) => (
+                    <div key={i} className={`flex items-center gap-3 p-2.5 rounded-xl ${s.ok ? '' : 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800'}`}
+                      onClick={() => !s.ok && s.action && s.action()}>
+                      <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${s.ok ? 'bg-green-100 dark:bg-green-900/40' : 'bg-gray-100 dark:bg-gray-800'}`}>
+                        {s.ok
+                          ? <CheckCircle size={13} className="text-green-500" />
+                          : <span className="w-2 h-2 rounded-full bg-gray-300 dark:bg-gray-600 block" />}
+                      </div>
+                      <span className={`text-sm ${s.ok ? 'text-gray-400 dark:text-gray-500 line-through' : 'text-gray-700 dark:text-gray-300 font-medium'}`}>{s.label}</span>
+                      {!s.ok && s.action && <span className="ml-auto text-xs text-primary-500">→</span>}
+                    </div>
+                  ))}
+                </div>
+                {!isApproved && done >= 5 && (
+                  <p className="mt-4 text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 rounded-xl p-3">
+                    Una vez completes todos los pasos, el equipo de VELORA revisará tu perfil y lo aprobará en 24-48h.
                   </p>
                 )}
+              </div>
+            );
+          })()}
+
+          {/* Profile photo + bio + service mode */}
+          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6 space-y-6">
+            {/* Photo */}
+            <div>
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-1 flex items-center gap-2">
+                <Camera size={16} className="text-primary-600" />
+                {t('profdash.photo_title')}
+              </h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">{t('profdash.photo_desc')}</p>
+              <div className="flex items-center gap-4">
+                <div className="w-20 h-20 rounded-2xl bg-gray-100 dark:bg-gray-800 border-2 border-dashed border-gray-200 dark:border-gray-700 flex items-center justify-center overflow-hidden flex-shrink-0">
+                  {profile?.user?.avatarUrl ? (
+                    <img src={profile.user.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                  ) : (
+                    <User size={28} className="text-gray-300" />
+                  )}
+                </div>
+                <div>
+                  <label className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-xl cursor-pointer transition-colors ${
+                    profile?.user?.avatarUrl
+                      ? 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                      : 'bg-primary-600 text-white hover:bg-primary-700'
+                  }`}>
+                    {uploadingAvatar ? t('common.uploading') : profile?.user?.avatarUrl ? t('profdash.change_photo') : t('profdash.upload_photo')}
+                    <input type="file" className="hidden" accept="image/*" onChange={handleAvatarUpload} disabled={uploadingAvatar} />
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div className="border-t border-gray-100 dark:border-gray-800" />
+
+            {/* Bio */}
+            <div>
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-1 flex items-center gap-2">
+                <User size={16} className="text-primary-600" />
+                Descripción profesional
+              </h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">Cuéntales a los clientes quién eres y qué haces. Mínimo 10 caracteres.</p>
+              <textarea
+                value={bio}
+                onChange={e => setBio(e.target.value)}
+                rows={3}
+                maxLength={500}
+                placeholder="Ej: Peluquera con 8 años de experiencia especializada en coloraciones y cortes modernos. Trabajo con productos premium y garantizo resultados..."
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm resize-none dark:bg-gray-800 dark:text-white"
+              />
+              <div className="flex items-center justify-between mt-2">
+                <span className="text-xs text-gray-400">{bio.length}/500</span>
+                <button
+                  onClick={handleSaveBio}
+                  disabled={savingBio || bio.trim().length < 10}
+                  className="px-4 py-1.5 bg-primary-600 text-white text-sm font-medium rounded-xl hover:bg-primary-700 disabled:opacity-40 transition-colors"
+                >
+                  {savingBio ? 'Guardando...' : 'Guardar bio'}
+                </button>
+              </div>
+            </div>
+
+            <div className="border-t border-gray-100 dark:border-gray-800" />
+
+            {/* Service mode */}
+            <div>
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-1">Modo de servicio</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">¿Cómo ofreces tus servicios?</p>
+              <div className="grid grid-cols-3 gap-2">
+                {([
+                  { value: 'PRESENTIAL', label: 'A domicilio', desc: 'Vas al cliente' },
+                  { value: 'REMOTE', label: 'Remoto', desc: 'Online / videollamada' },
+                  { value: 'BOTH', label: 'Ambos', desc: 'Flexible' },
+                ] as const).map(opt => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    disabled={savingMode}
+                    onClick={() => handleServiceMode(opt.value)}
+                    className={`p-3 rounded-xl border-2 text-left transition-all disabled:opacity-50 ${
+                      profile?.serviceMode === opt.value
+                        ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/30'
+                        : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                    }`}
+                  >
+                    <p className={`text-sm font-semibold ${profile?.serviceMode === opt.value ? 'text-primary-700 dark:text-primary-300' : 'text-gray-700 dark:text-gray-300'}`}>{opt.label}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">{opt.desc}</p>
+                  </button>
+                ))}
               </div>
             </div>
           </div>
 
-          <p className="text-gray-500 dark:text-gray-400">{t('profdash.use_tabs')}</p>
+          {/* Active bookings */}
           {bookings.filter((b: Booking) => ['PENDING', 'ACCEPTED', 'IN_PROGRESS'].includes(b.status)).length > 0 && (
             <div>
               <h3 className="font-semibold text-gray-900 dark:text-white mb-3">{t('profdash.active_bookings')}</h3>

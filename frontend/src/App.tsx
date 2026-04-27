@@ -20,6 +20,7 @@ import KYCVerification from './pages/KYCVerification';
 import StripeOnboarding from './pages/StripeOnboarding';
 import Terms from './pages/Terms';
 import Privacy from './pages/Privacy';
+import BecomeProvider from './pages/BecomeProvider';
 import ErrorBoundary from './components/ErrorBoundary';
 import Onboarding from './components/Onboarding';
 
@@ -88,6 +89,7 @@ export default function App() {
                 <Route path="/opportunities" element={<ProtectedRoute><Opportunities /></ProtectedRoute>} />
                 <Route path="/kyc" element={<ProtectedRoute><KYCVerification /></ProtectedRoute>} />
                 <Route path="/stripe/onboarding" element={<ProtectedRoute><StripeOnboarding /></ProtectedRoute>} />
+                <Route path="/become-provider" element={<ProtectedRoute><BecomeProvider /></ProtectedRoute>} />
                 <Route path="/terms" element={<Terms />} />
                 <Route path="/privacy" element={<Privacy />} />
               </Route>

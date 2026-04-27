@@ -214,7 +214,7 @@ export default function Home() {
                 </div>
               </div>
               <Link
-                to={user ? '/dashboard' : '/register'}
+                to={user ? '/become-provider' : '/register'}
                 className="flex-shrink-0 px-5 py-2.5 bg-gray-950 dark:bg-primary-600 text-white text-sm font-semibold rounded-xl hover:bg-gray-800 dark:hover:bg-primary-700 transition-colors"
               >
                 Empezar

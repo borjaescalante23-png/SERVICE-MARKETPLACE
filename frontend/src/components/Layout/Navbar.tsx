@@ -78,7 +78,7 @@ export default function Navbar() {
 
                 {user.role === 'CLIENT' && (
                   <Link
-                    to="/dashboard"
+                    to="/become-provider"
                     className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20 hover:bg-primary-100 dark:hover:bg-primary-900/40 border border-primary-200 dark:border-primary-800 transition-colors"
                   >
                     <Briefcase size={14} />
@@ -192,7 +192,7 @@ export default function Navbar() {
               )}
               {user.role === 'CLIENT' && (
                 <Link
-                  to="/dashboard"
+                  to="/become-provider"
                   onClick={() => setMobileOpen(false)}
                   className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-semibold text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800"
                 >

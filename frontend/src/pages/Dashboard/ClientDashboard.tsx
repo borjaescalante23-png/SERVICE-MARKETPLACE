@@ -22,7 +22,12 @@ export default function ClientDashboard() {
   async function handleBecomeProvider() {
     setActivatingProvider(true);
     try {
-      await authApi.toggleProvider();
+      const { data } = await authApi.toggleProvider();
+      // Store new tokens that carry the updated role (CLIENT→PROFESSIONAL)
+      if (data.accessToken) {
+        localStorage.setItem('accessToken', data.accessToken);
+        localStorage.setItem('refreshToken', data.refreshToken);
+      }
       await refreshUser();
       qc.invalidateQueries({ queryKey: ['my-bookings'] });
       toast.success('Modo proveedor activado. Completa tu perfil para empezar.');

@@ -13,7 +13,7 @@ const experienceSchema = z.object({
   serviceCategory: z.enum([
     'HAIRDRESSING', 'BEAUTY', 'CLEANING', 'CHEF', 'HANDYMAN',
     'PERSONAL_TRAINER', 'MASSAGE', 'CHILDCARE', 'ELDERCARE', 'PET_CARE',
-    'TUTORING', 'PLUMBING', 'ELECTRICIAN', 'GARDENING', 'OTHER',
+    'TUTORING', 'PLUMBING', 'ELECTRICIAN', 'GARDENING',
   ]),
   approximateDate: z.string().min(4).max(50),
 });
@@ -47,6 +47,28 @@ export async function updateBio(req: AuthRequest, res: Response): Promise<void> 
   const profile = await prisma.professionalProfile.update({
     where: { userId: req.user!.userId },
     data: { bio },
+  });
+
+  res.json(profile);
+}
+
+export async function updateProfile(req: AuthRequest, res: Response): Promise<void> {
+  const { bio, serviceMode } = req.body;
+  const validModes = ['PRESENTIAL', 'REMOTE', 'BOTH'];
+
+  const data: any = { city: 'Barcelona', country: 'España' };
+  if (bio !== undefined) {
+    if (bio.length > 500) { res.status(400).json({ error: 'Bio demasiado larga (máx. 500 caracteres)' }); return; }
+    data.bio = bio;
+  }
+  if (serviceMode !== undefined) {
+    if (!validModes.includes(serviceMode)) { res.status(400).json({ error: 'Modo de servicio inválido' }); return; }
+    data.serviceMode = serviceMode;
+  }
+
+  const profile = await prisma.professionalProfile.update({
+    where: { userId: req.user!.userId },
+    data,
   });
 
   res.json(profile);

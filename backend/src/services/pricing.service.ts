@@ -24,7 +24,6 @@ const BASE_RANGES: Record<string, [number, number]> = {
   ELDERCARE: [12, 22],
   PET_CARE: [15, 45],
   TUTORING: [20, 60],
-  OTHER: [20, 80],
 };
 
 export async function getPricingRecommendation(

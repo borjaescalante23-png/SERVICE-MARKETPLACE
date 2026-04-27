@@ -225,5 +225,11 @@ export async function toggleProvider(req: AuthRequest, res: Response): Promise<v
     }
   }
 
-  res.json(updated);
+  // Issue new tokens with updated role so middleware sees the new role immediately
+  const payload = { userId: updated.id, role: updated.role, email: updated.email };
+  const accessToken = signAccessToken(payload);
+  const refreshToken = signRefreshToken(payload);
+  await saveRefreshToken(user.id, refreshToken);
+
+  res.json({ ...updated, accessToken, refreshToken });
 }

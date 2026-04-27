@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import {
-  getMyProfile, updateBio, addExperienceEntry, deleteExperienceEntry,
+  getMyProfile, updateBio, updateProfile, addExperienceEntry, deleteExperienceEntry,
   uploadDocument, deleteDocument, getProfessionals, getProfessionalById,
 } from '../controllers/professional.controller';
 import { authenticate, requireRole } from '../middleware/auth.middleware';
@@ -13,6 +13,7 @@ router.get('/me', authenticate, requireRole('PROFESSIONAL'), getMyProfile);
 router.get('/:id', authenticate, getProfessionalById);
 
 router.patch('/me/bio', authenticate, requireRole('PROFESSIONAL'), updateBio);
+router.patch('/me/profile', authenticate, requireRole('PROFESSIONAL'), updateProfile);
 
 router.post(
   '/me/experience',
