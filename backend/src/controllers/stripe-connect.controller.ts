@@ -6,6 +6,7 @@ import {
   createOnboardingLink,
   getConnectAccountStatus,
 } from '../services/stripe-connect.service';
+import { constructConnectWebhookEvent } from '../services/stripe.service';
 
 export async function startOnboarding(req: AuthRequest, res: Response): Promise<void> {
   const userId = req.user!.userId;
@@ -78,14 +79,32 @@ export async function stripeConnectWebhook(req: AuthRequest, res: Response): Pro
   const payload = req.body as Buffer;
   const signature = req.headers['stripe-signature'] as string;
 
-  try {
-    const { default: Stripe } = await import('stripe' as any);
-    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', { apiVersion: '2024-12-18.acacia' });
-    const event = stripe.webhooks.constructEvent(payload, signature, process.env.STRIPE_CONNECT_WEBHOOK_SECRET || '');
+  if (!signature) {
+    res.status(400).json({ error: 'Cabecera stripe-signature requerida' });
+    return;
+  }
 
+  let event: any;
+  try {
+    event = await constructConnectWebhookEvent(payload, signature);
+  } catch (err: any) {
+    if (err.type === 'StripeSignatureVerificationError') {
+      res.status(400).json({ error: 'Firma del webhook invalida' });
+    } else {
+      console.error('[Stripe Connect Webhook] Error de configuracion:', err.message);
+      res.status(500).json({ error: 'Error de configuracion del servidor de pagos' });
+    }
+    return;
+  }
+
+  try {
     if (event.type === 'account.updated') {
       const account = event.data.object as any;
-      const newStatus = account.charges_enabled ? 'ACTIVE' : account.details_submitted ? 'PENDING' : 'INCOMPLETE';
+      const newStatus = account.charges_enabled
+        ? 'ACTIVE'
+        : account.details_submitted
+          ? 'PENDING'
+          : 'INCOMPLETE';
 
       await prisma.professionalProfile.updateMany({
         where: { stripeConnectId: account.id },
@@ -95,6 +114,7 @@ export async function stripeConnectWebhook(req: AuthRequest, res: Response): Pro
 
     res.json({ received: true });
   } catch (err: any) {
-    res.status(400).json({ error: `Webhook error: ${err.message}` });
+    console.error('[Stripe Connect Webhook] Error procesando evento:', err.message);
+    res.status(500).json({ error: 'Error interno al procesar el evento' });
   }
 }

@@ -49,8 +49,26 @@ export async function createCheckoutSession(
   }
 }
 
-export async function constructWebhookEvent(payload: Buffer, signature: string) {
+async function getStripeForWebhook() {
+  // constructEvent is a local HMAC check — the SDK key is not used for network calls here
   const { default: Stripe } = await import('stripe' as any);
-  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', { apiVersion: '2024-12-18.acacia' });
-  return stripe.webhooks.constructEvent(payload, signature, process.env.STRIPE_WEBHOOK_SECRET || '');
+  return new Stripe(process.env.STRIPE_SECRET_KEY || 'no-key', { apiVersion: '2024-12-18.acacia' });
+}
+
+export async function constructWebhookEvent(payload: Buffer, signature: string) {
+  const secret = process.env.STRIPE_WEBHOOK_SECRET;
+  if (!secret) {
+    throw new Error('STRIPE_WEBHOOK_SECRET no esta definido en las variables de entorno');
+  }
+  const stripe = await getStripeForWebhook();
+  return stripe.webhooks.constructEvent(payload, signature, secret);
+}
+
+export async function constructConnectWebhookEvent(payload: Buffer, signature: string) {
+  const secret = process.env.STRIPE_CONNECT_WEBHOOK_SECRET;
+  if (!secret) {
+    throw new Error('STRIPE_CONNECT_WEBHOOK_SECRET no esta definido en las variables de entorno');
+  }
+  const stripe = await getStripeForWebhook();
+  return stripe.webhooks.constructEvent(payload, signature, secret);
 }

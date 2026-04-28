@@ -159,9 +159,25 @@ export async function payBooking(req: AuthRequest, res: Response): Promise<void>
 export async function stripeWebhook(req: Request, res: Response): Promise<void> {
   const signature = req.headers['stripe-signature'] as string;
 
-  try {
-    const event = await constructWebhookEvent(req.body as Buffer, signature);
+  if (!signature) {
+    res.status(400).json({ error: 'Cabecera stripe-signature requerida' });
+    return;
+  }
 
+  let event: any;
+  try {
+    event = await constructWebhookEvent(req.body as Buffer, signature);
+  } catch (err: any) {
+    if (err.type === 'StripeSignatureVerificationError') {
+      res.status(400).json({ error: 'Firma del webhook invalida' });
+    } else {
+      console.error('[Stripe Webhook] Error de configuracion:', err.message);
+      res.status(500).json({ error: 'Error de configuracion del servidor de pagos' });
+    }
+    return;
+  }
+
+  try {
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object as any;
       const bookingId = session.metadata?.bookingId;
@@ -176,8 +192,8 @@ export async function stripeWebhook(req: Request, res: Response): Promise<void> 
 
     res.json({ received: true });
   } catch (err: any) {
-    console.error('Webhook error:', err.message);
-    res.status(400).json({ error: `Webhook error: ${err.message}` });
+    console.error('[Stripe Webhook] Error procesando evento:', err.message);
+    res.status(500).json({ error: 'Error interno al procesar el evento' });
   }
 }
 

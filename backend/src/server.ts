@@ -67,7 +67,28 @@ function setupWebSocket(server: http.Server): void {
   }
 }
 
+function validateStripeSecrets(): void {
+  const stripeKey = process.env.STRIPE_SECRET_KEY;
+  const isStripeConfigured = !!stripeKey && !stripeKey.startsWith('sk_test_REEMPLAZA');
+
+  if (!isStripeConfigured) return; // Dev mode without Stripe — skip
+
+  if (!process.env.STRIPE_WEBHOOK_SECRET) {
+    throw new Error(
+      'STRIPE_WEBHOOK_SECRET no esta definido. Configuralo en el archivo .env antes de iniciar el servidor.',
+    );
+  }
+
+  if (!process.env.STRIPE_CONNECT_WEBHOOK_SECRET) {
+    throw new Error(
+      'STRIPE_CONNECT_WEBHOOK_SECRET no esta definido. Configuralo en el archivo .env antes de iniciar el servidor.',
+    );
+  }
+}
+
 async function main() {
+  validateStripeSecrets();
+
   await prisma.$connect();
   console.log('✅ Base de datos conectada');
 
