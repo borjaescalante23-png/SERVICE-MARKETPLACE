@@ -34,10 +34,6 @@ export default function ProfessionalDashboard() {
     servicesApi.getPricing(newService.category).then(r => setPricingHint(r.data)).catch(() => setPricingHint(null));
   }, [newService.category, showServiceForm]);
 
-  useEffect(() => {
-    if (profile?.bio) setBio(profile.bio);
-  }, [profile?.bio]);
-
   const { data: profile, isLoading } = useQuery({
     queryKey: ['my-profile'],
     queryFn: () => professionalsApi.getMyProfile().then(r => r.data),
@@ -47,6 +43,10 @@ export default function ProfessionalDashboard() {
     queryKey: ['my-bookings'],
     queryFn: () => bookingsApi.list().then(r => r.data),
   });
+
+  useEffect(() => {
+    if (profile?.bio) setBio(profile.bio);
+  }, [profile?.bio]);
 
   async function handleDocumentUpload(e: React.ChangeEvent<HTMLInputElement>, type: string) {
     const file = e.target.files?.[0];

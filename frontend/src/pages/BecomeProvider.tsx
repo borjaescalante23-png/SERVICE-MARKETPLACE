@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { authApi } from '../services/api';
@@ -22,11 +22,21 @@ const STEPS = [
 ];
 
 export default function BecomeProvider() {
-  const { refreshUser } = useAuth();
+  const { user, refreshUser } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    if (user?.isProvider) {
+      navigate('/provider-onboarding', { replace: true });
+    }
+  }, [user, navigate]);
+
   async function handleActivate() {
+    if (user?.isProvider) {
+      navigate('/provider-onboarding');
+      return;
+    }
     setLoading(true);
     try {
       const { data } = await authApi.toggleProvider();
@@ -36,9 +46,11 @@ export default function BecomeProvider() {
       }
       await refreshUser();
       toast.success('¡Modo proveedor activado! Completa tu perfil para empezar.');
-      navigate('/dashboard');
+      navigate('/provider-onboarding');
     } catch (err: any) {
-      toast.error(err?.response?.data?.error || 'Error al activar el modo proveedor');
+      const msg = err?.response?.data?.error || err?.message || 'Error al activar el modo proveedor';
+      toast.error(msg);
+      console.error('[BecomeProvider] toggleProvider error:', err?.response?.status, err?.response?.data);
     } finally {
       setLoading(false);
     }
