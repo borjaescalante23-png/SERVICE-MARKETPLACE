@@ -10,6 +10,9 @@ import {
   notifyBookingCreated, notifyBookingAccepted, notifyPaymentHeld,
   notifyProviderMarkedComplete, notifyClientConfirmed, notifyBookingCancelled,
 } from '../services/notification.service';
+import {
+  analyzeDispute, analyzeDisputeHeuristic, executeDisputeResolution,
+} from '../agents/dispute.agent';
 
 const createBookingSchema = z.object({
   serviceId: z.string().min(1),
@@ -365,6 +368,148 @@ export async function clientConfirmCompletion(req: AuthRequest, res: Response): 
   res.json({ message: 'Servicio confirmado. Pago liberado al profesional.' });
 }
 
+// ---------------------------------------------------------------------------
+// Dispute helpers (used only by clientDisputeCompletion)
+// ---------------------------------------------------------------------------
+
+const DISPUTE_MAX_AI_ATTEMPTS = 2;
+
+async function notifyAdminsDisputeFailed(
+  disputeId: string,
+  bookingId: string,
+  reason: string,
+): Promise<void> {
+  try {
+    const admins = await prisma.user.findMany({
+      where: { role: 'ADMIN' },
+      select: { id: true },
+    });
+    if (!admins.length) {
+      console.error(`[Dispute] No admin users found to notify about failed analysis for dispute ${disputeId}`);
+      return;
+    }
+    await prisma.notification.createMany({
+      data: admins.map(admin => ({
+        userId: admin.id,
+        type: 'DISPUTE_ANALYSIS_FAILED',
+        title: 'Disputa pendiente de revision manual',
+        body: `El analisis automatico de la disputa ${disputeId} (booking ${bookingId}) ha fallado tras ${DISPUTE_MAX_AI_ATTEMPTS} intentos y requiere intervencion manual. Motivo: ${reason}`,
+        data: JSON.stringify({ disputeId, bookingId, reason }),
+        priority: 'HIGH',
+        isRead: false,
+      })),
+    });
+  } catch (err) {
+    console.error('[Dispute] Failed to notify admins of failed analysis:', err);
+  }
+}
+
+async function notifyPartiesDisputeManualReview(
+  clientId: string,
+  professionalUserId: string,
+  bookingId: string,
+): Promise<void> {
+  try {
+    await prisma.notification.createMany({
+      data: [
+        {
+          userId: clientId,
+          type: 'DISPUTE_MANUAL_REVIEW',
+          title: 'Tu disputa esta siendo revisada manualmente',
+          body: 'El equipo de VELORA revisara tu disputa en un plazo de 24-48 horas y te notificara con la resolucion.',
+          data: JSON.stringify({ bookingId }),
+          priority: 'HIGH',
+          isRead: false,
+        },
+        {
+          userId: professionalUserId,
+          type: 'DISPUTE_MANUAL_REVIEW',
+          title: 'Disputa en revision manual',
+          body: 'El cliente ha abierto una disputa que sera revisada por el equipo de VELORA. Te notificaremos con la resolucion en 24-48 horas.',
+          data: JSON.stringify({ bookingId }),
+          priority: 'HIGH',
+          isRead: false,
+        },
+      ],
+    });
+  } catch (err) {
+    console.error('[Dispute] Failed to notify parties of manual review:', err);
+  }
+}
+
+/**
+ * Runs the full dispute analysis pipeline in the background.
+ * Guarantees that the dispute never stays in an unresolved limbo:
+ *   - AI succeeds          → execute resolution
+ *   - AI fails (retries)   → use heuristic + notify admins
+ *   - Heuristic also fails → mark dispute MANUAL_REVIEW + notify admins + notify parties
+ */
+async function runDisputeAnalysis(
+  disputeId: string,
+  bookingId: string,
+  clientId: string,
+  professionalUserId: string,
+): Promise<void> {
+  let lastAiError: string = 'Unknown error';
+
+  // Attempt AI analysis up to DISPUTE_MAX_AI_ATTEMPTS times
+  for (let attempt = 1; attempt <= DISPUTE_MAX_AI_ATTEMPTS; attempt++) {
+    try {
+      const result = await analyzeDispute(disputeId);
+      await executeDisputeResolution(disputeId, result);
+      return; // success
+    } catch (err: any) {
+      lastAiError = err?.message ?? 'Unknown error';
+      console.error(
+        `[Dispute] AI analysis attempt ${attempt}/${DISPUTE_MAX_AI_ATTEMPTS} failed for dispute ${disputeId}: ${lastAiError}`,
+      );
+    }
+  }
+
+  // All AI attempts exhausted — try heuristic as last resort
+  console.warn(
+    `[Dispute] AI unavailable after ${DISPUTE_MAX_AI_ATTEMPTS} attempts for dispute ${disputeId}. Applying heuristic resolution.`,
+  );
+
+  try {
+    const heuristicResult = await analyzeDisputeHeuristic(disputeId);
+    await executeDisputeResolution(disputeId, heuristicResult);
+    // Notify admins that heuristic was used (audit visibility)
+    await notifyAdminsDisputeFailed(
+      disputeId,
+      bookingId,
+      `Resolucion aplicada por heuristica tras fallo del agente IA: ${lastAiError}`,
+    );
+    return;
+  } catch (heuristicErr: any) {
+    const heuristicMsg = heuristicErr?.message ?? 'Unknown error';
+    console.error(
+      `[Dispute] Heuristic resolution also failed for dispute ${disputeId}: ${heuristicMsg}`,
+    );
+  }
+
+  // Both AI and heuristic failed — mark for full manual review
+  try {
+    await prisma.dispute.update({
+      where: { id: disputeId },
+      data: { status: 'OPEN', resolvedBy: null },
+    });
+  } catch (updateErr) {
+    console.error('[Dispute] Failed to update dispute status to OPEN for manual review:', updateErr);
+  }
+
+  await Promise.all([
+    notifyAdminsDisputeFailed(
+      disputeId,
+      bookingId,
+      `Fallo critico: ni la IA ni la heuristica pudieron resolver la disputa. Error IA: ${lastAiError}`,
+    ),
+    notifyPartiesDisputeManualReview(clientId, professionalUserId, bookingId),
+  ]);
+}
+
+// ---------------------------------------------------------------------------
+
 export async function clientDisputeCompletion(req: AuthRequest, res: Response): Promise<void> {
   const { bookingId } = req.params;
   const { reason, description } = req.body;
@@ -397,19 +542,27 @@ export async function clientDisputeCompletion(req: AuthRequest, res: Response): 
 
   const dispute = await prisma.$transaction(async (tx) => {
     await tx.booking.update({ where: { id: bookingId }, data: { status: 'DISPUTED' } });
-    return tx.dispute.create({ data: { bookingId, openedBy: req.user!.userId, reason, description } });
+    return tx.dispute.create({
+      data: { bookingId, openedBy: req.user!.userId, reason, description },
+    });
   });
 
-  // Run AI analysis asynchronously
-  try {
-    const { analyzeDispute, executeDisputeResolution } = await import('../agents/dispute.agent');
-    const result = await analyzeDispute(dispute.id);
-    await executeDisputeResolution(dispute.id, result);
-  } catch (err) {
-    console.error('AI dispute analysis failed:', err);
-  }
+  // Respond immediately — analysis runs in the background
+  res.status(201).json({
+    message: 'Disputa abierta. El sistema la analizará automáticamente.',
+    disputeId: dispute.id,
+  });
 
-  res.status(201).json({ message: 'Disputa abierta. La IA la analizará automáticamente.' });
+  // Fire-and-forget with full error coverage — client/professional are always notified
+  runDisputeAnalysis(
+    dispute.id,
+    bookingId,
+    booking.clientId,
+    booking.professional.userId,
+  ).catch(err => {
+    // runDisputeAnalysis handles its own errors; this is the absolute last guard
+    console.error('[Dispute] runDisputeAnalysis leaked an unhandled error:', err);
+  });
 }
 
 export async function submitEvidence(req: AuthRequest, res: Response): Promise<void> {
