@@ -55,8 +55,12 @@ SERVICE-MARKETPLACE/
 - communication.agent.ts — auto-translation in chat
 
 ## How to run
+## How to run
 - Backend: cd backend && npm run dev
-- Frontend: cd frontend && npm run dev
+- Frontend: cd frontend && npm run dev  
+- Stripe webhooks (necesario para pagos): stripe listen --forward-to localhost:3001/api/bookings/webhook/stripe
+
+Los tres comandos deben estar corriendo a la vez en terminales separadas para que la app funcione completa.
 
 ## When making changes
 - Always check `frontend/src/types/index.ts` before adding new data structures
