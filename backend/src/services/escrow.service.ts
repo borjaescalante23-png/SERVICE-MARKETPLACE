@@ -180,10 +180,10 @@ export async function refundEscrow(bookingId: string): Promise<void> {
 }
 
 export async function partialRefundEscrow(bookingId: string, refundAmount: number): Promise<void> {
-  // TODO: To persist refundAmount in DB, add `refundAmount Float?` to EscrowTransaction
-  // in schema.prisma and run `npx prisma db push`. Pending user confirmation.
   if (refundAmount <= 0) {
-    throw new Error(`[Escrow] partialRefundEscrow called with invalid refundAmount (${refundAmount}) for booking ${bookingId}`);
+    throw new Error(
+      `[Escrow] partialRefundEscrow called with invalid refundAmount (${refundAmount}) for booking ${bookingId}`,
+    );
   }
 
   const escrow = await prisma.escrowTransaction.findUnique({ where: { bookingId } });
@@ -197,24 +197,28 @@ export async function partialRefundEscrow(bookingId: string, refundAmount: numbe
 
   if (refundAmount > escrow.amount) {
     throw new Error(
-      `[Escrow] partialRefundEscrow: refundAmount (€${refundAmount}) exceeds held amount (€${escrow.amount}) for booking ${bookingId}`,
+      `[Escrow] partialRefundEscrow: refundAmount (€${refundAmount.toFixed(2)}) exceeds held amount (€${escrow.amount.toFixed(2)}) for booking ${bookingId}`,
     );
   }
-
-  console.info(
-    `[Escrow] Partial refund of €${refundAmount.toFixed(2)} (of €${escrow.amount.toFixed(2)} held) for booking ${bookingId}`,
-  );
 
   await prisma.$transaction([
     prisma.escrowTransaction.update({
       where: { bookingId },
-      data: { status: 'REFUNDED', refundedAt: new Date() },
+      data: {
+        status: 'REFUNDED',
+        refundedAt: new Date(),
+        refundAmount,
+      },
     }),
     prisma.booking.update({
       where: { id: bookingId },
       data: { paymentStatus: 'REFUNDED' },
     }),
   ]);
+
+  console.info(
+    `[Escrow] Partial refund of €${refundAmount.toFixed(2)} (of €${escrow.amount.toFixed(2)} held) persisted for booking ${bookingId}`,
+  );
 }
 
 export async function processAutoReleases(): Promise<number> {
