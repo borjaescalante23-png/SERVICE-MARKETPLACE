@@ -20,7 +20,6 @@ const BASE_RANGES: Record<string, [number, number]> = {
   BEAUTY: [30, 100],
   MASSAGE: [40, 120],
   PERSONAL_TRAINER: [35, 100],
-  CHILDCARE: [12, 25],
   ELDERCARE: [12, 22],
   PET_CARE: [15, 45],
   TUTORING: [20, 60],

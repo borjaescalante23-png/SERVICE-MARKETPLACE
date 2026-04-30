@@ -87,7 +87,7 @@ export default function Register() {
                   required
                   value={form.firstName}
                   onChange={set('firstName')}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-600 text-gray-900 dark:text-white dark:bg-gray-800 text-sm"
+                  className="w-full px-4 py-3 text-base rounded-xl border border-gray-200 dark:border-[#1E2D45] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 focus:border-[#2563EB] dark:focus:border-[#3B82F6] text-gray-900 dark:text-[#F8FAFF] dark:bg-[#0F1A2E] placeholder-gray-400 dark:placeholder-[#94A3B8] transition-colors"
                   placeholder="Carlos"
                 />
               </div>
@@ -97,7 +97,7 @@ export default function Register() {
                   required
                   value={form.lastName}
                   onChange={set('lastName')}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-600 text-gray-900 dark:text-white dark:bg-gray-800 text-sm"
+                  className="w-full px-4 py-3 text-base rounded-xl border border-gray-200 dark:border-[#1E2D45] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 focus:border-[#2563EB] dark:focus:border-[#3B82F6] text-gray-900 dark:text-[#F8FAFF] dark:bg-[#0F1A2E] placeholder-gray-400 dark:placeholder-[#94A3B8] transition-colors"
                   placeholder="García"
                 />
               </div>
@@ -110,7 +110,7 @@ export default function Register() {
                 required
                 value={form.email}
                 onChange={set('email')}
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-600 text-gray-900 dark:text-white dark:bg-gray-800 text-sm"
+                className="w-full px-4 py-3 text-base rounded-xl border border-gray-200 dark:border-[#1E2D45] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 focus:border-[#2563EB] dark:focus:border-[#3B82F6] text-gray-900 dark:text-[#F8FAFF] dark:bg-[#0F1A2E] placeholder-gray-400 dark:placeholder-[#94A3B8] transition-colors"
                 placeholder="tu@email.com"
               />
             </div>
@@ -123,7 +123,7 @@ export default function Register() {
                 minLength={8}
                 value={form.password}
                 onChange={set('password')}
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-600 text-gray-900 dark:text-white dark:bg-gray-800 text-sm"
+                className="w-full px-4 py-3 text-base rounded-xl border border-gray-200 dark:border-[#1E2D45] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 focus:border-[#2563EB] dark:focus:border-[#3B82F6] text-gray-900 dark:text-[#F8FAFF] dark:bg-[#0F1A2E] placeholder-gray-400 dark:placeholder-[#94A3B8] transition-colors"
                 placeholder="Mínimo 8 caracteres"
               />
             </div>

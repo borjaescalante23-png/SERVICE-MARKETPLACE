@@ -8,7 +8,7 @@ const serviceSchema = z.object({
   description: z.string().min(10).max(500),
   category: z.enum([
     'HAIRDRESSING', 'BEAUTY', 'CLEANING', 'CHEF', 'HANDYMAN',
-    'PERSONAL_TRAINER', 'MASSAGE', 'CHILDCARE', 'ELDERCARE', 'PET_CARE',
+    'PERSONAL_TRAINER', 'MASSAGE', 'ELDERCARE', 'PET_CARE',
     'TUTORING', 'PLUMBING', 'ELECTRICIAN', 'GARDENING',
   ]),
   price: z.number().positive().max(10000),

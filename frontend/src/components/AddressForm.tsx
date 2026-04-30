@@ -339,7 +339,7 @@ export default function AddressForm({ onConfirm }: Props) {
         {/* Confirm */}
         <button type="button" onClick={handleConfirm} disabled={!canConfirm}
           className="w-full py-3 bg-primary-600 text-white font-semibold rounded-xl hover:bg-primary-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all text-sm tracking-wide">
-          Confirmar dirección
+          Continuar
         </button>
       </div>
     </div>

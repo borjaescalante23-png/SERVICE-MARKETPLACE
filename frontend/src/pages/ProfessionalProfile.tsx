@@ -1,16 +1,14 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { professionalsApi, bookingsApi } from '../services/api';
 import { CATEGORY_LABELS, CATEGORY_IMAGES } from '../types';
-import StarRating from '../components/common/StarRating';
-import LevelBadge from '../components/common/LevelBadge';
 import AddressForm, { type StructuredAddress } from '../components/AddressForm';
 import Lightbox from '../components/Lightbox';
 import { availabilityApi } from '../services/api';
 import {
   CheckCircle, Briefcase, Calendar, MapPin, Shield,
-  ChevronDown, ChevronUp, ChevronLeft, Globe, Edit2,
+  ChevronDown, ChevronUp, ChevronLeft, Globe, Star, Clock, X,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useI18n } from '../i18n';
@@ -20,6 +18,36 @@ import { es } from 'date-fns/locale';
 
 type ConfirmedAddress = StructuredAddress;
 
+const TIME_SLOTS = [
+  '09:00', '10:00', '11:00', '12:00', '13:00',
+  '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00',
+];
+
+function LevelPill({ level }: { level: string }) {
+  if (level === 'ELITE') return (
+    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-400/20 border border-amber-400/40 text-amber-300">
+      ★ Elite
+    </span>
+  );
+  if (level === 'PRO') return (
+    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-violet-400/20 border border-violet-400/40 text-violet-300">
+      ◆ Pro
+    </span>
+  );
+  return null;
+}
+
+function StepLabel({ n, label }: { n: number; label: string }) {
+  return (
+    <div className="flex items-center gap-2 mb-3">
+      <span className="w-5 h-5 rounded-full bg-[#0A1628] dark:bg-[#F8FAFF] text-white dark:text-[#0A1628] text-[11px] font-black flex items-center justify-center flex-shrink-0">
+        {n}
+      </span>
+      <span className="text-xs font-bold text-[#0A1628] dark:text-[#F8FAFF] uppercase tracking-wide">{label}</span>
+    </div>
+  );
+}
+
 export default function ProfessionalProfile() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
@@ -28,11 +56,15 @@ export default function ProfessionalProfile() {
 
   const [selectedService, setSelectedService] = useState<string>('');
   const [confirmedAddr, setConfirmedAddr] = useState<ConfirmedAddress | null>(null);
-  const [scheduledAt, setScheduledAt] = useState('');
+  const [selectedDate, setSelectedDate] = useState('');
+  const [selectedTime, setSelectedTime] = useState('');
   const [notes, setNotes] = useState('');
   const [booking, setBooking] = useState(false);
   const [expandedExp, setExpandedExp] = useState<string | null>(null);
   const [lightbox, setLightbox] = useState<{ images: string[]; index: number } | null>(null);
+  const [showBookingSheet, setShowBookingSheet] = useState(false);
+
+  const scheduledAt = selectedDate && selectedTime ? `${selectedDate}T${selectedTime}` : '';
 
   const { data: pro, isLoading } = useQuery({
     queryKey: ['professional', id],
@@ -46,30 +78,56 @@ export default function ProfessionalProfile() {
     enabled: !!id,
   });
 
-  // Must be before early returns — hooks must always run in the same order
+  const daySlotInfo = useMemo(() => {
+    if (!selectedDate || !(availability as any[]).length) return null;
+    const dow = new Date(selectedDate + 'T12:00').getDay();
+    return (availability as any[]).find((s: any) => s.dayOfWeek === dow) || null;
+  }, [selectedDate, availability]);
+
+  const visibleSlots = useMemo(() => {
+    if (!daySlotInfo) return TIME_SLOTS;
+    const [sH] = daySlotInfo.startTime.split(':').map(Number);
+    const [eH] = daySlotInfo.endTime.split(':').map(Number);
+    return TIME_SLOTS.filter(t => {
+      const [h] = t.split(':').map(Number);
+      return h >= sH && h <= eH;
+    });
+  }, [daySlotInfo]);
+
   const availabilityWarning = useMemo(() => {
-    if (!scheduledAt || !(availability as any[]).length) return null;
-    const date = new Date(scheduledAt);
-    if (isNaN(date.getTime())) return null;
-    const dow = date.getDay();
-    const slot = (availability as any[]).find(s => s.dayOfWeek === dow);
+    if (!selectedDate || !daySlotInfo) return null;
+    const dow = new Date(selectedDate + 'T12:00').getDay();
+    const slot = (availability as any[]).find((s: any) => s.dayOfWeek === dow);
     if (!slot) return 'El profesional no suele trabajar este día';
-    const [sH, sM] = slot.startTime.split(':').map(Number);
-    const [eH, eM] = slot.endTime.split(':').map(Number);
-    const timeMins = date.getHours() * 60 + date.getMinutes();
-    if (timeMins < sH * 60 + sM || timeMins > eH * 60 + eM) {
-      return `Fuera del horario habitual: ${slot.startTime}–${slot.endTime}`;
-    }
     return null;
-  }, [scheduledAt, availability]);
+  }, [selectedDate, daySlotInfo, availability]);
+
+  const next14Days = useMemo(() => {
+    const days: Date[] = [];
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    for (let i = 0; i < 14; i++) {
+      const d = new Date(today);
+      d.setDate(today.getDate() + i);
+      days.push(d);
+    }
+    return days;
+  }, []);
+
+  const isDayAvailable = useCallback((date: Date) => {
+    if (!(availability as any[]).length) return true;
+    const dow = date.getDay();
+    return (availability as any[]).some((s: any) => s.dayOfWeek === dow);
+  }, [availability]);
+
+  const DAY_LABELS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 
   async function handleBooking(e: React.FormEvent) {
     e.preventDefault();
     if (!user) { navigate('/login'); return; }
     if (user.role === 'ADMIN') { toast.error('Los administradores no pueden realizar reservas'); return; }
-
     if (!confirmedAddr) { toast.error('Selecciona la dirección del servicio'); return; }
-    if (!scheduledAt) { toast.error('Selecciona una fecha y hora para el servicio'); return; }
+    if (!scheduledAt) { toast.error('Selecciona una fecha y hora'); return; }
     if (!selectedService) { toast.error('Selecciona un servicio'); return; }
 
     const scheduledDate = new Date(scheduledAt);
@@ -103,378 +161,677 @@ export default function ProfessionalProfile() {
   }
 
   if (isLoading) return (
-    <div className="flex justify-center py-20">
-      <div className="w-8 h-8 border-2 border-primary-600 border-t-transparent rounded-full animate-spin" />
+    <div className="min-h-screen bg-[#F8FAFF] dark:bg-[#080F1E] flex items-center justify-center">
+      <div className="w-8 h-8 border-2 border-[#2563EB] border-t-transparent rounded-full animate-spin" />
     </div>
   );
-  if (!pro) return <div className="text-center py-20 text-gray-500">{t('profile.not_found')}</div>;
+  if (!pro) return (
+    <div className="min-h-screen bg-[#F8FAFF] dark:bg-[#080F1E] flex items-center justify-center">
+      <p className="text-[#6B7280] dark:text-[#94A3B8]">{t('profile.not_found')}</p>
+    </div>
+  );
 
   const selectedSvc = pro.services?.find((s: any) => s.id === selectedService);
   const hasActiveServices = (pro.services?.length ?? 0) > 0;
+  const minDate = new Date().toISOString().split('T')[0];
 
   return (
     <>
-    <div className="max-w-6xl mx-auto px-4 py-6">
-      <button
-        onClick={() => navigate(-1)}
-        className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 mb-5 transition-colors"
-      >
-        <ChevronLeft size={18} />
-        {t('common.back')}
-      </button>
+      <div className="min-h-screen bg-[#F8FAFF] dark:bg-[#080F1E]">
 
-      <div className="grid lg:grid-cols-3 gap-6">
-        {/* Left column */}
-        <div className="lg:col-span-2 space-y-5">
-          {/* Header */}
-          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 sm:p-8">
-            <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-6">
-              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center flex-shrink-0 overflow-hidden">
+        {/* ── Banner header ── */}
+        <div
+          className="relative"
+          style={{ background: 'linear-gradient(135deg, #0A1628 0%, #0F2257 55%, #162d6e 100%)' }}
+        >
+          <div
+            className="absolute top-0 right-0 w-96 h-96 pointer-events-none opacity-[0.07]"
+            style={{ background: 'radial-gradient(circle, #3B82F6 0%, transparent 65%)' }}
+          />
+
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <button
+              onClick={() => navigate(-1)}
+              className="flex items-center gap-1.5 text-sm text-white/60 hover:text-white transition-colors pt-5"
+            >
+              <ChevronLeft size={18} />
+              {t('common.back')}
+            </button>
+
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5 pt-5 pb-8">
+              <div className="w-24 h-24 rounded-full overflow-hidden flex-shrink-0 ring-[3px] ring-white bg-[#2563EB]">
                 {pro.user?.avatarUrl ? (
-                  <img src={pro.user.avatarUrl} alt="" className="w-full h-full object-cover" />
+                  <img src={pro.user.avatarUrl} alt="" className="w-full h-full object-cover object-top" />
                 ) : (
-                  <span className="text-2xl sm:text-3xl font-bold text-primary-600 dark:text-primary-400">
-                    {pro.user?.firstName?.[0]}{pro.user?.lastName?.[0]}
-                  </span>
+                  <div className="w-full h-full flex items-center justify-center">
+                    <span className="text-3xl font-black text-white">
+                      {pro.user?.firstName?.[0]}{pro.user?.lastName?.[0]}
+                    </span>
+                  </div>
                 )}
               </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex flex-wrap items-center gap-2 mb-1">
-                  <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+
+              <div className="flex-1">
+                <div className="flex flex-wrap items-center gap-2.5 mb-2">
+                  <h1 className="text-2xl font-bold text-white">
                     {pro.user?.firstName} {pro.user?.lastName}
                   </h1>
-                  <div className="flex items-center gap-1 px-2 py-1 bg-green-50 dark:bg-green-900/20 rounded-full">
-                    <CheckCircle size={13} className="text-green-500" />
-                    <span className="text-xs text-green-600 dark:text-green-400 font-medium">{t('common.verified')}</span>
+                  <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white/15 backdrop-blur-sm rounded-full border border-white/25">
+                    <CheckCircle size={12} className="text-green-400" />
+                    <span className="text-xs font-semibold text-white">{t('common.verified')}</span>
                   </div>
-                  {pro.level && pro.level !== 'VERIFIED' && <LevelBadge level={pro.level} size="md" />}
+                  {pro.level && pro.level !== 'VERIFIED' && <LevelPill level={pro.level} />}
                 </div>
 
                 <div className="flex items-center gap-2 mb-3">
-                  <StarRating rating={Math.round(pro.avgRating)} size={15} />
-                  <span className="font-semibold text-gray-700 dark:text-gray-200 text-sm">{pro.avgRating.toFixed(1)}</span>
-                  <span className="text-gray-400 text-xs">({pro.totalReviews} {t('profile.reviews_short')})</span>
+                  <div className="flex gap-0.5">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <Star key={i} size={14}
+                        fill={i < Math.round(pro.avgRating) ? '#F59E0B' : 'transparent'}
+                        className={i < Math.round(pro.avgRating) ? 'text-amber-400' : 'text-white/25'}
+                      />
+                    ))}
+                  </div>
+                  <span className="font-semibold text-white text-sm">{pro.avgRating.toFixed(1)}</span>
+                  <span className="text-white/50 text-xs">({pro.totalReviews} {t('profile.reviews_short')})</span>
                 </div>
 
-                <div className="flex flex-wrap gap-3 text-xs text-gray-500 dark:text-gray-400">
-                  <span className="flex items-center gap-1"><Briefcase size={12} />{pro.completedJobs} {t('profile.completed_jobs')}</span>
-                  <span className="flex items-center gap-1"><Shield size={12} />{Math.round(pro.acceptanceRate * 100)}{t('profile.acceptance')}</span>
-                  {pro.city && <span className="flex items-center gap-1"><MapPin size={12} />{pro.city}{pro.country ? `, ${pro.country}` : ''}</span>}
+                <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-white/55">
+                  <span className="flex items-center gap-1.5"><Briefcase size={11} />{pro.completedJobs} {t('profile.completed_jobs')}</span>
+                  <span className="flex items-center gap-1.5"><Shield size={11} />{Math.round(pro.acceptanceRate * 100)}{t('profile.acceptance')}</span>
+                  {pro.city && <span className="flex items-center gap-1.5"><MapPin size={11} />{pro.city}{pro.country ? `, ${pro.country}` : ''}</span>}
                   {pro.serviceMode && (
-                    <span className="flex items-center gap-1">
-                      <Globe size={12} />
+                    <span className="flex items-center gap-1.5">
+                      <Globe size={11} />
                       {pro.serviceMode === 'REMOTE' ? t('profile.service_remote') : pro.serviceMode === 'BOTH' ? t('profile.service_both') : t('profile.service_presential')}
                     </span>
                   )}
                 </div>
-                {pro.bio && <p className="mt-3 text-gray-600 dark:text-gray-300 text-sm leading-relaxed">{pro.bio}</p>}
               </div>
             </div>
           </div>
-
-          {/* Experience */}
-          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 sm:p-6">
-            <div className="flex items-center gap-2 mb-5">
-              <CheckCircle size={18} className="text-green-500" />
-              <h2 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">{t('profile.verified_experience')}</h2>
-              <span className="ml-auto text-xs px-2 py-1 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 rounded-full">
-                {pro.experienceEntries?.length || 0} {t('profile.works')}
-              </span>
-            </div>
-            {pro.experienceEntries?.length === 0 && <p className="text-gray-400 text-sm">{t('profile.no_experience')}</p>}
-            <div className="space-y-3">
-              {pro.experienceEntries?.map((entry: any) => (
-                <div key={entry.id} className="border border-gray-100 dark:border-gray-800 rounded-xl overflow-hidden">
-                  <button
-                    className="w-full flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-left"
-                    onClick={() => setExpandedExp(expandedExp === entry.id ? null : entry.id)}
-                  >
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <img src={CATEGORY_IMAGES[entry.serviceCategory]} alt="" className="w-5 h-5 rounded-lg object-cover flex-shrink-0" />
-                        <span className="font-medium text-gray-900 dark:text-white text-sm truncate">{entry.title}</span>
-                      </div>
-                      <div className="flex items-center gap-2 mt-1 flex-wrap">
-                        <span className="text-xs text-gray-400">{entry.approximateDate}</span>
-                        <span className="text-xs px-2 py-0.5 bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 rounded-full">
-                          {CATEGORY_LABELS[entry.serviceCategory]}
-                        </span>
-                      </div>
-                    </div>
-                    {expandedExp === entry.id ? <ChevronUp size={15} className="text-gray-400 flex-shrink-0" /> : <ChevronDown size={15} className="text-gray-400 flex-shrink-0" />}
-                  </button>
-                  {expandedExp === entry.id && (
-                    <div className="px-4 pb-4 border-t border-gray-50 dark:border-gray-800">
-                      <p className="text-gray-600 dark:text-gray-300 text-sm mt-3 mb-3">{entry.description}</p>
-                      {entry.images?.length > 0 && (
-                        <div className="grid grid-cols-3 gap-2">
-                          {entry.images.map((img: any, imgIdx: number) => (
-                            <button
-                              key={img.id}
-                              type="button"
-                              onClick={() => setLightbox({
-                                images: entry.images.map((i: any) => i.fileUrl),
-                                index: imgIdx,
-                              })}
-                              className="overflow-hidden rounded-lg group relative"
-                            >
-                              <img src={img.fileUrl} alt={entry.title} className="w-full h-20 sm:h-24 object-cover group-hover:scale-105 transition-transform duration-200" />
-                              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors rounded-lg" />
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Availability */}
-          {availability.length > 0 && (
-            <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 sm:p-6">
-              <h2 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                <Calendar size={16} className="text-primary-600" />
-                Disponibilidad semanal
-              </h2>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                {(['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom']).map((label, i) => {
-                  const dayIdx = i === 6 ? 0 : i + 1;
-                  const slot = (availability as any[]).find(s => s.dayOfWeek === dayIdx);
-                  return (
-                    <div
-                      key={i}
-                      className={`p-2.5 rounded-xl text-xs text-center border ${
-                        slot
-                          ? 'bg-primary-50 dark:bg-primary-900/20 border-primary-200 dark:border-primary-800 text-primary-700 dark:text-primary-300'
-                          : 'bg-gray-50 dark:bg-gray-800 border-gray-100 dark:border-gray-700 text-gray-400 dark:text-gray-500'
-                      }`}
-                    >
-                      <p className="font-semibold">{label}</p>
-                      {slot ? (
-                        <p className="mt-0.5 text-xs">{slot.startTime}–{slot.endTime}</p>
-                      ) : (
-                        <p className="mt-0.5">No disponible</p>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Reviews */}
-          {pro.reviews?.length > 0 && (
-            <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 sm:p-6">
-              <h2 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-5">
-                {t('profile.reviews_title')} ({pro.totalReviews})
-              </h2>
-              <div className="space-y-3">
-                {(pro.reviews ?? []).map((review: any) => (
-                  <div key={review.id} className="p-4 bg-gray-50 dark:bg-gray-800 rounded-xl">
-                    <div className="flex items-start justify-between mb-2 gap-2">
-                      <div className="flex items-center gap-2 min-w-0">
-                        <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/40 flex items-center justify-center flex-shrink-0">
-                          <span className="text-xs font-bold text-primary-600 dark:text-primary-400">{review.clientName?.[0] || '?'}</span>
-                        </div>
-                        <div className="min-w-0">
-                          <span className="text-sm font-medium text-gray-900 dark:text-white truncate block">{review.clientName}</span>
-                          <div className="flex items-center gap-1 mt-0.5">
-                            <CheckCircle size={10} className="text-green-500" />
-                            <span className="text-xs text-green-600 dark:text-green-400">{t('profile.review_verified')}</span>
-                          </div>
-                        </div>
-                      </div>
-                      <StarRating rating={review.rating} size={12} />
-                    </div>
-                    <p className="text-gray-600 dark:text-gray-300 text-sm">{review.comment}</p>
-                    {review.completedAt && (
-                      <p className="text-xs text-gray-400 mt-2">
-                        {format(new Date(review.completedAt), "d 'de' MMMM, yyyy", { locale: es })}
-                      </p>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
 
-        {/* Right column — services + booking */}
-        <div className="space-y-4">
-          {/* Services */}
-          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5">
-            <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-3">{t('profile.services')}</h2>
-            {!hasActiveServices ? (
-              <div className="py-6 text-center">
-                <Briefcase size={24} className="mx-auto mb-2 text-gray-300 dark:text-gray-600" />
-                <p className="text-sm text-gray-400 dark:text-gray-500">Este profesional no tiene servicios activos actualmente</p>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {pro.services.map((service: any) => (
-                  <button
-                    key={service.id}
-                    onClick={() => setSelectedService(service.id)}
-                    className={`w-full text-left p-3 sm:p-4 rounded-xl border-2 transition-all ${
-                      selectedService === service.id
-                        ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
-                        : 'border-gray-100 dark:border-gray-700 hover:border-gray-200 dark:hover:border-gray-600'
-                    }`}
-                  >
-                    <div className="flex justify-between items-start gap-3">
-                      <div className="min-w-0">
-                        <span className="font-medium text-gray-900 dark:text-white text-sm block truncate">{service.name}</span>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-2">{service.description}</p>
-                      </div>
-                      <div className="text-right flex-shrink-0">
-                        <span className="font-bold text-primary-600 dark:text-primary-400">{service.price}€</span>
-                        <p className="text-xs text-gray-400">{service.duration}min</p>
-                      </div>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+        {/* ── Main content ── */}
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-36 md:pb-6">
+          <div className="grid md:grid-cols-3 gap-6">
 
-          {/* Booking form */}
-          {user && user.role !== 'ADMIN' && pro.userId !== user.id && (
-            <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 overflow-visible">
-              <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-4">{t('profile.book_title')}</h2>
+            {/* ── Left column ── */}
+            <div className="lg:col-span-2 space-y-5">
 
-              {!hasActiveServices ? (
-                <div className="py-4 text-center text-sm text-gray-400 dark:text-gray-500">
-                  No es posible reservar: el profesional no tiene servicios disponibles.
+              {pro.bio && (
+                <div className="bg-white dark:bg-[#0F1A2E] rounded-2xl border border-[#E5E7EB] dark:border-[#1E2D45] p-5 sm:p-6">
+                  <h2 className="text-base font-semibold text-[#0A1628] dark:text-[#F8FAFF] mb-3">Sobre mí</h2>
+                  <p className="text-[#6B7280] dark:text-[#94A3B8] text-sm leading-relaxed">{pro.bio}</p>
                 </div>
-              ) : (
-              <form onSubmit={handleBooking} className="space-y-4">
-                {/* Date/time */}
-                <div>
-                  <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5 uppercase tracking-wide">
-                    <Calendar size={12} className="inline mr-1" />{t('profile.datetime')}
-                  </label>
-                  <input
-                    type="datetime-local"
-                    required
-                    value={scheduledAt}
-                    onChange={e => setScheduledAt(e.target.value)}
-                    min={new Date().toISOString().slice(0, 16)}
-                    className="w-full px-3 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm dark:bg-gray-800 dark:text-white"
-                  />
-                  {availabilityWarning && (
-                    <p className="mt-1.5 text-xs text-amber-600 dark:text-amber-400 flex items-center gap-1">
-                      <span>⚠</span>{availabilityWarning}
-                    </p>
-                  )}
+              )}
+
+              {/* Experience */}
+              <div className="bg-white dark:bg-[#0F1A2E] rounded-2xl border border-[#E5E7EB] dark:border-[#1E2D45] p-5 sm:p-6">
+                <div className="flex items-center gap-2 mb-5">
+                  <CheckCircle size={18} className="text-green-500" />
+                  <h2 className="text-base sm:text-lg font-semibold text-[#0A1628] dark:text-[#F8FAFF]">
+                    {t('profile.verified_experience')}
+                  </h2>
+                  <span className="ml-auto text-xs px-2.5 py-1 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 rounded-full font-medium border border-green-100 dark:border-green-800/50">
+                    {pro.experienceEntries?.length || 0} {t('profile.works')}
+                  </span>
                 </div>
-
-                {/* Address section */}
-                <div>
-                  <p className="text-xs font-semibold text-gray-600 dark:text-gray-400 mb-2 uppercase tracking-wide flex items-center gap-1">
-                    <MapPin size={12} />Dirección del servicio
-                  </p>
-
-                  {confirmedAddr ? (
-                    <div className="flex items-start gap-2 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl">
-                      <MapPin size={14} className="text-green-500 flex-shrink-0 mt-0.5" />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm text-green-800 dark:text-green-300 font-medium">
-                          {confirmedAddr.street} {confirmedAddr.number}
-                        </p>
-                        <div className="flex flex-wrap items-center gap-2 mt-0.5">
-                          {confirmedAddr.neighborhood && (
-                            <span className="text-xs text-green-600 dark:text-green-500">{confirmedAddr.neighborhood}</span>
-                          )}
-                          {confirmedAddr.postalCode && (
-                            <span className="text-[10px] font-bold text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-900/40 px-1.5 py-0.5 rounded">
-                              CP {confirmedAddr.postalCode}
-                            </span>
-                          )}
-                          <span className="text-xs text-green-600 dark:text-green-500 capitalize">
-                            {confirmedAddr.housingType === 'piso'
-                              ? `Piso ${confirmedAddr.floor}${confirmedAddr.door ? ` · ${confirmedAddr.door}` : ''}${confirmedAddr.staircase ? ` Esc.${confirmedAddr.staircase}` : ''}`
-                              : 'Casa / Chalet'}
-                          </span>
-                        </div>
-                      </div>
+                {pro.experienceEntries?.length === 0 && (
+                  <p className="text-[#6B7280] dark:text-[#94A3B8] text-sm">{t('profile.no_experience')}</p>
+                )}
+                <div className="space-y-2.5">
+                  {pro.experienceEntries?.map((entry: any) => (
+                    <div key={entry.id} className="border border-[#E5E7EB] dark:border-[#1E2D45] rounded-xl overflow-hidden">
                       <button
-                        type="button"
-                        onClick={() => setConfirmedAddr(null)}
-                        className="flex-shrink-0 px-2 py-1 text-xs font-medium text-green-700 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/30 rounded-lg transition-colors"
+                        className="w-full flex items-center justify-between p-4 hover:bg-[#F8FAFF] dark:hover:bg-[#080F1E] transition-colors text-left"
+                        onClick={() => setExpandedExp(expandedExp === entry.id ? null : entry.id)}
                       >
-                        Cambiar
+                        <div className="min-w-0 flex-1 mr-3">
+                          <div className="flex items-center gap-2">
+                            <img src={CATEGORY_IMAGES[entry.serviceCategory]} alt="" className="w-5 h-5 rounded-lg object-cover flex-shrink-0" />
+                            <span className="font-medium text-[#0A1628] dark:text-[#F8FAFF] text-sm truncate">{entry.title}</span>
+                          </div>
+                          <div className="flex items-center gap-2 mt-1 flex-wrap">
+                            <span className="text-xs text-[#6B7280] dark:text-[#94A3B8]">{entry.approximateDate}</span>
+                            <span className="text-xs px-2 py-0.5 bg-blue-50 dark:bg-blue-900/20 text-[#2563EB] dark:text-[#3B82F6] rounded-full">
+                              {CATEGORY_LABELS[entry.serviceCategory]}
+                            </span>
+                          </div>
+                        </div>
+                        {expandedExp === entry.id
+                          ? <ChevronUp size={15} className="text-[#6B7280] dark:text-[#94A3B8] flex-shrink-0" />
+                          : <ChevronDown size={15} className="text-[#6B7280] dark:text-[#94A3B8] flex-shrink-0" />
+                        }
                       </button>
+                      {expandedExp === entry.id && (
+                        <div className="px-4 pb-4 border-t border-[#E5E7EB] dark:border-[#1E2D45]">
+                          <p className="text-[#6B7280] dark:text-[#94A3B8] text-sm mt-3 mb-3 leading-relaxed">{entry.description}</p>
+                          {entry.images?.length > 0 && (
+                            <div className="grid grid-cols-3 gap-2">
+                              {entry.images.map((img: any, imgIdx: number) => (
+                                <button key={img.id} type="button"
+                                  onClick={() => setLightbox({ images: entry.images.map((i: any) => i.fileUrl), index: imgIdx })}
+                                  className="overflow-hidden rounded-xl group relative"
+                                >
+                                  <img src={img.fileUrl} alt={entry.title} className="w-full h-20 sm:h-24 object-cover group-hover:scale-105 transition-transform duration-200" />
+                                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors rounded-xl" />
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Availability */}
+              {(availability as any[]).length > 0 && (
+                <div className="bg-white dark:bg-[#0F1A2E] rounded-2xl border border-[#E5E7EB] dark:border-[#1E2D45] p-5 sm:p-6">
+                  <h2 className="text-base sm:text-lg font-semibold text-[#0A1628] dark:text-[#F8FAFF] mb-4 flex items-center gap-2">
+                    <Calendar size={16} className="text-[#2563EB] dark:text-[#3B82F6]" />
+                    Disponibilidad semanal
+                  </h2>
+                  <div className="grid grid-cols-4 sm:grid-cols-7 gap-2">
+                    {(['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom']).map((label, i) => {
+                      const dayIdx = i === 6 ? 0 : i + 1;
+                      const slot = (availability as any[]).find(s => s.dayOfWeek === dayIdx);
+                      return (
+                        <div key={i} className={`p-2.5 rounded-xl text-xs text-center border transition-colors ${
+                          slot
+                            ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800/60 text-[#2563EB] dark:text-[#3B82F6]'
+                            : 'bg-[#F8FAFF] dark:bg-[#080F1E] border-[#E5E7EB] dark:border-[#1E2D45] text-[#6B7280] dark:text-[#94A3B8]'
+                        }`}>
+                          <p className="font-semibold">{label}</p>
+                          {slot ? (
+                            <p className="mt-0.5 opacity-80 leading-tight text-[10px]">{slot.startTime}–{slot.endTime}</p>
+                          ) : (
+                            <p className="mt-0.5 opacity-50">—</p>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Reviews */}
+              {pro.reviews?.length > 0 && (
+                <div className="bg-white dark:bg-[#0F1A2E] rounded-2xl border border-[#E5E7EB] dark:border-[#1E2D45] p-5 sm:p-6">
+                  <h2 className="text-base sm:text-lg font-semibold text-[#0A1628] dark:text-[#F8FAFF] mb-5">
+                    {t('profile.reviews_title')}{' '}
+                    <span className="text-[#6B7280] dark:text-[#94A3B8] font-normal text-sm">({pro.totalReviews})</span>
+                  </h2>
+                  <div className="space-y-3">
+                    {(pro.reviews ?? []).map((review: any) => (
+                      <div key={review.id} className="p-4 bg-[#F8FAFF] dark:bg-[#080F1E] rounded-xl border border-[#E5E7EB] dark:border-[#1E2D45]">
+                        <div className="flex items-start justify-between mb-2.5 gap-3">
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <div className="w-9 h-9 rounded-full bg-[#0A1628] dark:bg-[#1E2D45] flex items-center justify-center flex-shrink-0">
+                              <span className="text-xs font-bold text-white">{review.clientName?.[0] || '?'}</span>
+                            </div>
+                            <div className="min-w-0">
+                              <span className="text-sm font-semibold text-[#0A1628] dark:text-[#F8FAFF] truncate block">{review.clientName}</span>
+                              <div className="flex items-center gap-1 mt-0.5">
+                                <CheckCircle size={10} className="text-green-500" />
+                                <span className="text-[11px] text-green-600 dark:text-green-400">{t('profile.review_verified')}</span>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex gap-0.5 flex-shrink-0">
+                            {Array.from({ length: 5 }).map((_, i) => (
+                              <Star key={i} size={12}
+                                fill={i < review.rating ? '#F59E0B' : 'transparent'}
+                                className={i < review.rating ? 'text-amber-400' : 'text-gray-200 dark:text-[#1E2D45]'}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                        <p className="text-[#6B7280] dark:text-[#94A3B8] text-sm leading-relaxed">{review.comment}</p>
+                        {review.completedAt && (
+                          <p className="text-xs text-[#6B7280]/60 dark:text-[#94A3B8]/60 mt-2">
+                            {format(new Date(review.completedAt), "d 'de' MMMM, yyyy", { locale: es })}
+                          </p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* ── Right column: booking sidebar (tablet+) ── */}
+            <div className="hidden md:block space-y-0">
+              <div className="bg-white dark:bg-[#0F1A2E] rounded-2xl border border-[#E5E7EB] dark:border-[#1E2D45] overflow-hidden">
+
+                {/* ── Step 1: Service ── */}
+                <div className="p-5 border-b border-[#E5E7EB] dark:border-[#1E2D45]">
+                  <StepLabel n={1} label={t('profile.services')} />
+                  {!hasActiveServices ? (
+                    <div className="py-4 text-center">
+                      <Briefcase size={22} className="mx-auto mb-2 text-[#6B7280] dark:text-[#94A3B8]" />
+                      <p className="text-sm text-[#6B7280] dark:text-[#94A3B8]">Sin servicios activos</p>
                     </div>
                   ) : (
-                    <AddressForm onConfirm={setConfirmedAddr} />
+                    <div className="space-y-2">
+                      {pro.services.map((service: any) => (
+                        <button
+                          key={service.id}
+                          onClick={() => setSelectedService(service.id)}
+                          className={`w-full text-left p-3.5 rounded-xl border-2 transition-all duration-200 ${
+                            selectedService === service.id
+                              ? 'border-[#2563EB] dark:border-[#3B82F6] bg-blue-50 dark:bg-blue-900/15'
+                              : 'border-[#E5E7EB] dark:border-[#1E2D45] hover:border-[#0A1628] dark:hover:border-[#94A3B8]'
+                          }`}
+                        >
+                          <div className="flex justify-between items-start gap-3">
+                            <div className="min-w-0">
+                              <span className="font-semibold text-[#0A1628] dark:text-[#F8FAFF] text-sm block truncate">{service.name}</span>
+                              <p className="text-xs text-[#6B7280] dark:text-[#94A3B8] mt-0.5 line-clamp-2">{service.description}</p>
+                              <span className="inline-flex items-center gap-1 mt-1.5 text-[11px] text-[#6B7280] dark:text-[#94A3B8] bg-gray-100 dark:bg-[#1E2D45] px-1.5 py-0.5 rounded-full">
+                                <Clock size={10} />{service.duration}min
+                              </span>
+                            </div>
+                            <span className="font-black text-[#0A1628] dark:text-[#F8FAFF] text-lg flex-shrink-0">{service.price}€</span>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
                   )}
                 </div>
 
-                {/* Notes */}
-                <div>
-                  <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5 uppercase tracking-wide">{t('profile.notes')}</label>
-                  <textarea
-                    value={notes}
-                    onChange={e => setNotes(e.target.value)}
-                    rows={2}
-                    placeholder={t('profile.notes_placeholder')}
-                    className="w-full px-3 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm resize-none dark:bg-gray-800 dark:text-white"
-                  />
-                </div>
-
-                {/* Summary */}
-                {selectedSvc && (
-                  <div className="p-3 bg-primary-50 dark:bg-primary-900/20 rounded-xl border border-primary-100 dark:border-primary-800">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600 dark:text-gray-300">{selectedSvc.name}</span>
-                      <span className="font-bold text-primary-700 dark:text-primary-300">{selectedSvc.price}€</span>
+                {hasActiveServices && (
+                  <>
+                    {/* ── Step 2: Date ── */}
+                    <div className="p-5 border-b border-[#E5E7EB] dark:border-[#1E2D45]">
+                      <StepLabel n={2} label="Elige el día" />
+                      <input
+                        type="date"
+                        value={selectedDate}
+                        onChange={e => { setSelectedDate(e.target.value); setSelectedTime(''); }}
+                        min={minDate}
+                        className="w-full px-3 py-2.5 rounded-xl border border-[#E5E7EB] dark:border-[#1E2D45] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 dark:focus:ring-[#3B82F6]/20 focus:border-[#2563EB] dark:focus:border-[#3B82F6] text-sm bg-white dark:bg-[#080F1E] text-[#0A1628] dark:text-[#F8FAFF] transition-colors"
+                      />
+                      {availabilityWarning && (
+                        <p className="mt-2 text-xs text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                          <span>⚠</span>{availabilityWarning}
+                        </p>
+                      )}
                     </div>
-                    <p className="text-xs text-gray-400 mt-1">{t('profile.escrow_note')}</p>
+
+                    {/* ── Step 3: Time slots ── */}
+                    {selectedDate && (
+                      <div className="p-5 border-b border-[#E5E7EB] dark:border-[#1E2D45]">
+                        <StepLabel n={3} label="Elige la hora" />
+                        <div className="grid grid-cols-3 gap-2">
+                          {visibleSlots.map(slot => (
+                            <button
+                              key={slot}
+                              type="button"
+                              onClick={() => setSelectedTime(slot)}
+                              className={`py-2 text-sm font-semibold rounded-xl border-2 transition-all duration-150 ${
+                                selectedTime === slot
+                                  ? 'border-[#2563EB] dark:border-[#3B82F6] bg-[#2563EB] dark:bg-[#3B82F6] text-white'
+                                  : 'border-[#E5E7EB] dark:border-[#1E2D45] text-[#0A1628] dark:text-[#F8FAFF] hover:border-[#0A1628] dark:hover:border-[#94A3B8]'
+                              }`}
+                            >
+                              {slot}
+                            </button>
+                          ))}
+                          {visibleSlots.length === 0 && (
+                            <p className="col-span-3 text-center text-xs text-[#6B7280] dark:text-[#94A3B8] py-3">
+                              No hay horarios disponibles este día
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* ── Step 4: Address ── */}
+                    {user && user.role !== 'ADMIN' && pro.userId !== user.id && (
+                      <div className="p-5 border-b border-[#E5E7EB] dark:border-[#1E2D45]">
+                        <StepLabel n={4} label="Dirección del servicio" />
+                        {confirmedAddr ? (
+                          <div className="flex items-start gap-2 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800/50 rounded-xl">
+                            <MapPin size={14} className="text-green-500 flex-shrink-0 mt-0.5" />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm text-green-800 dark:text-green-300 font-medium">
+                                {confirmedAddr.street} {confirmedAddr.number}
+                              </p>
+                              <div className="flex flex-wrap items-center gap-2 mt-0.5">
+                                {confirmedAddr.neighborhood && (
+                                  <span className="text-xs text-green-600 dark:text-green-500">{confirmedAddr.neighborhood}</span>
+                                )}
+                                {confirmedAddr.postalCode && (
+                                  <span className="text-[10px] font-bold text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-900/40 px-1.5 py-0.5 rounded">
+                                    CP {confirmedAddr.postalCode}
+                                  </span>
+                                )}
+                                <span className="text-xs text-green-600 dark:text-green-500 capitalize">
+                                  {confirmedAddr.housingType === 'piso'
+                                    ? `Piso ${confirmedAddr.floor}${confirmedAddr.door ? ` · ${confirmedAddr.door}` : ''}${confirmedAddr.staircase ? ` Esc.${confirmedAddr.staircase}` : ''}`
+                                    : 'Casa / Chalet'}
+                                </span>
+                              </div>
+                            </div>
+                            <button type="button" onClick={() => setConfirmedAddr(null)}
+                              className="flex-shrink-0 px-2 py-1 text-xs font-medium text-green-700 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/30 rounded-lg transition-colors"
+                            >
+                              Cambiar
+                            </button>
+                          </div>
+                        ) : (
+                          <AddressForm onConfirm={setConfirmedAddr} />
+                        )}
+                      </div>
+                    )}
+
+                    {/* ── Notes ── */}
+                    {user && user.role !== 'ADMIN' && pro.userId !== user.id && (
+                      <div className="p-5 border-b border-[#E5E7EB] dark:border-[#1E2D45]">
+                        <label className="block text-xs font-bold text-[#0A1628] dark:text-[#F8FAFF] uppercase tracking-wide mb-2">
+                          {t('profile.notes')}
+                        </label>
+                        <textarea
+                          value={notes}
+                          onChange={e => setNotes(e.target.value)}
+                          rows={2}
+                          placeholder={t('profile.notes_placeholder')}
+                          className="w-full px-3 py-2.5 rounded-xl border border-[#E5E7EB] dark:border-[#1E2D45] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 dark:focus:ring-[#3B82F6]/20 focus:border-[#2563EB] dark:focus:border-[#3B82F6] text-sm resize-none bg-white dark:bg-[#080F1E] text-[#0A1628] dark:text-[#F8FAFF] placeholder-[#6B7280] dark:placeholder-[#94A3B8] transition-colors"
+                        />
+                      </div>
+                    )}
+
+                    {/* ── Summary + Book button ── */}
+                    {user && user.role !== 'ADMIN' && pro.userId !== user.id && (
+                      <div className="p-5">
+                        {selectedSvc && (
+                          <div className="mb-4 p-3.5 bg-[#F8FAFF] dark:bg-[#080F1E] rounded-xl border border-[#E5E7EB] dark:border-[#1E2D45]">
+                            <div className="flex justify-between text-sm mb-1">
+                              <span className="text-[#6B7280] dark:text-[#94A3B8]">{selectedSvc.name}</span>
+                              <span className="font-bold text-[#0A1628] dark:text-[#F8FAFF]">{selectedSvc.price}€</span>
+                            </div>
+                            {scheduledAt && (
+                              <p className="text-xs text-[#6B7280] dark:text-[#94A3B8]">
+                                {format(new Date(scheduledAt), "EEEE d 'de' MMMM · HH:mm", { locale: es })}
+                              </p>
+                            )}
+                            <p className="text-[11px] text-[#6B7280] dark:text-[#94A3B8] mt-1">{t('profile.escrow_note')}</p>
+                          </div>
+                        )}
+                        <form onSubmit={handleBooking}>
+                          <button
+                            type="submit"
+                            disabled={booking || !selectedService || !scheduledAt || !confirmedAddr}
+                            className="w-full py-3.5 text-white font-bold rounded-xl disabled:opacity-40 transition-all text-sm active:scale-[0.98] shadow-lg"
+                            style={{ background: '#0A1628', boxShadow: '0 4px 14px rgba(10,22,40,0.3)' }}
+                            onMouseEnter={e => { if (!e.currentTarget.disabled) e.currentTarget.style.background = '#2563EB'; }}
+                            onMouseLeave={e => { e.currentTarget.style.background = '#0A1628'; }}
+                          >
+                            {booking ? t('profile.booking_loading') : t('profile.book_button')}
+                          </button>
+                        </form>
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {/* Not logged in */}
+                {!user && (
+                  <div className="p-5">
+                    <p className="text-[#6B7280] dark:text-[#94A3B8] text-sm mb-4 text-center">{t('profile.login_to_book')}</p>
+                    <a href="/login" className="block w-full py-3 text-white font-bold rounded-xl text-sm text-center transition-all"
+                      style={{ background: '#0A1628' }}
+                      onMouseEnter={e => { e.currentTarget.style.background = '#2563EB'; }}
+                      onMouseLeave={e => { e.currentTarget.style.background = '#0A1628'; }}
+                    >
+                      {t('profile.login_button')}
+                    </a>
                   </div>
                 )}
 
+                {/* Own profile */}
+                {user && user.role !== 'ADMIN' && pro.userId === user.id && (
+                  <div className="p-5 text-center">
+                    <p className="text-sm text-[#6B7280] dark:text-[#94A3B8]">Este es tu perfil profesional.</p>
+                    <a href="/dashboard" className="mt-3 inline-block text-sm font-semibold text-[#2563EB] dark:text-[#3B82F6] hover:underline">
+                      Ir a mi panel →
+                    </a>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Mobile sticky booking bar (above BottomNav) ── */}
+      <div className="md:hidden fixed bottom-16 left-0 right-0 z-40 bg-white/95 dark:bg-[#0F1A2E]/95 backdrop-blur-sm border-t border-[#E5E7EB] dark:border-[#1E2D45] px-4 py-3">
+        {!user ? (
+          <a
+            href="/login"
+            className="block w-full py-3.5 text-center text-white font-bold rounded-xl text-sm"
+            style={{ background: '#0A1628' }}
+          >
+            Iniciar sesión para reservar
+          </a>
+        ) : user.role === 'ADMIN' || pro?.userId === user?.id ? null : !hasActiveServices ? (
+          <p className="text-center text-sm text-[#6B7280] dark:text-[#94A3B8] py-1">Sin servicios disponibles</p>
+        ) : (
+          <div className="flex items-center gap-3">
+            <div>
+              <p className="text-[10px] text-[#6B7280] dark:text-[#94A3B8] leading-none">desde</p>
+              <p className="text-xl font-black text-[#0A1628] dark:text-[#F8FAFF] leading-none mt-0.5">
+                {pro && Math.min(...(pro.services ?? []).map((s: any) => s.price))}€
+              </p>
+            </div>
+            <button
+              onClick={() => setShowBookingSheet(true)}
+              className="flex-1 py-3.5 text-white font-bold rounded-xl text-sm active:scale-[0.98] transition-all"
+              style={{ background: '#0A1628', boxShadow: '0 4px 14px rgba(10,22,40,0.3)' }}
+            >
+              Reservar
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* ── Mobile booking bottom sheet ── */}
+      {showBookingSheet && (
+        <div className="md:hidden fixed inset-0 z-[60]">
+          <div
+            className="absolute inset-0 bg-black/50"
+            onClick={() => setShowBookingSheet(false)}
+          />
+          <div className="absolute bottom-0 left-0 right-0 bg-white dark:bg-gray-900 rounded-t-3xl max-h-[92vh] flex flex-col">
+            {/* Handle */}
+            <div className="flex justify-center pt-3 flex-shrink-0">
+              <div className="w-10 h-1 rounded-full bg-gray-200 dark:bg-gray-700" />
+            </div>
+            {/* Header */}
+            <div className="flex items-center justify-between px-5 pt-3 pb-4 border-b border-gray-100 dark:border-gray-800 flex-shrink-0">
+              <h3 className="text-base font-bold text-[#0A1628] dark:text-[#F8FAFF]">Hacer una reserva</h3>
+              <button
+                onClick={() => setShowBookingSheet(false)}
+                className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              >
+                <X size={18} className="text-gray-500 dark:text-gray-400" />
+              </button>
+            </div>
+
+            {/* Scrollable content */}
+            <div className="flex-1 overflow-y-auto">
+              {/* Step 1: Service */}
+              <div className="p-5 border-b border-gray-100 dark:border-gray-800">
+                <StepLabel n={1} label={t('profile.services')} />
+                <div className="space-y-2">
+                  {pro.services.map((service: any) => (
+                    <button
+                      key={service.id}
+                      onClick={() => setSelectedService(service.id)}
+                      className={`w-full text-left p-3.5 rounded-xl border-2 transition-all duration-200 ${
+                        selectedService === service.id
+                          ? 'border-[#2563EB] bg-blue-50 dark:bg-blue-900/20'
+                          : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'
+                      }`}
+                    >
+                      <div className="flex justify-between items-start gap-3">
+                        <div className="min-w-0">
+                          <span className="font-semibold text-[#0A1628] dark:text-[#F8FAFF] text-sm block truncate">{service.name}</span>
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-2">{service.description}</p>
+                          <span className="inline-flex items-center gap-1 mt-1.5 text-[11px] text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded-full">
+                            <Clock size={10} />{service.duration}min
+                          </span>
+                        </div>
+                        <span className="font-black text-[#0A1628] dark:text-[#F8FAFF] text-lg flex-shrink-0">{service.price}€</span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Step 2: Date visual picker */}
+              <div className="p-5 border-b border-gray-100 dark:border-gray-800">
+                <StepLabel n={2} label="Elige el día" />
+                <div className="flex gap-2 overflow-x-auto pb-1 -mx-5 px-5 no-scrollbar">
+                  {next14Days.map(date => {
+                    const dateStr = date.toISOString().split('T')[0];
+                    const available = isDayAvailable(date);
+                    const isSelected = selectedDate === dateStr;
+                    return (
+                      <button
+                        key={dateStr}
+                        disabled={!available}
+                        onClick={() => { setSelectedDate(dateStr); setSelectedTime(''); }}
+                        className={`flex-shrink-0 flex flex-col items-center px-3 py-2.5 rounded-xl border-2 transition-all ${
+                          isSelected
+                            ? 'border-[#2563EB] bg-[#2563EB] text-white'
+                            : available
+                              ? 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-[#0A1628] dark:text-white'
+                              : 'border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 text-gray-300 dark:text-gray-600 cursor-not-allowed'
+                        }`}
+                      >
+                        <span className="text-[10px] font-semibold uppercase">{DAY_LABELS[date.getDay()]}</span>
+                        <span className="text-lg font-black leading-none mt-0.5">{date.getDate()}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+                {availabilityWarning && (
+                  <p className="mt-2 text-xs text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                    <Clock size={11} />{availabilityWarning}
+                  </p>
+                )}
+              </div>
+
+              {/* Step 3: Time slots */}
+              {selectedDate && (
+                <div className="p-5 border-b border-gray-100 dark:border-gray-800">
+                  <StepLabel n={3} label="Elige la hora" />
+                  <div className="grid grid-cols-4 gap-2">
+                    {visibleSlots.map(slot => (
+                      <button
+                        key={slot}
+                        type="button"
+                        onClick={() => setSelectedTime(slot)}
+                        className={`py-2.5 text-sm font-semibold rounded-xl border-2 transition-all duration-150 ${
+                          selectedTime === slot
+                            ? 'border-[#2563EB] bg-[#2563EB] text-white'
+                            : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-[#0A1628] dark:text-white'
+                        }`}
+                      >
+                        {slot}
+                      </button>
+                    ))}
+                    {visibleSlots.length === 0 && (
+                      <p className="col-span-4 text-center text-xs text-gray-500 dark:text-gray-400 py-3">
+                        No hay horarios disponibles este día
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Step 4: Address */}
+              <div className="p-5 border-b border-gray-100 dark:border-gray-800">
+                <StepLabel n={4} label="Dirección del servicio" />
+                {confirmedAddr ? (
+                  <div className="flex items-start gap-2 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800/50 rounded-xl">
+                    <MapPin size={14} className="text-green-500 flex-shrink-0 mt-0.5" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-green-800 dark:text-green-300 font-medium">
+                        {confirmedAddr.street} {confirmedAddr.number}
+                      </p>
+                      <div className="flex flex-wrap items-center gap-2 mt-0.5">
+                        {confirmedAddr.neighborhood && (
+                          <span className="text-xs text-green-600 dark:text-green-500">{confirmedAddr.neighborhood}</span>
+                        )}
+                        {confirmedAddr.postalCode && (
+                          <span className="text-[10px] font-bold text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-900/40 px-1.5 py-0.5 rounded">
+                            CP {confirmedAddr.postalCode}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <button type="button" onClick={() => setConfirmedAddr(null)}
+                      className="flex-shrink-0 px-2 py-1 text-xs font-medium text-green-700 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/30 rounded-lg transition-colors"
+                    >
+                      Cambiar
+                    </button>
+                  </div>
+                ) : (
+                  <AddressForm onConfirm={setConfirmedAddr} />
+                )}
+              </div>
+
+              {/* Notes */}
+              <div className="p-5">
+                <label className="block text-xs font-bold text-[#0A1628] dark:text-[#F8FAFF] uppercase tracking-wide mb-2">
+                  {t('profile.notes')}
+                </label>
+                <textarea
+                  value={notes}
+                  onChange={e => setNotes(e.target.value)}
+                  rows={2}
+                  placeholder={t('profile.notes_placeholder')}
+                  className="w-full px-3 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 text-sm resize-none bg-white dark:bg-gray-800 text-[#0A1628] dark:text-[#F8FAFF] placeholder-gray-400 dark:placeholder-gray-500 transition-colors"
+                />
+              </div>
+            </div>
+
+            {/* Fixed bottom: summary + book button */}
+            <div className="flex-shrink-0 border-t border-gray-100 dark:border-gray-800 p-4 bg-white dark:bg-gray-900" style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom))' }}>
+              {selectedSvc && scheduledAt && (
+                <div className="flex items-center justify-between mb-3 px-1">
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{selectedSvc.name}</p>
+                  <p className="text-sm font-bold text-[#0A1628] dark:text-[#F8FAFF]">{selectedSvc.price}€</p>
+                </div>
+              )}
+              <form onSubmit={handleBooking}>
                 <button
                   type="submit"
-                  disabled={booking || !selectedService}
-                  className="w-full py-3 bg-primary-600 text-white font-semibold rounded-xl hover:bg-primary-700 disabled:opacity-50 transition-colors text-sm"
+                  disabled={booking || !selectedService || !scheduledAt || !confirmedAddr}
+                  className="w-full py-4 text-white font-bold rounded-xl disabled:opacity-40 transition-all text-sm active:scale-[0.98]"
+                  style={{ background: '#0A1628', boxShadow: '0 4px 14px rgba(10,22,40,0.3)' }}
                 >
                   {booking ? t('profile.booking_loading') : t('profile.book_button')}
                 </button>
               </form>
-              )}
             </div>
-          )}
-
-          {!user && (
-            <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 text-center">
-              <p className="text-gray-500 dark:text-gray-400 text-sm mb-4">{t('profile.login_to_book')}</p>
-              <a href="/login" className="block w-full py-3 bg-primary-600 text-white font-semibold rounded-xl text-center hover:bg-primary-700 transition-colors text-sm">
-                {t('profile.login_button')}
-              </a>
-            </div>
-          )}
-
-          {user && user.role !== 'ADMIN' && pro.userId === user.id && (
-            <div className="bg-gray-50 dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-5 text-center">
-              <p className="text-sm text-gray-500 dark:text-gray-400">Este es tu perfil profesional.</p>
-              <a href="/dashboard" className="mt-3 inline-block text-sm font-medium text-primary-600 hover:text-primary-700">
-                Ir a mi panel →
-              </a>
-            </div>
-          )}
+          </div>
         </div>
-      </div>
-    </div>
-    {lightbox && (
-      <Lightbox
-        images={lightbox.images}
-        index={lightbox.index}
-        onClose={() => setLightbox(null)}
-        onNav={(i) => setLightbox(lb => lb ? { ...lb, index: i } : null)}
-      />
-    )}
+      )}
+
+      {lightbox && (
+        <Lightbox
+          images={lightbox.images}
+          index={lightbox.index}
+          onClose={() => setLightbox(null)}
+          onNav={(i) => setLightbox(lb => lb ? { ...lb, index: i } : null)}
+        />
+      )}
     </>
   );
 }

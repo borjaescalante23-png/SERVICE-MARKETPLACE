@@ -12,7 +12,9 @@ import Register from './pages/Register';
 import ProfessionalList from './pages/ProfessionalList';
 import ProfessionalProfile from './pages/ProfessionalProfile';
 import BookingDetail from './pages/BookingDetail';
+import Bookings from './pages/Bookings';
 import Dashboard from './pages/Dashboard/index';
+import ProviderHub from './pages/ProviderHub';
 import Settings from './pages/Settings';
 import SmartMatch from './pages/SmartMatch';
 import Opportunities from './pages/Opportunities';
@@ -84,7 +86,9 @@ export default function App() {
                 <Route path="/professionals/:id" element={<ProfessionalProfile />} />
                 <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
                 <Route path="/admin" element={<AdminRoute><Dashboard /></AdminRoute>} />
+                <Route path="/bookings" element={<ProtectedRoute><Bookings /></ProtectedRoute>} />
                 <Route path="/bookings/:bookingId" element={<ProtectedRoute><BookingDetail /></ProtectedRoute>} />
+                <Route path="/provider-hub" element={<ProtectedRoute><ProviderHub /></ProtectedRoute>} />
                 <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
                 <Route path="/match" element={<ProtectedRoute><SmartMatch /></ProtectedRoute>} />
                 <Route path="/opportunities" element={<ProtectedRoute><Opportunities /></ProtectedRoute>} />

@@ -12,6 +12,46 @@
   }
 }
 
+@layer components {
+  .btn-electric {
+    background: linear-gradient(to right, #1a78ff, #0d63ec);
+    color: white;
+    font-weight: 600;
+    transition: all 0.15s;
+    box-shadow: 0 4px 14px rgba(26, 120, 255, 0.35);
+    display: inline-flex;
+    align-items: center;
+  }
+  .btn-electric:hover {
+    background: linear-gradient(to right, #0d63ec, #0850d0);
+    box-shadow: 0 6px 18px rgba(26, 120, 255, 0.45);
+    transform: translateY(-1px);
+  }
+
+  .btn-navy {
+    background: linear-gradient(to right, #0F2557, #0a1830);
+    color: white;
+    font-weight: 600;
+    transition: all 0.15s;
+    box-shadow: 0 4px 14px rgba(6, 14, 30, 0.5);
+  }
+  .btn-navy:hover {
+    background: linear-gradient(to right, #0a1830, #060e1e);
+    transform: translateY(-1px);
+  }
+
+  .card-premium {
+    @apply bg-white dark:bg-navy-900 rounded-2xl border border-gray-100
+           dark:border-navy-800 shadow-sm hover:shadow-xl
+           hover:-translate-y-0.5 transition-all duration-200;
+  }
+
+  .nav-dark {
+    background: linear-gradient(to right, #060e1e, #0F2557);
+    box-shadow: 0 4px 20px rgba(6, 14, 30, 0.5);
+  }
+}
+
 @layer utilities {
   .line-clamp-2 {
     display: -webkit-box;
@@ -19,6 +59,13 @@
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
+
+  .text-shadow-sm {
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+  }
+
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 }
 
 @media print {

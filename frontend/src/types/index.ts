@@ -7,7 +7,7 @@ export type BookingStatus = 'PENDING' | 'ACCEPTED' | 'IN_PROGRESS' | 'COMPLETED_
 export type PaymentStatus = 'PENDING' | 'HELD_IN_ESCROW' | 'RELEASED' | 'REFUNDED' | 'DISPUTED';
 export type ServiceCategory =
   | 'HAIRDRESSING' | 'BEAUTY' | 'CLEANING' | 'CHEF' | 'HANDYMAN'
-  | 'PERSONAL_TRAINER' | 'MASSAGE' | 'CHILDCARE' | 'ELDERCARE' | 'PET_CARE'
+  | 'PERSONAL_TRAINER' | 'MASSAGE' | 'ELDERCARE' | 'PET_CARE'
   | 'TUTORING' | 'PLUMBING' | 'ELECTRICIAN' | 'GARDENING';
 
 export interface User {
@@ -43,6 +43,7 @@ export interface ProfessionalProfile {
   country?: string;
   serviceMode: ServiceMode;
   kycStatus?: string;
+  travelRadius?: number;
   stripeConnectId?: string;
   stripeConnectStatus?: string;
   selfieUrl?: string;
@@ -201,7 +202,6 @@ export const CATEGORY_LABELS: Record<ServiceCategory, string> = {
   HANDYMAN: 'Manitas',
   PERSONAL_TRAINER: 'Entrenador Personal',
   MASSAGE: 'Masajes',
-  CHILDCARE: 'Cuidado Infantil',
   ELDERCARE: 'Cuidado de Mayores',
   PET_CARE: 'Cuidado de Mascotas',
   TUTORING: 'Tutorías',
@@ -218,7 +218,6 @@ export const CATEGORY_ICONS: Record<ServiceCategory, string> = {
   HANDYMAN: '🛠️',
   PERSONAL_TRAINER: '💪',
   MASSAGE: '🧘',
-  CHILDCARE: '👶',
   ELDERCARE: '👴',
   PET_CARE: '🐾',
   TUTORING: '📚',
@@ -235,7 +234,6 @@ export const CATEGORY_IMAGES: Record<ServiceCategory, string> = {
   HANDYMAN:         'https://images.pexels.com/photos/5691544/pexels-photo-5691544.jpeg?auto=compress&cs=tinysrgb&w=800&h=533&fit=crop',
   PERSONAL_TRAINER: 'https://images.pexels.com/photos/4587383/pexels-photo-4587383.jpeg?auto=compress&cs=tinysrgb&w=800&h=533&fit=crop',
   MASSAGE:          'https://images.pexels.com/photos/6629607/pexels-photo-6629607.jpeg?auto=compress&cs=tinysrgb&w=800&h=533&fit=crop',
-  CHILDCARE:        'https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=800&q=85&auto=format&fit=crop',
   ELDERCARE:        'https://images.pexels.com/photos/29372722/pexels-photo-29372722.jpeg?auto=compress&cs=tinysrgb&w=800&h=533&fit=crop',
   PET_CARE:         'https://images.pexels.com/photos/6235650/pexels-photo-6235650.jpeg?auto=compress&cs=tinysrgb&w=800&h=533&fit=crop',
   TUTORING:         'https://images.pexels.com/photos/10222299/pexels-photo-10222299.jpeg?auto=compress&cs=tinysrgb&w=800&h=533&fit=crop',

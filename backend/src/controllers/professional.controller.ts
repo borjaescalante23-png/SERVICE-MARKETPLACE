@@ -12,7 +12,7 @@ const experienceSchema = z.object({
   description: z.string().min(10).max(500),
   serviceCategory: z.enum([
     'HAIRDRESSING', 'BEAUTY', 'CLEANING', 'CHEF', 'HANDYMAN',
-    'PERSONAL_TRAINER', 'MASSAGE', 'CHILDCARE', 'ELDERCARE', 'PET_CARE',
+    'PERSONAL_TRAINER', 'MASSAGE', 'ELDERCARE', 'PET_CARE',
     'TUTORING', 'PLUMBING', 'ELECTRICIAN', 'GARDENING',
   ]),
   approximateDate: z.string().min(4).max(50),
@@ -53,7 +53,7 @@ export async function updateBio(req: AuthRequest, res: Response): Promise<void> 
 }
 
 export async function updateProfile(req: AuthRequest, res: Response): Promise<void> {
-  const { bio, serviceMode } = req.body;
+  const { bio, serviceMode, travelRadius } = req.body;
   const validModes = ['PRESENTIAL', 'REMOTE', 'BOTH'];
 
   const data: any = { city: 'Barcelona', country: 'España' };
@@ -64,6 +64,14 @@ export async function updateProfile(req: AuthRequest, res: Response): Promise<vo
   if (serviceMode !== undefined) {
     if (!validModes.includes(serviceMode)) { res.status(400).json({ error: 'Modo de servicio inválido' }); return; }
     data.serviceMode = serviceMode;
+  }
+  if (travelRadius !== undefined) {
+    const radius = Number(travelRadius);
+    if (!Number.isFinite(radius) || radius < 0 || radius > 500) {
+      res.status(400).json({ error: 'Radio de desplazamiento inválido (0–500 km)' });
+      return;
+    }
+    data.travelRadius = Math.round(radius);
   }
 
   const profile = await prisma.professionalProfile.update({

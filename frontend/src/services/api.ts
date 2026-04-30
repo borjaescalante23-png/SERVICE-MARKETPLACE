@@ -61,7 +61,7 @@ export const professionalsApi = {
   getById: (id: string) => api.get(`/professionals/${id}`),
   getMyProfile: () => api.get('/professionals/me'),
   updateBio: (bio: string) => api.patch('/professionals/me/bio', { bio }),
-  updateProfile: (data: { bio?: string; serviceMode?: string }) => api.patch('/professionals/me/profile', data),
+  updateProfile: (data: { bio?: string; serviceMode?: string; travelRadius?: number }) => api.patch('/professionals/me/profile', data),
   addExperience: (formData: FormData) => api.post('/professionals/me/experience', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
   }),

@@ -1,9 +1,12 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useI18n } from '../../i18n';
-import { LogOut, LayoutDashboard, Shield, Menu, X, Zap, Sun, Moon, Settings, Sparkles, TrendingUp, Briefcase } from 'lucide-react';
+import {
+  LogOut, Shield, Zap,
+  Sun, Moon, Home, Search, CalendarCheck, Briefcase, UserCircle,
+} from 'lucide-react';
 import toast from 'react-hot-toast';
 import NotificationCenter from '../common/NotificationCenter';
 
@@ -12,135 +15,135 @@ export default function Navbar() {
   const { theme, toggleTheme } = useTheme();
   const { t } = useI18n();
   const navigate = useNavigate();
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const { pathname } = useLocation();
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 12);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   async function handleLogout() {
     await logout();
     toast.success(t('nav.logout'));
     navigate('/');
-    setMobileOpen(false);
   }
 
   return (
-    <nav className="bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 sticky top-0 z-50 shadow-sm">
+    <nav
+      className={`sticky top-0 z-50 bg-white dark:bg-[#080F1E] border-b transition-all duration-300 ${
+        scrolled
+          ? 'border-gray-200 dark:border-[#1E2D45] shadow-[0_2px_20px_rgba(0,0,0,0.06)] dark:shadow-[0_2px_20px_rgba(0,0,0,0.3)]'
+          : 'border-gray-100 dark:border-[#1E2D45]/50 shadow-none'
+      }`}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          <Link to="/" className="flex items-center gap-2.5" onClick={() => setMobileOpen(false)}>
-            <div className="w-9 h-9 bg-gradient-to-br from-primary-500 to-primary-700 rounded-xl flex items-center justify-center shadow-md">
-              <Zap size={18} className="text-white" fill="white" />
+        <div className="flex items-center justify-between h-14 md:h-[68px]">
+
+          {/* Logo */}
+          <Link to="/" className="flex items-center gap-2.5 group flex-shrink-0">
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+              style={{ background: 'linear-gradient(135deg, #2563EB 0%, #0A1628 100%)' }}>
+              <Zap size={17} className="text-white" fill="white" />
             </div>
-            <span className="font-extrabold text-gray-900 dark:text-white text-xl tracking-tight">VELORA</span>
+            <span className="font-black text-[#0A1628] dark:text-[#F8FAFF] text-[1.2rem] tracking-tight">VELORA</span>
           </Link>
 
-          <div className="hidden sm:flex items-center gap-1">
-            <Link
-              to="/professionals"
-              className="px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors"
-            >
-              {t('nav.professionals')}
-            </Link>
+          {/* Desktop center nav */}
+          {user && (
+            <div className="hidden md:flex items-center gap-1 absolute left-1/2 -translate-x-1/2">
+              {[
+                { to: '/dashboard', icon: <Home size={15} />, label: 'Inicio' },
+                { to: '/professionals', icon: <Search size={15} />, label: 'Explorar' },
+                { to: '/bookings', icon: <CalendarCheck size={15} />, label: 'Reservas' },
+                { to: user.isProvider ? '/provider-hub' : '/become-provider', icon: <Briefcase size={15} />, label: 'Proveedor',
+                  active: pathname.startsWith('/provider-hub') || pathname.startsWith('/become-provider') },
+                { to: '/settings', icon: <UserCircle size={15} />, label: 'Perfil' },
+              ].map(({ to, icon, label, active }) => {
+                const isActive = active ?? (pathname === to || (to !== '/dashboard' && pathname.startsWith(to)));
+                return (
+                  <Link
+                    key={to}
+                    to={to}
+                    className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-xl transition-all ${
+                      isActive
+                        ? 'text-[#0A1628] dark:text-[#F8FAFF] bg-gray-100 dark:bg-[#0F1A2E]'
+                        : 'text-gray-500 dark:text-[#94A3B8] hover:text-[#0A1628] dark:hover:text-[#F8FAFF] hover:bg-gray-50 dark:hover:bg-[#0F1A2E]'
+                    }`}
+                  >
+                    {icon}
+                    {label}
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Desktop right */}
+          <div className="hidden md:flex items-center gap-2">
             {user ? (
               <>
-                <Link
-                  to="/dashboard"
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                >
-                  <LayoutDashboard size={16} />
-                  {t('nav.dashboard')}
-                </Link>
                 {user.role === 'ADMIN' && (
                   <Link
                     to="/admin"
-                    className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-primary-700 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors"
+                    className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-[#2563EB] hover:bg-blue-50 rounded-xl transition-all"
                   >
-                    <Shield size={16} />
+                    <Shield size={15} />
                     Admin
                   </Link>
                 )}
-
-                <Link
-                  to="/match"
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors"
-                >
-                  <Sparkles size={15} />
-                  Matching IA
-                </Link>
-
-                {user.role === 'PROFESSIONAL' && (
-                  <Link
-                    to="/opportunities"
-                    className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors"
-                  >
-                    <TrendingUp size={15} />
-                    Oportunidades
-                  </Link>
-                )}
-
-                {user.role === 'CLIENT' && (
-                  <Link
-                    to="/become-provider"
-                    className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20 hover:bg-primary-100 dark:hover:bg-primary-900/40 border border-primary-200 dark:border-primary-800 transition-colors"
-                  >
-                    <Briefcase size={14} />
-                    Hazte profesional
-                  </Link>
-                )}
-
                 <NotificationCenter />
 
                 <button
                   onClick={toggleTheme}
-                  className="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  className="p-2 text-gray-400 dark:text-[#94A3B8] hover:text-gray-700 dark:hover:text-[#F8FAFF] hover:bg-gray-100 dark:hover:bg-[#0F1A2E] rounded-xl transition-all"
                   title={theme === 'dark' ? t('nav.light_mode') : t('nav.dark_mode')}
                 >
-                  {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+                  {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
                 </button>
 
-                <Link
-                  to="/settings"
-                  className="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                  title={t('nav.settings')}
-                >
-                  <Settings size={18} />
-                </Link>
-
-                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-50 dark:bg-gray-800 ml-1">
+                <div className="flex items-center gap-2 pl-2 border-l border-gray-100 ml-1">
                   {user.avatarUrl ? (
-                    <img src={user.avatarUrl} alt="" className="w-7 h-7 rounded-full object-cover" />
+                    <img src={user.avatarUrl} alt="" className="w-8 h-8 rounded-full object-cover ring-2 ring-gray-100" />
                   ) : (
-                    <div className="w-7 h-7 rounded-full bg-primary-100 dark:bg-primary-900/40 flex items-center justify-center">
-                      <span className="text-xs font-bold text-primary-700 dark:text-primary-300">
+                    <div className="w-8 h-8 rounded-full bg-[#0A1628] flex items-center justify-center flex-shrink-0">
+                      <span className="text-[11px] font-black text-white">
                         {user.firstName?.[0] ?? '?'}{user.lastName?.[0] ?? ''}
                       </span>
                     </div>
                   )}
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{user.firstName}</span>
+                  <span className="text-sm font-semibold text-[#0A1628] dark:text-[#F8FAFF]">{user.firstName}</span>
                 </div>
+
                 <button
                   onClick={handleLogout}
-                  className="p-2 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  className="p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
                   title="Cerrar sesión"
                 >
-                  <LogOut size={18} />
+                  <LogOut size={17} />
                 </button>
               </>
             ) : (
               <>
                 <button
                   onClick={toggleTheme}
-                  className="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  className="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-xl transition-all"
                 >
-                  {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+                  {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
                 </button>
                 <Link
                   to="/login"
-                  className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
+                  className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-[#0A1628] transition-colors"
                 >
                   {t('nav.login')}
                 </Link>
                 <Link
                   to="/register"
-                  className="px-4 py-2 text-sm font-semibold bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors shadow-sm"
+                  className="px-5 py-2.5 text-sm font-bold text-white rounded-full active:scale-95 transition-all"
+                  style={{ background: '#0A1628' }}
+                  onMouseEnter={e => (e.currentTarget.style.background = '#2563EB')}
+                  onMouseLeave={e => (e.currentTarget.style.background = '#0A1628')}
                 >
                   {t('nav.register')}
                 </Link>
@@ -148,120 +151,33 @@ export default function Navbar() {
             )}
           </div>
 
-          <div className="sm:hidden flex items-center gap-2">
+          {/* Mobile right: notifications + theme */}
+          <div className="md:hidden flex items-center gap-1">
             {user && <NotificationCenter />}
             <button
-              className="p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-              onClick={() => setMobileOpen(!mobileOpen)}
-              aria-label="Menú"
+              onClick={toggleTheme}
+              className="p-2 text-gray-400 dark:text-[#94A3B8] hover:text-gray-700 dark:hover:text-[#F8FAFF] hover:bg-gray-100 dark:hover:bg-[#0F1A2E] rounded-xl transition-all"
             >
-              {mobileOpen ? <X size={22} /> : <Menu size={22} />}
+              {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
             </button>
+            {user ? (
+              user.avatarUrl ? (
+                <img src={user.avatarUrl} alt="" className="w-8 h-8 rounded-full object-cover ring-2 ring-gray-100" />
+              ) : (
+                <div className="w-8 h-8 rounded-full bg-[#0A1628] flex items-center justify-center">
+                  <span className="text-[11px] font-black text-white">
+                    {user.firstName?.[0] ?? '?'}{user.lastName?.[0] ?? ''}
+                  </span>
+                </div>
+              )
+            ) : (
+              <Link to="/login" className="px-3 py-1.5 text-xs font-bold text-white rounded-full" style={{ background: '#0A1628' }}>
+                Entrar
+              </Link>
+            )}
           </div>
         </div>
       </div>
-
-      {mobileOpen && (
-        <div className="sm:hidden border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 px-4 py-3 space-y-1">
-          <Link
-            to="/professionals"
-            onClick={() => setMobileOpen(false)}
-            className="block px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
-          >
-            {t('nav.professionals')}
-          </Link>
-          {user ? (
-            <>
-              <Link
-                to="/dashboard"
-                onClick={() => setMobileOpen(false)}
-                className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
-              >
-                <LayoutDashboard size={16} />
-                {t('nav.dashboard')}
-              </Link>
-              {user.role === 'ADMIN' && (
-                <Link
-                  to="/admin"
-                  onClick={() => setMobileOpen(false)}
-                  className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-primary-700 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20"
-                >
-                  <Shield size={16} />
-                  Admin
-                </Link>
-              )}
-              {user.role === 'CLIENT' && (
-                <Link
-                  to="/become-provider"
-                  onClick={() => setMobileOpen(false)}
-                  className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-semibold text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800"
-                >
-                  <Briefcase size={16} />
-                  Hazte profesional
-                </Link>
-              )}
-              <Link
-                to="/settings"
-                onClick={() => setMobileOpen(false)}
-                className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
-              >
-                <Settings size={16} />
-                {t('nav.settings')}
-              </Link>
-              <button
-                onClick={toggleTheme}
-                className="flex items-center gap-2 w-full px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
-              >
-                {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
-                {theme === 'dark' ? t('nav.light_mode') : t('nav.dark_mode')}
-              </button>
-              <div className="px-3 py-2.5 flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                {user.avatarUrl ? (
-                  <img src={user.avatarUrl} alt="" className="w-7 h-7 rounded-full object-cover" />
-                ) : (
-                  <div className="w-7 h-7 rounded-full bg-primary-100 dark:bg-primary-900/40 flex items-center justify-center">
-                    <span className="text-xs font-bold text-primary-700 dark:text-primary-300">
-                      {user.firstName?.[0] ?? '?'}{user.lastName?.[0] ?? ''}
-                    </span>
-                  </div>
-                )}
-                {user.firstName} {user.lastName}
-              </div>
-              <button
-                onClick={handleLogout}
-                className="flex items-center gap-2 w-full px-3 py-2.5 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10"
-              >
-                <LogOut size={16} />
-                {t('nav.logout')}
-              </button>
-            </>
-          ) : (
-            <>
-              <button
-                onClick={() => { toggleTheme(); setMobileOpen(false); }}
-                className="flex items-center gap-2 w-full px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
-              >
-                {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
-                {theme === 'dark' ? t('nav.light_mode') : t('nav.dark_mode')}
-              </button>
-              <Link
-                to="/login"
-                onClick={() => setMobileOpen(false)}
-                className="block px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
-              >
-                {t('nav.login')}
-              </Link>
-              <Link
-                to="/register"
-                onClick={() => setMobileOpen(false)}
-                className="block px-3 py-2.5 rounded-lg text-sm font-semibold bg-primary-600 text-white text-center hover:bg-primary-700"
-              >
-                {t('nav.register')}
-              </Link>
-            </>
-          )}
-        </div>
-      )}
     </nav>
   );
 }

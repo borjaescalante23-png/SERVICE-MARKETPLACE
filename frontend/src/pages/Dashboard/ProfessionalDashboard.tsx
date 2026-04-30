@@ -8,7 +8,7 @@ import Badge from '../../components/common/Badge';
 import StarRating from '../../components/common/StarRating';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { Plus, Upload, CheckCircle, AlertCircle, Briefcase, Star, Trash2, Camera, User, TrendingUp, ShieldCheck, CreditCard, CalendarDays } from 'lucide-react';
+import { Plus, Upload, CheckCircle, AlertCircle, Briefcase, Star, Trash2, Camera, User, TrendingUp, ShieldCheck, CreditCard, CalendarDays, Clock } from 'lucide-react';
 import AvailabilitySchedule from '../../components/AvailabilitySchedule';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../contexts/AuthContext';
@@ -212,34 +212,48 @@ export default function ProfessionalDashboard() {
         </div>
       )}
 
-      {/* KYC Banner */}
-      {kycStatus !== 'APPROVED' && (
-        <Link to="/kyc" className="block mb-4">
-          <div className={`p-4 rounded-2xl flex items-center gap-3 transition-opacity hover:opacity-90 ${
-            kycStatus === 'PROCESSING' || kycStatus === 'MANUAL_REVIEW'
-              ? 'bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700'
-              : kycStatus === 'REJECTED'
-              ? 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800'
-              : 'bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800'
-          }`}>
-            <ShieldCheck size={20} className={kycStatus === 'REJECTED' ? 'text-red-500 flex-shrink-0' : kycStatus === 'APPROVED' ? 'text-green-500 flex-shrink-0' : 'text-blue-500 flex-shrink-0'} />
+      {/* Profile incomplete banner */}
+      {!profile?.bio && kycStatus !== 'APPROVED' && (
+        <Link to="/provider-onboarding" className="block mb-4">
+          <div className="p-4 rounded-2xl flex items-center gap-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 hover:opacity-90 transition-opacity">
+            <AlertCircle size={20} className="text-amber-500 flex-shrink-0" />
             <div className="flex-1 min-w-0">
-              <p className="font-medium text-gray-900 dark:text-white text-sm">
-                {kycStatus === 'PENDING' ? '🪪 Verificación de identidad pendiente' :
-                 kycStatus === 'PROCESSING' ? 'Verificando tu identidad...' :
-                 kycStatus === 'MANUAL_REVIEW' ? 'Identidad en revisión manual' :
-                 'Verificación rechazada — Intentar de nuevo'}
-              </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                {kycStatus === 'PENDING' ? 'Completa el KYC biométrico para poder operar. Toca aquí.' :
-                 kycStatus === 'PROCESSING' ? 'La IA está analizando tus documentos.' :
-                 kycStatus === 'MANUAL_REVIEW' ? 'El equipo lo revisará en 24-48h.' :
-                 'Intenta de nuevo con mejor iluminación.'}
-              </p>
+              <p className="font-medium text-gray-900 dark:text-white text-sm">{t('profdash.banner_incomplete')}</p>
             </div>
-            <span className="text-xs text-primary-600 dark:text-primary-400 font-medium flex-shrink-0">→</span>
+            <span className="text-xs text-amber-600 dark:text-amber-400 font-medium flex-shrink-0 whitespace-nowrap">{t('profdash.go_onboarding')}</span>
           </div>
         </Link>
+      )}
+
+      {/* KYC Banner */}
+      {kycStatus === 'PENDING' && (
+        <Link to="/kyc" className="block mb-4">
+          <div className="p-4 rounded-2xl flex items-center gap-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 hover:opacity-90 transition-opacity">
+            <ShieldCheck size={20} className="text-blue-500 flex-shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="font-medium text-gray-900 dark:text-white text-sm">{t('profdash.banner_kyc_pending')}</p>
+            </div>
+            <span className="text-xs text-blue-600 dark:text-blue-400 font-medium flex-shrink-0 whitespace-nowrap">{t('profdash.go_kyc')}</span>
+          </div>
+        </Link>
+      )}
+      {(kycStatus === 'PROCESSING' || kycStatus === 'MANUAL_REVIEW') && (
+        <div className="mb-4 p-4 rounded-2xl flex items-center gap-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700">
+          <Clock size={20} className="text-amber-500 flex-shrink-0" />
+          <p className="text-sm text-gray-700 dark:text-gray-300 flex-1">{t('profdash.banner_kyc_review')}</p>
+        </div>
+      )}
+      {kycStatus === 'REJECTED' && (
+        <div className="mb-4 p-4 rounded-2xl flex items-center gap-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+          <ShieldCheck size={20} className="text-red-500 flex-shrink-0" />
+          <p className="text-sm text-gray-700 dark:text-gray-300 flex-1">{t('profdash.banner_kyc_rejected')}</p>
+          <Link
+            to="/kyc"
+            className="text-xs font-semibold text-red-600 dark:text-red-400 whitespace-nowrap underline-offset-2 hover:underline"
+          >
+            {t('profdash.retry_kyc')}
+          </Link>
+        </div>
       )}
 
       {/* Stripe Connect Banner */}
@@ -253,14 +267,14 @@ export default function ProfessionalDashboard() {
             <CreditCard size={20} className={stripeStatus === 'PENDING' ? 'text-amber-500 flex-shrink-0' : 'text-purple-500 flex-shrink-0'} />
             <div className="flex-1 min-w-0">
               <p className="font-medium text-gray-900 dark:text-white text-sm">
-                {stripeStatus === 'NOT_STARTED' ? '💳 Configura tu cuenta de cobros' :
+                {stripeStatus === 'NOT_STARTED' ? 'Configura tu cuenta de cobros' :
                  stripeStatus === 'INCOMPLETE' ? 'Onboarding de Stripe incompleto' :
-                 'Verificación de cuenta en proceso'}
+                 'Verificacion de cuenta en proceso'}
               </p>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                {stripeStatus === 'NOT_STARTED' ? 'Necesitas conectar Stripe para recibir pagos. Toca aquí.' :
+                {stripeStatus === 'NOT_STARTED' ? 'Necesitas conectar Stripe para recibir pagos.' :
                  stripeStatus === 'INCOMPLETE' ? 'Completa el proceso para activar los cobros.' :
-                 'Stripe está verificando tu información.'}
+                 'Stripe esta verificando tu informacion.'}
               </p>
             </div>
             <span className="text-xs text-primary-600 dark:text-primary-400 font-medium flex-shrink-0">→</span>
