@@ -1,6 +1,7 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { bookingsApi, professionalsApi } from '../services/api';
+import { bookingsApi, professionalsApi, stripeConnectApi } from '../services/api';
 import { Booking, BOOKING_STATUS_LABELS, VERIFICATION_STATUS_LABELS } from '../types';
 import Badge from '../components/common/Badge';
 import LevelBadge from '../components/common/LevelBadge';
@@ -9,11 +10,14 @@ import { es } from 'date-fns/locale';
 import {
   CheckCircle, AlertCircle, ShieldCheck, CreditCard,
   Star, Briefcase, TrendingUp, Clock, ChevronRight, Calendar,
+  Wallet, ArrowDownToLine, RefreshCw,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import toast from 'react-hot-toast';
 
 export default function ProviderHub() {
   const { user } = useAuth();
+  const [payoutLoading, setPayoutLoading] = useState(false);
 
   const { data: profile, isLoading: loadingProfile } = useQuery({
     queryKey: ['my-profile'],
@@ -26,6 +30,28 @@ export default function ProviderHub() {
     queryFn: () => bookingsApi.list().then(r => r.data),
     enabled: !!user?.isProvider,
   });
+
+  const stripeStatus = profile?.stripeConnectStatus || 'NOT_STARTED';
+
+  const { data: balance, refetch: refetchBalance } = useQuery({
+    queryKey: ['stripe-balance'],
+    queryFn: () => stripeConnectApi.getBalance().then(r => r.data),
+    enabled: stripeStatus === 'ACTIVE',
+    staleTime: 60000,
+  });
+
+  async function handlePayout() {
+    setPayoutLoading(true);
+    try {
+      const { data } = await stripeConnectApi.requestPayout();
+      toast.success(`Retiro de ${data.amount}€ iniciado. Llegará en 1-2 días hábiles.`);
+      refetchBalance();
+    } catch (err: any) {
+      toast.error(err?.response?.data?.error || 'Error al solicitar el retiro');
+    } finally {
+      setPayoutLoading(false);
+    }
+  }
 
   if (!user?.isProvider) {
     return (
@@ -51,7 +77,6 @@ export default function ProviderHub() {
   const vs = profile?.verificationStatus;
   const isApproved = vs === 'APPROVED';
   const kycStatus = profile?.kycStatus || 'PENDING';
-  const stripeStatus = profile?.stripeConnectStatus || 'NOT_STARTED';
 
   const activeBookings = bookings.filter((b: Booking) =>
     b.professionalId === profile?.id &&
@@ -190,13 +215,46 @@ export default function ProviderHub() {
         </div>
       )}
 
+      {/* Stripe balance */}
+      {stripeStatus === 'ACTIVE' && (
+        <div className="mb-5 bg-gradient-to-r from-[#0A1628] to-[#1e3a5f] rounded-2xl p-5 text-white">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Wallet size={18} className="text-blue-300" />
+              <span className="text-sm font-semibold text-blue-100">Saldo disponible</span>
+            </div>
+            <button onClick={() => refetchBalance()} className="text-blue-300 hover:text-white transition-colors">
+              <RefreshCw size={14} />
+            </button>
+          </div>
+          <div className="flex items-end justify-between">
+            <div>
+              <p className="text-3xl font-black">
+                {balance ? `${balance.available.toFixed(2)}€` : '—'}
+              </p>
+              {balance && balance.pending > 0 && (
+                <p className="text-xs text-blue-300 mt-1">{balance.pending.toFixed(2)}€ pendiente de liberar</p>
+              )}
+            </div>
+            <button
+              onClick={handlePayout}
+              disabled={payoutLoading || !balance || balance.available <= 0}
+              className="flex items-center gap-1.5 px-4 py-2 bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl text-sm font-semibold disabled:opacity-40 transition-colors"
+            >
+              <ArrowDownToLine size={14} />
+              {payoutLoading ? '...' : 'Retirar'}
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="grid grid-cols-2 gap-3 mb-6">
-        <Link to="/opportunities" className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl p-4 flex flex-col gap-2 hover:border-blue-200 dark:hover:border-blue-900 transition-all active:scale-[0.98]">
+        <Link to="/opportunity-requests" className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl p-4 flex flex-col gap-2 hover:border-blue-200 dark:hover:border-blue-900 transition-all active:scale-[0.98]">
           <div className="w-10 h-10 bg-[#F0F4FF] dark:bg-[#0F1A2E] rounded-xl flex items-center justify-center">
             <TrendingUp size={18} className="text-[#0A1628] dark:text-[#F8FAFF]" />
           </div>
-          <p className="text-sm font-semibold text-[#0A1628] dark:text-[#F8FAFF]">Oportunidades</p>
-          <p className="text-xs text-gray-400 dark:text-gray-500">Trabajos cercanos a ti</p>
+          <p className="text-sm font-semibold text-[#0A1628] dark:text-[#F8FAFF]">Solicitudes</p>
+          <p className="text-xs text-gray-400 dark:text-gray-500">Ver pedidos de clientes</p>
         </Link>
         <Link to="/provider-onboarding" className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl p-4 flex flex-col gap-2 hover:border-blue-200 dark:hover:border-blue-900 transition-all active:scale-[0.98]">
           <div className="w-10 h-10 bg-[#F0F4FF] dark:bg-[#0F1A2E] rounded-xl flex items-center justify-center">
@@ -257,6 +315,11 @@ export default function ProviderHub() {
                 </div>
                 <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
                   <Badge label={BOOKING_STATUS_LABELS[b.status]} type="booking" status={b.status} />
+                  {b.isRecurring && (
+                    <span className="flex items-center gap-0.5 text-[10px] font-semibold text-blue-600 dark:text-blue-400">
+                      <RefreshCw size={9} />Recurrente
+                    </span>
+                  )}
                   <p className="text-sm font-bold text-[#0A1628] dark:text-[#F8FAFF]">{b.professionalAmount?.toFixed(0)}€</p>
                 </div>
               </Link>

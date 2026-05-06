@@ -1,3 +1,4 @@
+import 'express-async-errors';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -16,6 +17,7 @@ import notificationRoutes from './routes/notification.routes';
 import kycRoutes from './routes/kyc.routes';
 import stripeConnectRoutes from './routes/stripe-connect.routes';
 import availabilityRoutes from './routes/availability.routes';
+import opportunityRequestRoutes from './routes/opportunity-request.routes';
 let matchRoutes: any = null;
 let opportunityRoutes: any = null;
 try {
@@ -68,6 +70,7 @@ app.use('/api/stripe', stripeConnectRoutes);
 app.use('/api/professionals', availabilityRoutes);
 if (matchRoutes) app.use('/api', matchRoutes);
 if (opportunityRoutes) app.use('/api/opportunities', opportunityRoutes);
+app.use('/api/opportunity-requests', opportunityRequestRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ error: 'Ruta no encontrada' });

@@ -1,556 +1,536 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
-import {
-  MapPin, Search, X, Loader, Navigation,
-  CheckCircle2, ChevronRight, AlertCircle, Home, Building2,
-  Layers, Globe, Maximize2, Minimize2,
-} from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Search, MapPin, X, Loader2, Navigation, AlertCircle, Plus, Minus } from 'lucide-react';
+import toast from 'react-hot-toast';
 
-// ── Public interface ──────────────────────────────────────────────────────────
-export interface AddressResult {
-  lat: number; lng: number;
-  formatted: string; street: string;
-  city: string; postalCode: string; country: string;
+// ── Types ──────────────────────────────────────────────────────────────────────
+
+export interface AddressData {
+  street: string;
+  number: string;
+  postalCode: string;
+  city: string;
+  floor: string;
+  door: string;
+  buildingType: 'piso' | 'casa' | 'local';
+  lat: number;
+  lon: number;
+  formatted: string;
 }
 
 interface Props {
-  onConfirm: (r: AddressResult & { housingType: 'casa' | 'piso'; floor: string; door: string }) => void;
+  onConfirm: (address: AddressData) => void;
   initialAddress?: string;
+  className?: string;
 }
 
-// ── Constants ─────────────────────────────────────────────────────────────────
-const BCN = { lat: 41.3851, lng: 2.1734 };
-const BCN_BOUNDS = { minLat: 41.25, maxLat: 41.55, minLng: 1.90, maxLng: 2.35 };
-const VIEWBOX_D = 0.22;
-const MIN_GAP = 400;
-const LANG = 'ca,es;q=0.9,en;q=0.8';
+// ── Nominatim search (Provincia de Barcelona) ─────────────────────────────────
+// Nominatim returns much more precise street-level results than Photon for Spain.
+// viewbox = Barcelona province bounds, bounded=1 restricts results to this area.
 
-function inBcn(lat: number, lng: number) {
-  return lat >= BCN_BOUNDS.minLat && lat <= BCN_BOUNDS.maxLat &&
-    lng >= BCN_BOUNDS.minLng && lng <= BCN_BOUNDS.maxLng;
+interface NomResult {
+  lat: string;
+  lon: string;
+  display_name: string;
+  address: {
+    road?: string;
+    house_number?: string;
+    postcode?: string;
+    city?: string;
+    town?: string;
+    village?: string;
+    municipality?: string;
+    suburb?: string;
+    neighbourhood?: string;
+  };
 }
 
-// ── Pin styles (inject once) ──────────────────────────────────────────────────
+let _searchCtrl: AbortController | null = null;
+
+async function searchNominatim(query: string): Promise<NomResult[]> {
+  _searchCtrl?.abort();
+  _searchCtrl = new AbortController();
+  try {
+    // viewbox: lon_min,lat_max,lon_max,lat_min  (Barcelona province)
+    const params = new URLSearchParams({
+      q: query,
+      format: 'json',
+      addressdetails: '1',
+      limit: '6',
+      countrycodes: 'es',
+      'accept-language': 'es',
+      viewbox: '1.3,42.4,2.85,41.0',
+      bounded: '1',
+    });
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/search?${params}`,
+      { signal: _searchCtrl.signal, headers: { 'Accept-Language': 'es' } },
+    );
+    if (!res.ok) return [];
+    return await res.json();
+  } catch {
+    return [];
+  }
+}
+
+async function reverseNominatim(lat: number, lon: number): Promise<NomResult['address'] | null> {
+  try {
+    const params = new URLSearchParams({
+      lat: String(lat), lon: String(lon),
+      format: 'json', addressdetails: '1',
+      'accept-language': 'es',
+    });
+    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?${params}`);
+    if (!res.ok) return null;
+    const json = await res.json();
+    return json.address ?? null;
+  } catch {
+    return null;
+  }
+}
+
+// ── CSS injection ─────────────────────────────────────────────────────────────
+
 let _stylesOk = false;
 function injectStyles() {
-  if (_stylesOk) return;
+  if (_stylesOk || typeof document === 'undefined') return;
   _stylesOk = true;
+
+  if (!document.getElementById('leaflet-css')) {
+    const link = document.createElement('link');
+    link.id = 'leaflet-css';
+    link.rel = 'stylesheet';
+    link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+    document.head.appendChild(link);
+  }
+
   const s = document.createElement('style');
   s.textContent = `
-    .vpin{position:relative;width:28px;height:36px;display:flex;flex-direction:column;align-items:center;filter:drop-shadow(0 4px 10px rgba(15,40,80,.4));}
-    .vpin svg{animation:vpinDrop .45s cubic-bezier(.34,1.56,.64,1) both;}
-    .vpin-shadow{width:9px;height:3px;background:rgba(0,0,0,.15);border-radius:50%;margin-top:-1px;filter:blur(2px);animation:vpinShadow .45s ease both;}
-    .vpin-pulse{position:absolute;bottom:3px;left:50%;transform:translateX(-50%);width:5px;height:5px;border-radius:50%;background:rgba(15,40,80,.25);animation:vpinPulse 2.2s ease-out 1.4s infinite;}
-    @keyframes vpinDrop{0%{transform:translateY(-20px) scale(.5);opacity:0}60%{transform:translateY(3px) scale(1.06);opacity:1}80%{transform:translateY(-2px) scale(.98)}100%{transform:translateY(0) scale(1);opacity:1}}
-    @keyframes vpinShadow{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
-    @keyframes vpinPulse{0%{transform:translateX(-50%) scale(1);opacity:.55}100%{transform:translateX(-50%) scale(4.5);opacity:0}}
-    .leaflet-control-zoom{border:none!important;box-shadow:0 2px 16px rgba(0,0,0,.1)!important;border-radius:14px!important;overflow:hidden;}
-    .leaflet-control-zoom a{background:rgba(255,255,255,.96)!important;border:none!important;color:#374151!important;font-weight:700;width:34px!important;height:34px!important;line-height:34px!important;transition:background .15s;}
-    .leaflet-control-zoom a:hover{background:#eff6ff!important;color:#1e40af!important;}
-    .leaflet-control-attribution{font-size:9px!important;background:rgba(255,255,255,.6)!important;padding:1px 5px!important;border-radius:4px 0 0 0!important;}
+    /* ── Velora pin marker ── */
+    .velora-pin {
+      width: 32px; height: 44px;
+      position: relative;
+      filter: drop-shadow(0 4px 10px rgba(10,22,40,0.35));
+      cursor: grab;
+    }
+    .velora-pin:active { cursor: grabbing; }
+    .velora-pin-head {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: #fff;
+      border: 3px solid #0A1628;
+      display: flex; align-items: center; justify-content: center;
+      position: relative; z-index: 1;
+    }
+    .velora-pin-dot {
+      width: 12px; height: 12px; border-radius: 50%;
+      background: #2563EB;
+    }
+    .velora-pin-tail {
+      position: absolute; bottom: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 0; height: 0;
+      border-left: 7px solid transparent;
+      border-right: 7px solid transparent;
+      border-top: 14px solid #0A1628;
+      margin-top: -3px;
+    }
+    /* ── Map chrome ── */
+    .leaflet-control-attribution {
+      font-size: 9px !important;
+      background: rgba(255,255,255,.75) !important;
+      backdrop-filter: blur(4px);
+      border-radius: 6px 0 0 0 !important;
+      padding: 2px 6px !important;
+    }
+    .leaflet-container { cursor: crosshair !important; font-family: inherit; }
+    .leaflet-control-attribution a { color: #6B7280 !important; }
   `;
   document.head.appendChild(s);
 }
 
-const PIN_HTML = `
-<div class="vpin">
-  <svg width="28" height="35" viewBox="0 0 24 24" fill="none">
-    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="#0f2850" stroke="white" stroke-width="1"/>
-    <circle cx="12" cy="9" r="3.2" fill="white"/>
-    <circle cx="12" cy="9" r="1.6" fill="#0f2850"/>
-  </svg>
-  <div class="vpin-shadow"></div>
-  <div class="vpin-pulse"></div>
-</div>`;
+const MARKER_HTML = `
+  <div class="velora-pin">
+    <div class="velora-pin-head"><div class="velora-pin-dot"></div></div>
+    <div class="velora-pin-tail"></div>
+  </div>`;
 
-// ── Nominatim helpers ─────────────────────────────────────────────────────────
-interface NomResult {
-  place_id: number; lat: string; lon: string; display_name: string;
-  address: {
-    road?: string; house_number?: string; city?: string; town?: string;
-    village?: string; municipality?: string; postcode?: string;
-    country?: string; suburb?: string; neighbourhood?: string;
-  };
-}
+// ── Barcelona province bounds ─────────────────────────────────────────────────
 
-let _ctrl: AbortController | null = null;
-let _lastTs = 0;
-
-const SYNONYMS: Array<[RegExp, string]> = [
-  [/^carrer\b/i, 'Calle'], [/^avinguda\b/i, 'Avenida'], [/^passeig\b/i, 'Paseo'],
-  [/^plaça\b/i, 'Plaza'], [/^travessera\b/i, 'Travesía'], [/^camí\b/i, 'Camino'],
-  [/^calle\b/i, 'Carrer'], [/^avenida\b/i, 'Avinguda'], [/^paseo\b/i, 'Passeig'],
-  [/^plaza\b/i, 'Plaça'], [/^c\.\s*/i, 'Carrer '], [/^c\/\s*/i, 'Carrer '],
-  [/^av\.\s*/i, 'Avinguda '], [/^pg\.\s*/i, 'Passeig '],
-];
-
-function withBcn(q: string) { return /barcelona/i.test(q) ? q : `${q}, Barcelona`; }
-function dedup(s: string) { return s.replace(/([a-záéíóúàèìòùüïç])\1+/gi, '$1'); }
-function synonym(q: string): string | null {
-  for (const [re, r] of SYNONYMS) if (re.test(q)) return withBcn(`${r} ${q.replace(re,'').trim()}`);
-  return null;
-}
-
-function urlFree(q: string) {
-  const vb = `${BCN.lng-VIEWBOX_D},${BCN.lat+VIEWBOX_D},${BCN.lng+VIEWBOX_D},${BCN.lat-VIEWBOX_D}`;
-  return `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&addressdetails=1&limit=8&countrycodes=es&viewbox=${vb}&bounded=0`;
-}
-function urlStruct(street: string) {
-  return `https://nominatim.openstreetmap.org/search?street=${encodeURIComponent(street)}&city=Barcelona&country=Spain&format=json&addressdetails=1&limit=8`;
-}
-
-async function nomFetch(url: string, signal: AbortSignal): Promise<NomResult[]> {
-  const gap = MIN_GAP - (Date.now() - _lastTs);
-  if (gap > 0) await new Promise<void>(r => setTimeout(r, gap));
-  if (signal.aborted) return [];
-  _lastTs = Date.now();
-  try {
-    const res = await fetch(url, { headers: { 'Accept-Language': LANG }, signal });
-    if (!res.ok || signal.aborted) return [];
-    return res.json();
-  } catch { return []; }
-}
-
-function score(item: NomResult, raw: string) {
-  const q = raw.toLowerCase().replace(/,.*$/, '').trim();
-  const road = (item.address.road || '').toLowerCase();
-  const disp = item.display_name.toLowerCase();
-  let s = 0;
-  if (road === q) s += 100;
-  else if (road.startsWith(q)) s += 80;
-  else if (road.includes(q)) s += 55;
-  else if (disp.includes(q)) s += 30;
-  const words = q.split(/\s+/).filter(w => w.length > 2);
-  for (const w of words) {
-    if (road.includes(w)) s += 15;
-    else if (disp.includes(w)) s += 7;
-    for (const rw of road.split(/\s+/)) if (rw.startsWith(w) && w.length >= 3) { s += 12; break; }
-  }
-  const num = q.match(/\d+/)?.[0];
-  if (num && item.address.house_number === num) s += 20;
-  if (disp.includes('barcelona')) s += 5;
-  return s;
-}
+const BCN_CENTER: [number, number] = [41.3874, 2.1686];
+const BCN_BOUNDS: [[number, number], [number, number]] = [[41.0, 1.3], [42.4, 2.85]];
 
 // ── Component ─────────────────────────────────────────────────────────────────
-export default function AddressMapPicker({ onConfirm, initialAddress }: Props) {
-  const mapDiv = useRef<HTMLDivElement>(null);
+
+export default function AddressMapPicker({ onConfirm, initialAddress, className }: Props) {
+  const mapDivRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<any>(null);
   const markerRef = useRef<any>(null);
-  const streetRef = useRef<any>(null);
-  const satRef = useRef<any>(null);
-  const satLabelsRef = useRef<any>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
   const debRef = useRef<ReturnType<typeof setTimeout>>();
-  const userPos = useRef<{ lat: number; lng: number } | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const [query, setQuery] = useState(initialAddress || '');
   const [suggestions, setSuggestions] = useState<NomResult[]>([]);
   const [searching, setSearching] = useState(false);
-  const [reversing, setReversing] = useState(false);
   const [locating, setLocating] = useState(false);
-  const [selected, setSelected] = useState<AddressResult | null>(null);
-  const [housingType, setHousingType] = useState<'casa' | 'piso'>('casa');
-  const [floor, setFloor] = useState('');
-  const [door, setDoor] = useState('');
-  const [mode, setMode] = useState<'street' | 'satellite'>('street');
-  const [fullscreen, setFullscreen] = useState(false);
-  const [outsideBcn, setOutsideBcn] = useState(false);
+  const [mapReady, setMapReady] = useState(false);
   const [noResults, setNoResults] = useState(false);
 
-  // Reverse geocode via Nominatim
-  async function reverseGeocode(lat: number, lng: number) {
-    if (!inBcn(lat, lng)) { setOutsideBcn(true); setSelected(null); return; }
-    setOutsideBcn(false);
-    setReversing(true);
-    try {
-      const res = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1&zoom=18`,
-        { headers: { 'Accept-Language': LANG } },
-      );
-      const d = await res.json();
-      if (d?.address) {
-        const r = toResult(lat, lng, d.display_name, d.address);
-        setSelected(r); setQuery(shortAddr(r)); setSuggestions([]);
-      } else throw new Error();
-    } catch {
-      const r: AddressResult = { lat, lng, formatted: `${lat.toFixed(5)}, ${lng.toFixed(5)}, Barcelona`, street: `${lat.toFixed(4)}, ${lng.toFixed(4)}`, city: 'Barcelona', postalCode: '', country: 'España' };
-      setSelected(r); setQuery(`${lat.toFixed(4)}, ${lng.toFixed(4)}`); setSuggestions([]);
-    } finally { setReversing(false); }
-  }
+  const [street, setStreet] = useState('');
+  const [number, setNumber] = useState('');
+  const [postalCode, setPostalCode] = useState('');
+  const [city, setCity] = useState('');
+  const [floor, setFloor] = useState('');
+  const [door, setDoor] = useState('');
+  const [buildingType, setBuildingType] = useState<'piso' | 'casa' | 'local'>('casa');
+  const [coords, setCoords] = useState<{ lat: number; lon: number } | null>(null);
 
-  function toResult(lat: number, lng: number, display: string, a: NomResult['address']): AddressResult {
-    return { lat, lng, formatted: display, street: [a.road, a.house_number].filter(Boolean).join(' ') || '', city: a.city || a.town || a.village || a.municipality || '', postalCode: a.postcode || '', country: a.country || '' };
-  }
-  function shortAddr(r: AddressResult) {
-    if (r.street && r.city) return `${r.street}, ${r.city}`;
-    return r.formatted.split(',').slice(0, 3).join(',').trim();
-  }
+  const canConfirm = !!(street.trim() && number.trim() && city.trim() && coords);
 
-  // Map init
+  // ── Map init ─────────────────────────────────────────────────────────────────
+
   useEffect(() => {
     injectStyles();
-    if (!mapDiv.current || mapRef.current) return;
+    if (!mapDivRef.current || mapRef.current) return;
 
-    // Silent geolocation for bias
-    navigator.geolocation?.getCurrentPosition(
-      ({ coords }) => { userPos.current = { lat: coords.latitude, lng: coords.longitude }; },
-      () => {}, { enableHighAccuracy: false, timeout: 5000, maximumAge: 60000 },
-    );
+    let cancelled = false;
 
-    import('leaflet').then(L => {
-      if (!mapDiv.current) return;
+    import('leaflet').then(({ default: L }) => {
+      if (cancelled || !mapDivRef.current || mapRef.current) return;
 
-      const icon = L.divIcon({ className: '', html: PIN_HTML, iconSize: [28, 36], iconAnchor: [14, 33] });
-
-      // CARTO Positron — clean, premium, minimal (closest to premium styled map)
-      streetRef.current = L.tileLayer(
-        'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-        { attribution: '© <a href="https://carto.com">CARTO</a>', subdomains: 'abcd', maxZoom: 20 },
-      );
-
-      satRef.current = L.tileLayer(
-        'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-        { attribution: '© Esri', maxZoom: 19 },
-      );
-      satLabelsRef.current = L.tileLayer(
-        'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
-        { maxZoom: 19, opacity: 0.9 },
-      );
-
-      const map = L.map(mapDiv.current, {
-        center: [BCN.lat, BCN.lng], zoom: 14,
-        zoomControl: false, attributionControl: true,
+      const map = L.map(mapDivRef.current, {
+        center: BCN_CENTER,
+        zoom: 12,
+        zoomControl: false,
+        attributionControl: true,
+        maxBounds: BCN_BOUNDS,
+        maxBoundsViscosity: 0.85,
+        minZoom: 9,
       });
-      streetRef.current.addTo(map);
-      L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-      const marker = L.marker([BCN.lat, BCN.lng], { draggable: true, icon }).addTo(map);
+      // CartoDB Positron — clean, premium, light tiles
+      L.tileLayer(
+        'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+        {
+          attribution:
+            '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> © <a href="https://carto.com/attributions">CARTO</a>',
+          subdomains: 'abcd',
+          maxZoom: 19,
+        },
+      ).addTo(map);
+
+      const icon = L.divIcon({
+        className: '',
+        html: MARKER_HTML,
+        iconSize: [32, 44],
+        iconAnchor: [16, 44],
+      });
+
+      const marker = L.marker(BCN_CENTER, { icon, draggable: true }).addTo(map);
+
       mapRef.current = map;
       markerRef.current = marker;
+      setMapReady(true);
 
-      marker.on('dragend', () => {
-        const p = marker.getLatLng();
-        reverseGeocode(p.lat, p.lng);
+      marker.on('dragend', async () => {
+        const { lat, lng } = marker.getLatLng();
+        map.flyTo([lat, lng], Math.max(map.getZoom(), 16), { duration: 0.4 });
+        const addr = await reverseNominatim(lat, lng);
+        if (addr) applyAddress(addr, lat, lng);
       });
-      map.on('click', (e: any) => {
-        marker.setLatLng(e.latlng);
-        reverseGeocode(e.latlng.lat, e.latlng.lng);
+
+      map.on('click', async (e: any) => {
+        const { lat, lng } = e.latlng;
+        marker.setLatLng([lat, lng]);
+        map.flyTo([lat, lng], Math.max(map.getZoom(), 16), { duration: 0.4 });
+        const addr = await reverseNominatim(lat, lng);
+        if (addr) applyAddress(addr, lat, lng);
       });
     });
 
-    return () => { _ctrl?.abort(); mapRef.current?.remove(); mapRef.current = null; };
-  }, []);
+    return () => {
+      cancelled = true;
+      _searchCtrl?.abort();
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+        markerRef.current = null;
+      }
+    };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  useEffect(() => {
-    const t = setTimeout(() => mapRef.current?.invalidateSize(), 80);
-    return () => clearTimeout(t);
-  }, [fullscreen]);
+  // ── Helpers ───────────────────────────────────────────────────────────────────
 
-  function switchMode(m: 'street' | 'satellite') {
-    const map = mapRef.current; if (!map) return;
-    if (m === 'satellite') {
-      streetRef.current && map.removeLayer(streetRef.current);
-      satRef.current?.addTo(map); satLabelsRef.current?.addTo(map);
-    } else {
-      satRef.current && map.removeLayer(satRef.current);
-      satLabelsRef.current && map.removeLayer(satLabelsRef.current);
-      streetRef.current?.addTo(map);
-    }
-    setMode(m);
+  function applyAddress(a: NomResult['address'], lat: number, lon: number) {
+    setStreet(a?.road || '');
+    setNumber(a?.house_number || '');
+    setPostalCode(a?.postcode || '');
+    setCity(a?.city || a?.town || a?.village || a?.municipality || '');
+    setCoords({ lat, lon });
+    setQuery([a?.road, a?.house_number].filter(Boolean).join(', ') || '');
+    setSuggestions([]);
   }
 
-  // Search (5 strategies)
-  const doSearch = useCallback(async (raw: string) => {
-    const q = raw.trim();
-    if (q.length < 2) { setSuggestions([]); setNoResults(false); return; }
-    _ctrl?.abort(); _ctrl = new AbortController();
-    const { signal } = _ctrl;
-    setSearching(true); setNoResults(false);
+  function panTo(lat: number, lon: number, zoom = 16) {
+    if (!mapRef.current || !markerRef.current) return;
+    markerRef.current.setLatLng([lat, lon]);
+    mapRef.current.flyTo([lat, lon], zoom, { duration: 0.7 });
+  }
 
-    const seen = new Set<number>(); const pool: NomResult[] = [];
-    const absorb = (items: NomResult[]) => items.forEach(i => { if (!seen.has(i.place_id)) { seen.add(i.place_id); pool.push(i); } });
+  // ── Search ────────────────────────────────────────────────────────────────────
 
-    try {
-      absorb(await nomFetch(urlFree(withBcn(q)), signal));
-      if (signal.aborted) return;
-      if (!pool.length) {
-        const syn = synonym(q);
-        if (syn) { absorb(await nomFetch(urlFree(syn), signal)); if (signal.aborted) return; }
-      }
-      if (!pool.length) {
-        const bare = q.replace(/,\s*barcelona\s*$/i, '').replace(/^\w+\s+/, '').trim() || q;
-        absorb(await nomFetch(urlStruct(bare), signal)); if (signal.aborted) return;
-      }
-      if (!pool.length) {
-        const fixed = dedup(q.replace(/,\s*barcelona\s*$/i, '').trim());
-        if (fixed !== q.replace(/,\s*barcelona\s*$/i,'').trim()) { absorb(await nomFetch(urlFree(withBcn(fixed)), signal)); if (signal.aborted) return; }
-      }
-      if (!pool.length) {
-        const tokens = q.replace(/,\s*barcelona\s*$/i,'').trim().split(/\s+/);
-        if (tokens.length > 1) { absorb(await nomFetch(urlFree(withBcn(tokens.slice(0,-1).join(' '))), signal)); if (signal.aborted) return; }
-      }
-
-      const inB = pool.filter(i => inBcn(parseFloat(i.lat), parseFloat(i.lon)));
-      const cands = inB.length ? inB : pool.slice(0, 4);
-      const up = userPos.current;
-      const ranked = cands
-        .map(i => ({ i, s: score(i, q), d: up ? Math.hypot(parseFloat(i.lat)-up.lat, parseFloat(i.lon)-up.lng) : 999 }))
-        .sort((a,b) => Math.abs(b.s-a.s) > 8 ? b.s-a.s : a.d-b.d)
-        .map(x => x.i).slice(0, 6);
-
-      setSuggestions(ranked);
-      setNoResults(ranked.length === 0 && q.length >= 3);
-    } catch { setSuggestions([]); }
-    finally { if (!signal.aborted) setSearching(false); }
-  }, []);
-
-  function onChange(val: string) {
-    setQuery(val); setNoResults(false);
+  function onQueryChange(val: string) {
+    setQuery(val);
+    setNoResults(false);
     if (!val.trim()) { setSuggestions([]); return; }
     clearTimeout(debRef.current);
-    debRef.current = setTimeout(() => doSearch(val), 300);
+    debRef.current = setTimeout(async () => {
+      if (val.trim().length < 3) return;
+      setSearching(true);
+      const results = await searchNominatim(val);
+      setSuggestions(results);
+      setNoResults(results.length === 0);
+      setSearching(false);
+    }, 400);
   }
 
-  function pick(s: NomResult) {
-    const lat = parseFloat(s.lat), lng = parseFloat(s.lon);
-    if (!inBcn(lat, lng)) { setOutsideBcn(true); setSuggestions([]); return; }
-    setOutsideBcn(false); setNoResults(false);
-    const r = toResult(lat, lng, s.display_name, s.address);
-    setSelected(r); setQuery(shortAddr(r)); setSuggestions([]);
-    userPos.current = { lat, lng };
-    if (mapRef.current && markerRef.current) {
-      markerRef.current.setLatLng([lat, lng]);
-      mapRef.current.flyTo([lat, lng], 17, { duration: 1, easeLinearity: 0.3 });
-    }
+  function pickSuggestion(r: NomResult) {
+    const lat = parseFloat(r.lat);
+    const lon = parseFloat(r.lon);
+    const a = r.address;
+    setStreet(a.road || '');
+    setNumber(a.house_number || '');
+    setPostalCode(a.postcode || '');
+    setCity(a.city || a.town || a.village || a.municipality || '');
+    setCoords({ lat, lon });
+    setSuggestions([]);
+    setNoResults(false);
+    setQuery([a.road, a.house_number].filter(Boolean).join(', ') || r.display_name.split(',')[0]);
+    panTo(lat, lon, 17);
   }
 
-  function geolocate() {
-    if (!navigator.geolocation) return;
+  function formatSuggestion(r: NomResult): { main: string; sub: string } {
+    const a = r.address;
+    const main = [a.road, a.house_number].filter(Boolean).join(', ')
+      || a.suburb || a.neighbourhood
+      || r.display_name.split(',')[0];
+    const sub = [a.postcode, a.city || a.town || a.village || a.municipality]
+      .filter(Boolean).join(' · ');
+    return { main, sub };
+  }
+
+  // ── GPS ───────────────────────────────────────────────────────────────────────
+
+  async function handleGPS() {
+    if (!navigator.geolocation) { toast.error('Tu navegador no soporta geolocalización'); return; }
     setLocating(true);
     navigator.geolocation.getCurrentPosition(
-      async ({ coords: { latitude: lat, longitude: lng } }) => {
-        if (!inBcn(lat, lng)) { setOutsideBcn(true); setLocating(false); return; }
-        setOutsideBcn(false);
-        userPos.current = { lat, lng };
-        markerRef.current?.setLatLng([lat, lng]);
-        mapRef.current?.flyTo([lat, lng], 17, { duration: 1.2, easeLinearity: 0.25 });
-        await reverseGeocode(lat, lng);
+      async ({ coords: { latitude: lat, longitude: lon } }) => {
+        panTo(lat, lon, 17);
+        const addr = await reverseNominatim(lat, lon);
+        if (addr) applyAddress(addr, lat, lon);
         setLocating(false);
       },
-      () => setLocating(false),
+      () => { toast.error('Activa los permisos de ubicación en tu navegador'); setLocating(false); },
       { enableHighAccuracy: true, timeout: 8000 },
     );
   }
 
-  function confirm() {
-    if (!selected) return;
-    if (housingType === 'piso' && !floor.trim()) return;
-    onConfirm({ ...selected, housingType, floor, door });
+  // ── Confirm ───────────────────────────────────────────────────────────────────
+
+  function handleConfirm() {
+    if (!canConfirm || !coords) return;
+    const extra =
+      buildingType === 'piso' && floor
+        ? `Piso ${floor}${door ? ` · ${door}` : ''}`
+        : buildingType === 'local' ? 'Local' : '';
+    const formatted = [`${street} ${number}`.trim(), postalCode, city, extra]
+      .filter(Boolean).join(', ');
+    onConfirm({ street, number, postalCode, city, floor, door, buildingType, lat: coords.lat, lon: coords.lon, formatted });
   }
 
-  const canConfirm = selected && (housingType === 'casa' || floor.trim().length > 0);
-  const mapH = fullscreen ? '100%' : '320px';
+  // ── Render ────────────────────────────────────────────────────────────────────
 
   return (
-    <div className={fullscreen
-      ? 'fixed inset-0 z-[2000] flex flex-col bg-white dark:bg-gray-950'
-      : 'rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-700 shadow-xl'
-    }>
+    <div className={`space-y-3 ${className || ''}`}>
 
-      {/* ── MAP ── */}
-      <div className="relative flex-1" style={{ height: fullscreen ? undefined : mapH }}>
-
-        {/* Search bar */}
-        <div className="absolute top-3 left-3 right-3 z-[1001]">
-          <div className={`flex items-center gap-2 px-3.5 py-2.5 rounded-2xl shadow-2xl transition-all duration-200 ${
-            suggestions.length > 0
-              ? 'bg-white dark:bg-gray-900 border-2 border-primary-500 ring-4 ring-primary-100 dark:ring-primary-900/30'
-              : 'bg-white/96 dark:bg-gray-900/96 backdrop-blur-xl border border-gray-200/80 dark:border-gray-700'
-          }`}>
-            <Search size={15} className="text-primary-500 flex-shrink-0" />
-            <input
-              ref={inputRef}
-              value={query}
-              onChange={e => onChange(e.target.value)}
-              placeholder="Busca tu calle o barrio..."
-              className="flex-1 bg-transparent text-sm font-medium text-gray-900 dark:text-white outline-none placeholder-gray-400 dark:placeholder-gray-500 min-w-0"
-              autoComplete="off"
-            />
-            {(searching || reversing) && <Loader size={13} className="animate-spin text-primary-400 flex-shrink-0" />}
-            {query && !searching && !reversing && (
-              <button onClick={() => { setQuery(''); setSuggestions([]); setSelected(null); setNoResults(false); inputRef.current?.focus(); }}
-                className="p-0.5 rounded-full text-gray-300 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
-                <X size={13} />
-              </button>
-            )}
-            <button type="button" onClick={geolocate} disabled={locating}
-              className="flex items-center gap-1 pl-2.5 border-l border-gray-200 dark:border-gray-700 text-primary-500 hover:text-primary-700 disabled:opacity-40 transition-colors flex-shrink-0">
-              <Navigation size={13} className={locating ? 'animate-spin' : ''} />
-              <span className="text-[11px] font-bold hidden sm:inline tracking-wide">GPS</span>
+      {/* Search */}
+      <div className="relative">
+        <div className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus-within:border-[#2563EB] focus-within:ring-2 focus-within:ring-[#2563EB]/15 transition-all">
+          <Search size={15} className="text-gray-400 flex-shrink-0" />
+          <input
+            ref={inputRef}
+            type="text"
+            value={query}
+            onChange={e => onQueryChange(e.target.value)}
+            placeholder="Busca tu calle en Barcelona..."
+            autoComplete="off"
+            className="flex-1 bg-transparent text-sm text-[#0A1628] dark:text-white outline-none placeholder-gray-400 dark:placeholder-gray-500 min-w-0"
+          />
+          {searching && <Loader2 size={14} className="animate-spin text-[#2563EB] flex-shrink-0" />}
+          {query && !searching && (
+            <button type="button"
+              onClick={() => { setQuery(''); setSuggestions([]); setNoResults(false); inputRef.current?.focus(); }}
+              className="text-gray-300 hover:text-gray-500 dark:hover:text-gray-400 transition-colors flex-shrink-0 p-0.5"
+            >
+              <X size={13} />
             </button>
-          </div>
-
-          {/* Suggestions */}
-          {suggestions.length > 0 && (
-            <div className="mt-2 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden">
-              {suggestions.map((s, i) => {
-                const a = s.address;
-                const main = [a.road, a.house_number].filter(Boolean).join(' ') || a.neighbourhood || a.suburb || s.display_name.split(',')[0];
-                const sub = [a.city || a.town || a.village || a.municipality, a.postcode].filter(Boolean).join(' · ') || s.display_name.split(',').slice(1, 3).join(',').trim();
-                return (
-                  <button key={s.place_id} onClick={() => pick(s)}
-                    className={`w-full text-left px-4 py-3 flex items-center gap-3 hover:bg-primary-50 dark:hover:bg-primary-900/20 active:bg-primary-100 transition-colors ${
-                      i < suggestions.length - 1 ? 'border-b border-gray-50 dark:border-gray-800' : ''
-                    }`}>
-                    <div className="w-8 h-8 rounded-xl bg-primary-50 dark:bg-primary-900/40 flex items-center justify-center flex-shrink-0">
-                      <MapPin size={13} className="text-primary-500" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{main}</p>
-                      <p className="text-xs text-gray-400 dark:text-gray-500 truncate mt-0.5">{sub}</p>
-                    </div>
-                    <ChevronRight size={13} className="text-gray-300 dark:text-gray-600 flex-shrink-0" />
-                  </button>
-                );
-              })}
-            </div>
           )}
-
-          {/* No results */}
-          {noResults && !searching && query.length >= 3 && (
-            <div className="mt-2 bg-white dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-800 px-4 py-3 flex items-center gap-3">
-              <AlertCircle size={14} className="text-amber-400 flex-shrink-0" />
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                <span className="font-semibold text-gray-700 dark:text-gray-300">Sin resultados</span>
-                {' '}— prueba con el nombre de la calle sin número, o toca el mapa.
-              </p>
-            </div>
-          )}
-
-          {/* Outside Barcelona */}
-          {outsideBcn && (
-            <div className="mt-2 bg-red-50 dark:bg-red-900/20 rounded-2xl shadow-lg border border-red-100 dark:border-red-800 px-4 py-3 flex items-center gap-3">
-              <AlertCircle size={14} className="text-red-400 flex-shrink-0" />
-              <p className="text-xs text-red-600 dark:text-red-400">VELORA solo opera en Barcelona y área metropolitana.</p>
-            </div>
-          )}
+          <div className="w-px h-4 bg-gray-200 dark:bg-gray-600 flex-shrink-0" />
+          <button type="button" onClick={handleGPS} disabled={locating}
+            className="flex items-center gap-1.5 text-xs font-semibold text-[#0A1628] dark:text-[#F8FAFF] hover:text-[#2563EB] dark:hover:text-[#3B82F6] disabled:opacity-40 transition-colors flex-shrink-0 pl-1 min-h-[44px]"
+          >
+            <Navigation size={13} className={locating ? 'animate-spin' : ''} />
+            <span className="hidden sm:inline">Mi ubicación</span>
+          </button>
         </div>
 
-        {/* Map canvas */}
-        <div ref={mapDiv} className="absolute inset-0 z-[1]" />
-
-        {/* Bottom controls */}
-        <div className="absolute bottom-10 left-3 z-[1000] flex gap-1.5">
-          {(['street', 'satellite'] as const).map(m => (
-            <button key={m} type="button" onClick={() => switchMode(m)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-bold shadow-lg border transition-all ${
-                mode === m
-                  ? 'bg-primary-600 text-white border-primary-700 shadow-primary-200/50 dark:shadow-primary-900/50'
-                  : 'bg-white/95 dark:bg-gray-900/95 text-gray-600 dark:text-gray-400 border-gray-200/60 dark:border-gray-700 hover:border-primary-300 backdrop-blur-md'
-              }`}>
-              {m === 'street' ? <><Layers size={11} />Mapa</> : <><Globe size={11} />Satélite</>}
-            </button>
-          ))}
-        </div>
-
-        <button type="button" onClick={() => setFullscreen(f => !f)}
-          className="absolute bottom-10 right-14 z-[1000] w-8 h-8 flex items-center justify-center rounded-xl bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border border-gray-200/60 dark:border-gray-700 shadow-lg text-gray-500 hover:text-primary-600 dark:hover:text-primary-400 transition-all">
-          {fullscreen ? <Minimize2 size={13} /> : <Maximize2 size={13} />}
-        </button>
-
-        {/* Hint */}
-        {!selected && (
-          <div className="absolute bottom-2 left-0 right-0 z-[1000] flex justify-center pointer-events-none">
-            <div className="px-3 py-1 rounded-full bg-black/30 backdrop-blur-sm text-white text-[10px] font-medium tracking-wide">
-              Toca el mapa · arrastra el pin · o busca arriba
-            </div>
+        {/* Suggestions */}
+        {suggestions.length > 0 && (
+          <div className="absolute top-full mt-1.5 left-0 right-0 bg-white dark:bg-[#0F1A2E] rounded-xl shadow-2xl border border-gray-100 dark:border-[#1E2D45] overflow-hidden z-[1000]">
+            {suggestions.map((r, i) => {
+              const { main, sub } = formatSuggestion(r);
+              return (
+                <button key={`${r.lat}-${r.lon}-${i}`} type="button" onClick={() => pickSuggestion(r)}
+                  className={`w-full text-left px-4 py-3 flex items-center gap-3 hover:bg-[#F8FAFF] dark:hover:bg-[#1E2D45] transition-colors min-h-[44px] ${
+                    i < suggestions.length - 1 ? 'border-b border-gray-50 dark:border-[#1E2D45]' : ''
+                  }`}
+                >
+                  <MapPin size={14} className="text-[#2563EB] dark:text-[#3B82F6] flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-[#0A1628] dark:text-[#F8FAFF] truncate">{main}</p>
+                    {sub && <p className="text-xs text-gray-400 dark:text-[#94A3B8] mt-0.5 truncate">{sub}</p>}
+                  </div>
+                </button>
+              );
+            })}
           </div>
         )}
-      </div>
 
-      {/* ── DETAILS PANEL ── */}
-      <div className={`bg-white dark:bg-gray-900 ${fullscreen ? 'border-t border-gray-100 dark:border-gray-800 overflow-y-auto max-h-[44vh]' : ''}`}>
-        {selected ? (
-          <>
-            {/* Selected address card */}
-            <div className="px-4 pt-4">
-              <div className="flex items-start gap-3 p-4 bg-primary-50 dark:bg-primary-950/50 rounded-2xl border border-primary-100 dark:border-primary-900/60">
-                <div className="w-9 h-9 bg-primary-600 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm">
-                  <CheckCircle2 size={15} className="text-white" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-[10px] font-bold text-primary-500 dark:text-primary-400 uppercase tracking-widest mb-0.5">
-                    Ubicación seleccionada
-                  </p>
-                  <p className="text-sm font-semibold text-gray-900 dark:text-white leading-snug">
-                    {selected.street || selected.city || selected.formatted.split(',')[0]}
-                  </p>
-                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
-                    {[selected.postalCode, selected.city].filter(Boolean).join(' · ')}
-                  </p>
-                </div>
-                <button onClick={() => { setSelected(null); setQuery(''); inputRef.current?.focus(); }}
-                  className="p-1 rounded-lg text-gray-300 hover:text-gray-500 dark:hover:text-gray-400 transition-colors flex-shrink-0">
-                  <X size={14} />
-                </button>
-              </div>
-            </div>
-
-            {/* Housing type */}
-            <div className="px-4 pt-4">
-              <p className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">Tipo de vivienda</p>
-              <div className="grid grid-cols-2 gap-2.5 mb-4">
-                {([['casa', 'Casa / Chalet', Home], ['piso', 'Piso / Apartamento', Building2]] as const).map(([type, label, Icon]) => (
-                  <button key={type} type="button" onClick={() => setHousingType(type)}
-                    className={`flex items-center gap-2.5 px-4 py-3 rounded-xl border-2 text-sm font-semibold transition-all ${
-                      housingType === type
-                        ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 shadow-sm'
-                        : 'border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-600'
-                    }`}>
-                    <Icon size={15} />
-                    <span className="truncate">{label}</span>
-                  </button>
-                ))}
-              </div>
-
-              {housingType === 'piso' && (
-                <div className="grid grid-cols-2 gap-3 mb-4">
-                  {[['Piso', floor, setFloor, '1º, 2º...', true], ['Puerta', door, setDoor, 'A, B, 1...', false]].map(([label, val, setter, ph, req]) => (
-                    <div key={label as string}>
-                      <label className="block text-xs font-semibold text-gray-400 dark:text-gray-500 mb-1.5 uppercase tracking-wide">
-                        {label as string} {req && <span className="text-red-400">*</span>}
-                      </label>
-                      <input
-                        value={val as string}
-                        onChange={e => (setter as any)(e.target.value)}
-                        placeholder={ph as string}
-                        className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
-                      />
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Confirm button */}
-            <div className="px-4 pb-4">
-              <button type="button" onClick={confirm} disabled={!canConfirm}
-                className="w-full py-3.5 bg-primary-600 text-white font-semibold rounded-xl hover:bg-primary-700 active:bg-primary-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm shadow-primary-200 dark:shadow-primary-900/40 text-sm tracking-wide">
-                Confirmar dirección
-              </button>
-            </div>
-          </>
-        ) : (
-          <div className="px-4 py-6 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gray-50 dark:bg-gray-800 flex items-center justify-center flex-shrink-0 border border-gray-100 dark:border-gray-700">
-              <MapPin size={18} className="text-gray-300 dark:text-gray-600" />
-            </div>
-            <p className="text-sm text-gray-400 dark:text-gray-500 leading-snug">
-              Busca una calle o toca el mapa para seleccionar la dirección del servicio
+        {noResults && !searching && query.trim().length >= 3 && (
+          <div className="absolute top-full mt-1.5 left-0 right-0 bg-white dark:bg-[#0F1A2E] rounded-xl shadow-lg border border-gray-100 dark:border-[#1E2D45] px-4 py-3 flex items-center gap-2 z-[1000]">
+            <AlertCircle size={14} className="text-amber-400 flex-shrink-0" />
+            <p className="text-xs text-gray-500 dark:text-[#94A3B8]">
+              No encontramos esa dirección. Intenta con el nombre de la calle sin número.
             </p>
           </div>
         )}
       </div>
+
+      {/* Map */}
+      <div className="relative h-[240px] sm:h-[280px] rounded-2xl overflow-hidden border border-gray-200 dark:border-[#1E2D45]">
+        <div ref={mapDivRef} className="absolute inset-0 z-[1]" />
+
+        {!mapReady && (
+          <div className="absolute inset-0 z-[2] bg-[#F0F4FF] dark:bg-[#080F1E] flex flex-col items-center justify-center gap-2">
+            <div className="relative">
+              <div className="w-14 h-14 rounded-2xl bg-gray-200 dark:bg-[#1E2D45] animate-pulse" />
+              <MapPin size={24} className="absolute inset-0 m-auto text-gray-400 dark:text-[#94A3B8]" />
+            </div>
+            <p className="text-sm text-gray-400 dark:text-[#94A3B8]">Cargando mapa...</p>
+          </div>
+        )}
+
+        {/* Zoom controls */}
+        {mapReady && (
+          <div className="absolute bottom-8 right-3 z-[1000] flex flex-col gap-1">
+            <button type="button" onClick={() => mapRef.current?.zoomIn()}
+              className="w-9 h-9 bg-white dark:bg-[#0F1A2E] rounded-xl shadow-md border border-gray-200 dark:border-[#1E2D45] flex items-center justify-center text-[#0A1628] dark:text-[#F8FAFF] hover:bg-[#F8FAFF] dark:hover:bg-[#1E2D45] transition-colors"
+            >
+              <Plus size={16} strokeWidth={2.5} />
+            </button>
+            <button type="button" onClick={() => mapRef.current?.zoomOut()}
+              className="w-9 h-9 bg-white dark:bg-[#0F1A2E] rounded-xl shadow-md border border-gray-200 dark:border-[#1E2D45] flex items-center justify-center text-[#0A1628] dark:text-[#F8FAFF] hover:bg-[#F8FAFF] dark:hover:bg-[#1E2D45] transition-colors"
+            >
+              <Minus size={16} strokeWidth={2.5} />
+            </button>
+          </div>
+        )}
+
+        {/* Hint */}
+        {mapReady && !coords && (
+          <div className="absolute bottom-2 left-3 right-16 z-[1000] pointer-events-none">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#0A1628]/60 backdrop-blur-sm">
+              <MapPin size={10} className="text-white/80 flex-shrink-0" />
+              <span className="text-white text-[10px] font-medium leading-none">
+                Busca o toca el mapa para fijar la ubicación
+              </span>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Address fields */}
+      <div className="grid grid-cols-2 gap-2.5">
+        <div className="col-span-2">
+          <label className="block text-[11px] font-semibold text-gray-400 dark:text-[#94A3B8] uppercase tracking-wide mb-1.5">Calle</label>
+          <input type="text" value={street} onChange={e => setStreet(e.target.value)} placeholder="Nombre de la calle"
+            className="w-full px-3 py-2.5 rounded-xl border border-gray-200 dark:border-[#1E2D45] bg-white dark:bg-[#080F1E] text-sm text-[#0A1628] dark:text-[#F8FAFF] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/15 focus:border-[#2563EB] transition-all placeholder-gray-300 dark:placeholder-[#94A3B8]/40"
+          />
+        </div>
+        <div>
+          <label className="block text-[11px] font-semibold text-gray-400 dark:text-[#94A3B8] uppercase tracking-wide mb-1.5">Número</label>
+          <input type="text" value={number} onChange={e => setNumber(e.target.value)} placeholder="Nº"
+            className="w-full px-3 py-2.5 rounded-xl border border-gray-200 dark:border-[#1E2D45] bg-white dark:bg-[#080F1E] text-sm text-[#0A1628] dark:text-[#F8FAFF] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/15 focus:border-[#2563EB] transition-all placeholder-gray-300 dark:placeholder-[#94A3B8]/40"
+          />
+        </div>
+        <div>
+          <label className="block text-[11px] font-semibold text-gray-400 dark:text-[#94A3B8] uppercase tracking-wide mb-1.5">Código postal</label>
+          <input type="text" value={postalCode} onChange={e => setPostalCode(e.target.value)} placeholder="08001"
+            className="w-full px-3 py-2.5 rounded-xl border border-gray-200 dark:border-[#1E2D45] bg-white dark:bg-[#080F1E] text-sm text-[#0A1628] dark:text-[#F8FAFF] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/15 focus:border-[#2563EB] transition-all placeholder-gray-300 dark:placeholder-[#94A3B8]/40"
+          />
+        </div>
+        <div className="col-span-2">
+          <label className="block text-[11px] font-semibold text-gray-400 dark:text-[#94A3B8] uppercase tracking-wide mb-1.5">Ciudad</label>
+          <input type="text" value={city} onChange={e => setCity(e.target.value)} placeholder="Barcelona"
+            className="w-full px-3 py-2.5 rounded-xl border border-gray-200 dark:border-[#1E2D45] bg-white dark:bg-[#080F1E] text-sm text-[#0A1628] dark:text-[#F8FAFF] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/15 focus:border-[#2563EB] transition-all placeholder-gray-300 dark:placeholder-[#94A3B8]/40"
+          />
+        </div>
+      </div>
+
+      {/* Building type */}
+      <div>
+        <p className="text-[11px] font-semibold text-gray-400 dark:text-[#94A3B8] uppercase tracking-wide mb-2">Tipo de inmueble</p>
+        <div className="flex gap-2">
+          {(['piso', 'casa', 'local'] as const).map(type => (
+            <button key={type} type="button" onClick={() => setBuildingType(type)}
+              className={`flex-1 py-2.5 rounded-xl text-sm font-semibold border-2 transition-all min-h-[44px] ${
+                buildingType === type
+                  ? 'border-[#2563EB] bg-blue-50 dark:bg-blue-900/20 text-[#2563EB] dark:text-[#3B82F6]'
+                  : 'border-gray-200 dark:border-[#1E2D45] text-gray-500 dark:text-[#94A3B8] hover:border-gray-300 dark:hover:border-[#2D3F5A] bg-white dark:bg-[#080F1E]'
+              }`}
+            >
+              {type === 'piso' ? 'Piso' : type === 'casa' ? 'Casa' : 'Local'}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Floor + door */}
+      {buildingType === 'piso' && (
+        <div className="grid grid-cols-2 gap-2.5">
+          <div>
+            <label className="block text-[11px] font-semibold text-gray-400 dark:text-[#94A3B8] uppercase tracking-wide mb-1.5">Piso / Planta</label>
+            <input type="text" value={floor} onChange={e => setFloor(e.target.value)} placeholder="1º, 2º..."
+              className="w-full px-3 py-2.5 rounded-xl border border-gray-200 dark:border-[#1E2D45] bg-white dark:bg-[#080F1E] text-sm text-[#0A1628] dark:text-[#F8FAFF] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/15 focus:border-[#2563EB] transition-all placeholder-gray-300 dark:placeholder-[#94A3B8]/40"
+            />
+          </div>
+          <div>
+            <label className="block text-[11px] font-semibold text-gray-400 dark:text-[#94A3B8] uppercase tracking-wide mb-1.5">Puerta</label>
+            <input type="text" value={door} onChange={e => setDoor(e.target.value)} placeholder="A, B, 1..."
+              className="w-full px-3 py-2.5 rounded-xl border border-gray-200 dark:border-[#1E2D45] bg-white dark:bg-[#080F1E] text-sm text-[#0A1628] dark:text-[#F8FAFF] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/15 focus:border-[#2563EB] transition-all placeholder-gray-300 dark:placeholder-[#94A3B8]/40"
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Confirm */}
+      <button type="button" onClick={handleConfirm} disabled={!canConfirm}
+        className="w-full py-3 text-white font-semibold rounded-xl disabled:opacity-40 disabled:cursor-not-allowed transition-all text-sm"
+        style={{ background: '#0A1628' }}
+        onMouseEnter={e => { if (!e.currentTarget.disabled) e.currentTarget.style.background = '#2563EB'; }}
+        onMouseLeave={e => { e.currentTarget.style.background = '#0A1628'; }}
+      >
+        Confirmar dirección
+      </button>
     </div>
   );
 }

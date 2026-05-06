@@ -5,6 +5,8 @@ import {
   createConnectAccount,
   createOnboardingLink,
   getConnectAccountStatus,
+  getConnectBalance,
+  createPayout,
 } from '../services/stripe-connect.service';
 import { constructConnectWebhookEvent } from '../services/stripe.service';
 
@@ -72,6 +74,44 @@ export async function getConnectStatus(req: AuthRequest, res: Response): Promise
     res.json({ status: newStatus, ...status });
   } catch (err: any) {
     res.json({ status: profile.stripeConnectStatus, chargesEnabled: false });
+  }
+}
+
+export async function getBalance(req: AuthRequest, res: Response): Promise<void> {
+  const profile = await prisma.professionalProfile.findUnique({
+    where: { userId: req.user!.userId },
+    select: { stripeConnectId: true, stripeConnectStatus: true },
+  });
+
+  if (!profile?.stripeConnectId || profile.stripeConnectStatus !== 'ACTIVE') {
+    res.status(400).json({ error: 'Cuenta Stripe no activa' });
+    return;
+  }
+
+  try {
+    const balance = await getConnectBalance(profile.stripeConnectId);
+    res.json(balance);
+  } catch (err: any) {
+    res.status(503).json({ error: err.message || 'Error al obtener el saldo' });
+  }
+}
+
+export async function requestPayout(req: AuthRequest, res: Response): Promise<void> {
+  const profile = await prisma.professionalProfile.findUnique({
+    where: { userId: req.user!.userId },
+    select: { stripeConnectId: true, stripeConnectStatus: true },
+  });
+
+  if (!profile?.stripeConnectId || profile.stripeConnectStatus !== 'ACTIVE') {
+    res.status(400).json({ error: 'Cuenta Stripe no activa' });
+    return;
+  }
+
+  try {
+    const payout = await createPayout(profile.stripeConnectId);
+    res.json(payout);
+  } catch (err: any) {
+    res.status(503).json({ error: err.message || 'Error al solicitar el pago' });
   }
 }
 

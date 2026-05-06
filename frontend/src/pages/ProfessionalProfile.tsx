@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { professionalsApi, bookingsApi } from '../services/api';
 import { CATEGORY_LABELS, CATEGORY_IMAGES } from '../types';
-import AddressForm, { type StructuredAddress } from '../components/AddressForm';
+import AddressMapPicker, { type AddressData } from '../components/AddressMapPicker';
 import Lightbox from '../components/Lightbox';
 import { availabilityApi } from '../services/api';
 import {
@@ -16,7 +16,7 @@ import toast from 'react-hot-toast';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
-type ConfirmedAddress = StructuredAddress;
+type ConfirmedAddress = AddressData;
 
 const TIME_SLOTS = [
   '09:00', '10:00', '11:00', '12:00', '13:00',
@@ -63,6 +63,9 @@ export default function ProfessionalProfile() {
   const [expandedExp, setExpandedExp] = useState<string | null>(null);
   const [lightbox, setLightbox] = useState<{ images: string[]; index: number } | null>(null);
   const [showBookingSheet, setShowBookingSheet] = useState(false);
+  const [recurringFreq, setRecurringFreq] = useState<'NONE' | 'WEEKLY' | 'BIWEEKLY' | 'MONTHLY' | 'CUSTOM'>('NONE');
+  const [recurringEndDate, setRecurringEndDate] = useState('');
+  const [recurringIntervalDays, setRecurringIntervalDays] = useState(7);
 
   const scheduledAt = selectedDate && selectedTime ? `${selectedDate}T${selectedTime}` : '';
 
@@ -122,6 +125,33 @@ export default function ProfessionalProfile() {
 
   const DAY_LABELS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 
+  const recurringSessionCount = useMemo(() => {
+    if (recurringFreq === 'NONE' || !selectedDate) return 1;
+    const intervalDays =
+      recurringFreq === 'WEEKLY' ? 7 :
+      recurringFreq === 'BIWEEKLY' ? 14 :
+      recurringFreq === 'MONTHLY' ? 30 :
+      recurringIntervalDays;
+    if (!recurringEndDate) return 4;
+    const base = new Date(selectedDate);
+    const end = new Date(recurringEndDate);
+    let count = 1;
+    for (let i = 1; i <= 3; i++) {
+      const d = new Date(base.getTime() + i * intervalDays * 24 * 60 * 60 * 1000);
+      if (d <= end) count++;
+      else break;
+    }
+    return count;
+  }, [recurringFreq, selectedDate, recurringEndDate, recurringIntervalDays]);
+
+  const FREQ_OPTIONS = [
+    { id: 'NONE', label: 'Puntual' },
+    { id: 'WEEKLY', label: 'Semanal' },
+    { id: 'BIWEEKLY', label: 'Quincenal' },
+    { id: 'MONTHLY', label: 'Mensual' },
+    { id: 'CUSTOM', label: 'Personalizado' },
+  ] as const;
+
   async function handleBooking(e: React.FormEvent) {
     e.preventDefault();
     if (!user) { navigate('/login'); return; }
@@ -137,6 +167,12 @@ export default function ProfessionalProfile() {
 
     const addressStr = confirmedAddr.formatted || `${confirmedAddr.street} ${confirmedAddr.number}, ${confirmedAddr.city}`;
 
+    const intervalDays =
+      recurringFreq === 'WEEKLY' ? 7 :
+      recurringFreq === 'BIWEEKLY' ? 14 :
+      recurringFreq === 'MONTHLY' ? 30 :
+      recurringFreq === 'CUSTOM' ? recurringIntervalDays : undefined;
+
     setBooking(true);
     try {
       const { data } = await bookingsApi.create({
@@ -144,6 +180,10 @@ export default function ProfessionalProfile() {
         scheduledAt: scheduledDate.toISOString(),
         address: addressStr,
         clientNotes: notes,
+        isRecurring: recurringFreq !== 'NONE',
+        recurringFrequency: recurringFreq !== 'NONE' ? recurringFreq : undefined,
+        recurringIntervalDays: recurringFreq === 'CUSTOM' ? intervalDays : undefined,
+        recurringEndDate: recurringFreq !== 'NONE' && recurringEndDate ? new Date(recurringEndDate).toISOString() : undefined,
       });
       toast.success(t('profile.booking_created'));
       navigate(`/bookings/${data.id}`);
@@ -444,9 +484,61 @@ export default function ProfessionalProfile() {
 
                 {hasActiveServices && (
                   <>
-                    {/* ── Step 2: Date ── */}
+                    {/* ── Step 2: Frequency ── */}
                     <div className="p-5 border-b border-[#E5E7EB] dark:border-[#1E2D45]">
-                      <StepLabel n={2} label="Elige el día" />
+                      <StepLabel n={2} label="Frecuencia" />
+                      <div className="flex flex-wrap gap-1.5 mb-3">
+                        {FREQ_OPTIONS.map(opt => (
+                          <button
+                            key={opt.id}
+                            type="button"
+                            onClick={() => setRecurringFreq(opt.id)}
+                            className={`px-3 py-1.5 text-xs font-semibold rounded-full border-2 transition-all ${
+                              recurringFreq === opt.id
+                                ? 'border-[#2563EB] dark:border-[#3B82F6] bg-[#2563EB] dark:bg-[#3B82F6] text-white'
+                                : 'border-[#E5E7EB] dark:border-[#1E2D45] text-[#6B7280] dark:text-[#94A3B8] hover:border-[#0A1628] dark:hover:border-[#94A3B8]'
+                            }`}
+                          >
+                            {opt.label}
+                          </button>
+                        ))}
+                      </div>
+                      {recurringFreq === 'CUSTOM' && (
+                        <div className="flex items-center gap-2 mb-3">
+                          <span className="text-xs text-[#6B7280] dark:text-[#94A3B8]">Cada</span>
+                          <input
+                            type="number"
+                            min={1}
+                            max={365}
+                            value={recurringIntervalDays}
+                            onChange={e => setRecurringIntervalDays(Math.max(1, parseInt(e.target.value) || 1))}
+                            className="w-16 px-2 py-1.5 rounded-lg border border-[#E5E7EB] dark:border-[#1E2D45] text-sm text-center bg-white dark:bg-[#080F1E] text-[#0A1628] dark:text-[#F8FAFF] outline-none focus:border-[#2563EB] dark:focus:border-[#3B82F6]"
+                          />
+                          <span className="text-xs text-[#6B7280] dark:text-[#94A3B8]">días</span>
+                        </div>
+                      )}
+                      {recurringFreq !== 'NONE' && (
+                        <div>
+                          <label className="block text-xs text-[#6B7280] dark:text-[#94A3B8] mb-1">Fecha fin (opcional)</label>
+                          <input
+                            type="date"
+                            value={recurringEndDate}
+                            onChange={e => setRecurringEndDate(e.target.value)}
+                            min={selectedDate || minDate}
+                            className="w-full px-3 py-2 rounded-xl border border-[#E5E7EB] dark:border-[#1E2D45] text-sm bg-white dark:bg-[#080F1E] text-[#0A1628] dark:text-[#F8FAFF] outline-none focus:border-[#2563EB] dark:focus:border-[#3B82F6] transition-colors"
+                          />
+                          {selectedDate && (
+                            <p className="mt-1.5 text-xs text-[#2563EB] dark:text-[#3B82F6] font-medium">
+                              {recurringSessionCount} sesión{recurringSessionCount !== 1 ? 'es' : ''} programada{recurringSessionCount !== 1 ? 's' : ''}
+                            </p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* ── Step 3: Date ── */}
+                    <div className="p-5 border-b border-[#E5E7EB] dark:border-[#1E2D45]">
+                      <StepLabel n={3} label="Elige el día" />
                       <input
                         type="date"
                         value={selectedDate}
@@ -461,10 +553,10 @@ export default function ProfessionalProfile() {
                       )}
                     </div>
 
-                    {/* ── Step 3: Time slots ── */}
+                    {/* ── Step 4: Time slots ── */}
                     {selectedDate && (
                       <div className="p-5 border-b border-[#E5E7EB] dark:border-[#1E2D45]">
-                        <StepLabel n={3} label="Elige la hora" />
+                        <StepLabel n={4} label="Elige la hora" />
                         <div className="grid grid-cols-3 gap-2">
                           {visibleSlots.map(slot => (
                             <button
@@ -489,10 +581,10 @@ export default function ProfessionalProfile() {
                       </div>
                     )}
 
-                    {/* ── Step 4: Address ── */}
+                    {/* ── Step 5: Address ── */}
                     {user && user.role !== 'ADMIN' && pro.userId !== user.id && (
                       <div className="p-5 border-b border-[#E5E7EB] dark:border-[#1E2D45]">
-                        <StepLabel n={4} label="Dirección del servicio" />
+                        <StepLabel n={5} label="Dirección del servicio" />
                         {confirmedAddr ? (
                           <div className="flex items-start gap-2 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800/50 rounded-xl">
                             <MapPin size={14} className="text-green-500 flex-shrink-0 mt-0.5" />
@@ -501,18 +593,15 @@ export default function ProfessionalProfile() {
                                 {confirmedAddr.street} {confirmedAddr.number}
                               </p>
                               <div className="flex flex-wrap items-center gap-2 mt-0.5">
-                                {confirmedAddr.neighborhood && (
-                                  <span className="text-xs text-green-600 dark:text-green-500">{confirmedAddr.neighborhood}</span>
-                                )}
                                 {confirmedAddr.postalCode && (
                                   <span className="text-[10px] font-bold text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-900/40 px-1.5 py-0.5 rounded">
                                     CP {confirmedAddr.postalCode}
                                   </span>
                                 )}
-                                <span className="text-xs text-green-600 dark:text-green-500 capitalize">
-                                  {confirmedAddr.housingType === 'piso'
-                                    ? `Piso ${confirmedAddr.floor}${confirmedAddr.door ? ` · ${confirmedAddr.door}` : ''}${confirmedAddr.staircase ? ` Esc.${confirmedAddr.staircase}` : ''}`
-                                    : 'Casa / Chalet'}
+                                <span className="text-xs text-green-600 dark:text-green-500">
+                                  {confirmedAddr.buildingType === 'piso'
+                                    ? `Piso${confirmedAddr.floor ? ` ${confirmedAddr.floor}` : ''}${confirmedAddr.door ? ` · ${confirmedAddr.door}` : ''}`
+                                    : confirmedAddr.buildingType === 'local' ? 'Local' : 'Casa / Chalet'}
                                 </span>
                               </div>
                             </div>
@@ -523,7 +612,7 @@ export default function ProfessionalProfile() {
                             </button>
                           </div>
                         ) : (
-                          <AddressForm onConfirm={setConfirmedAddr} />
+                          <AddressMapPicker onConfirm={setConfirmedAddr} />
                         )}
                       </div>
                     )}
@@ -558,7 +647,26 @@ export default function ProfessionalProfile() {
                                 {format(new Date(scheduledAt), "EEEE d 'de' MMMM · HH:mm", { locale: es })}
                               </p>
                             )}
+                            {recurringFreq !== 'NONE' && (
+                              <p className="text-xs text-[#2563EB] dark:text-[#3B82F6] font-medium mt-1">
+                                {recurringSessionCount} sesiones · {selectedSvc.price * recurringSessionCount}€ total
+                              </p>
+                            )}
                             <p className="text-[11px] text-[#6B7280] dark:text-[#94A3B8] mt-1">{t('profile.escrow_note')}</p>
+                          </div>
+                        )}
+                        {/* Assessment visit banner */}
+                        {selectedSvc?.hasAssessmentVisit && (
+                          <div className="mb-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-800 flex items-start gap-2">
+                            <CheckCircle size={14} className="text-blue-500 mt-0.5 flex-shrink-0" />
+                            <div>
+                              <p className="text-xs font-semibold text-blue-800 dark:text-blue-300">Visita de valoración incluida</p>
+                              <p className="text-xs text-blue-600 dark:text-blue-400 mt-0.5">
+                                {selectedSvc.assessmentPrice
+                                  ? `El profesional realizará una visita previa por ${selectedSvc.assessmentPrice}€ para valorar el trabajo.`
+                                  : 'El profesional realizará una visita previa gratuita para valorar el trabajo.'}
+                              </p>
+                            </div>
                           </div>
                         )}
                         <form onSubmit={handleBooking}>
@@ -570,9 +678,14 @@ export default function ProfessionalProfile() {
                             onMouseEnter={e => { if (!e.currentTarget.disabled) e.currentTarget.style.background = '#2563EB'; }}
                             onMouseLeave={e => { e.currentTarget.style.background = '#0A1628'; }}
                           >
-                            {booking ? t('profile.booking_loading') : t('profile.book_button')}
+                            {booking ? t('profile.booking_loading') : recurringFreq !== 'NONE' ? 'Solicitar servicio recurrente' : t('profile.book_button')}
                           </button>
                         </form>
+                        {/* VELORA guarantee */}
+                        <div className="mt-3 flex items-center justify-center gap-1.5 text-xs text-[#6B7280] dark:text-[#94A3B8]">
+                          <Shield size={12} className="text-green-500" />
+                          <span>Garantía VELORA · Pago protegido por escrow</span>
+                        </div>
                       </div>
                     )}
                   </>
@@ -601,6 +714,7 @@ export default function ProfessionalProfile() {
                     </a>
                   </div>
                 )}
+
               </div>
             </div>
           </div>
@@ -692,9 +806,61 @@ export default function ProfessionalProfile() {
                 </div>
               </div>
 
-              {/* Step 2: Date visual picker */}
+              {/* Step 2: Frequency */}
               <div className="p-5 border-b border-gray-100 dark:border-gray-800">
-                <StepLabel n={2} label="Elige el día" />
+                <StepLabel n={2} label="Frecuencia" />
+                <div className="flex flex-wrap gap-1.5 mb-3">
+                  {FREQ_OPTIONS.map(opt => (
+                    <button
+                      key={opt.id}
+                      type="button"
+                      onClick={() => setRecurringFreq(opt.id)}
+                      className={`px-3 py-1.5 text-xs font-semibold rounded-full border-2 transition-all ${
+                        recurringFreq === opt.id
+                          ? 'border-[#2563EB] bg-[#2563EB] text-white'
+                          : 'border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400'
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+                {recurringFreq === 'CUSTOM' && (
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="text-xs text-gray-500 dark:text-gray-400">Cada</span>
+                    <input
+                      type="number"
+                      min={1}
+                      max={365}
+                      value={recurringIntervalDays}
+                      onChange={e => setRecurringIntervalDays(Math.max(1, parseInt(e.target.value) || 1))}
+                      className="w-16 px-2 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-center bg-white dark:bg-gray-800 text-[#0A1628] dark:text-white outline-none"
+                    />
+                    <span className="text-xs text-gray-500 dark:text-gray-400">días</span>
+                  </div>
+                )}
+                {recurringFreq !== 'NONE' && (
+                  <div>
+                    <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Fecha fin (opcional)</label>
+                    <input
+                      type="date"
+                      value={recurringEndDate}
+                      onChange={e => setRecurringEndDate(e.target.value)}
+                      min={selectedDate || minDate}
+                      className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 text-sm bg-white dark:bg-gray-800 text-[#0A1628] dark:text-white outline-none"
+                    />
+                    {selectedDate && (
+                      <p className="mt-1.5 text-xs text-[#2563EB] font-medium">
+                        {recurringSessionCount} sesión{recurringSessionCount !== 1 ? 'es' : ''} programada{recurringSessionCount !== 1 ? 's' : ''}
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Step 3: Date visual picker */}
+              <div className="p-5 border-b border-gray-100 dark:border-gray-800">
+                <StepLabel n={3} label="Elige el día" />
                 <div className="flex gap-2 overflow-x-auto pb-1 -mx-5 px-5 no-scrollbar">
                   {next14Days.map(date => {
                     const dateStr = date.toISOString().split('T')[0];
@@ -726,10 +892,10 @@ export default function ProfessionalProfile() {
                 )}
               </div>
 
-              {/* Step 3: Time slots */}
+              {/* Step 4: Time slots */}
               {selectedDate && (
                 <div className="p-5 border-b border-gray-100 dark:border-gray-800">
-                  <StepLabel n={3} label="Elige la hora" />
+                  <StepLabel n={4} label="Elige la hora" />
                   <div className="grid grid-cols-4 gap-2">
                     {visibleSlots.map(slot => (
                       <button
@@ -754,9 +920,9 @@ export default function ProfessionalProfile() {
                 </div>
               )}
 
-              {/* Step 4: Address */}
+              {/* Step 5: Address */}
               <div className="p-5 border-b border-gray-100 dark:border-gray-800">
-                <StepLabel n={4} label="Dirección del servicio" />
+                <StepLabel n={5} label="Dirección del servicio" />
                 {confirmedAddr ? (
                   <div className="flex items-start gap-2 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800/50 rounded-xl">
                     <MapPin size={14} className="text-green-500 flex-shrink-0 mt-0.5" />
@@ -765,14 +931,16 @@ export default function ProfessionalProfile() {
                         {confirmedAddr.street} {confirmedAddr.number}
                       </p>
                       <div className="flex flex-wrap items-center gap-2 mt-0.5">
-                        {confirmedAddr.neighborhood && (
-                          <span className="text-xs text-green-600 dark:text-green-500">{confirmedAddr.neighborhood}</span>
-                        )}
                         {confirmedAddr.postalCode && (
                           <span className="text-[10px] font-bold text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-900/40 px-1.5 py-0.5 rounded">
                             CP {confirmedAddr.postalCode}
                           </span>
                         )}
+                        <span className="text-xs text-green-600 dark:text-green-500">
+                          {confirmedAddr.buildingType === 'piso'
+                            ? `Piso${confirmedAddr.floor ? ` ${confirmedAddr.floor}` : ''}${confirmedAddr.door ? ` · ${confirmedAddr.door}` : ''}`
+                            : confirmedAddr.buildingType === 'local' ? 'Local' : 'Casa / Chalet'}
+                        </span>
                       </div>
                     </div>
                     <button type="button" onClick={() => setConfirmedAddr(null)}
@@ -782,7 +950,7 @@ export default function ProfessionalProfile() {
                     </button>
                   </div>
                 ) : (
-                  <AddressForm onConfirm={setConfirmedAddr} />
+                  <AddressMapPicker onConfirm={setConfirmedAddr} />
                 )}
               </div>
 
@@ -809,6 +977,16 @@ export default function ProfessionalProfile() {
                   <p className="text-sm font-bold text-[#0A1628] dark:text-[#F8FAFF]">{selectedSvc.price}€</p>
                 </div>
               )}
+              {selectedSvc?.hasAssessmentVisit && (
+                <div className="mb-3 p-2.5 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-800 flex items-start gap-2">
+                  <CheckCircle size={13} className="text-blue-500 mt-0.5 flex-shrink-0" />
+                  <p className="text-xs text-blue-700 dark:text-blue-300">
+                    {selectedSvc.assessmentPrice
+                      ? `Incluye visita de valoración previa (${selectedSvc.assessmentPrice}€)`
+                      : 'Incluye visita de valoración previa gratuita'}
+                  </p>
+                </div>
+              )}
               <form onSubmit={handleBooking}>
                 <button
                   type="submit"
@@ -816,9 +994,13 @@ export default function ProfessionalProfile() {
                   className="w-full py-4 text-white font-bold rounded-xl disabled:opacity-40 transition-all text-sm active:scale-[0.98]"
                   style={{ background: '#0A1628', boxShadow: '0 4px 14px rgba(10,22,40,0.3)' }}
                 >
-                  {booking ? t('profile.booking_loading') : t('profile.book_button')}
+                  {booking ? t('profile.booking_loading') : recurringFreq !== 'NONE' ? 'Solicitar servicio recurrente' : t('profile.book_button')}
                 </button>
               </form>
+              <div className="mt-2 flex items-center justify-center gap-1.5 text-[11px] text-gray-400 dark:text-gray-500">
+                <Shield size={11} className="text-green-500" />
+                Garantía VELORA · Pago protegido
+              </div>
             </div>
           </div>
         </div>

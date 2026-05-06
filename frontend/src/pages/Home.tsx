@@ -4,17 +4,18 @@ import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../contexts/AuthContext';
 import { professionalsApi } from '../services/api';
 import { CATEGORY_LABELS, CATEGORY_IMAGES, ServiceCategory } from '../types';
+import { SERVICE_GROUPS, ALL_CATEGORIES } from '../config/categories';
 import {
   Search, MapPin, Star, Zap,
-  CheckCircle, ChevronRight, Briefcase,
-  Wrench, Scissors, Leaf, Sparkles, Activity, Award,
+  CheckCircle, ChevronRight, Briefcase, Shield,
+  Wrench, Scissors, Leaf, Sparkles, Activity,
+  Home as HomeIcon, Heart, Dumbbell, BookOpen, Users, Monitor, Grid,
 } from 'lucide-react';
 
-const CATEGORIES: ServiceCategory[] = [
-  'PLUMBING', 'ELECTRICIAN', 'CLEANING', 'HANDYMAN',
-  'GARDENING', 'CHEF', 'HAIRDRESSING', 'PERSONAL_TRAINER',
-  'MASSAGE', 'ELDERCARE', 'TUTORING', 'PET_CARE',
-];
+const GROUP_ICONS: Record<string, React.ElementType> = {
+  HOGAR: HomeIcon, BIENESTAR: Heart, DEPORTE: Dumbbell,
+  CLASES: BookOpen, CUIDADOS: Users, TECNOLOGIA: Monitor, OTROS: Grid,
+};
 
 const POPULAR_CHIPS = [
   { label: 'Fontanería', value: 'fontanero', Icon: Wrench },
@@ -25,37 +26,48 @@ const POPULAR_CHIPS = [
   { label: 'Masajes', value: 'masaje', Icon: Activity },
 ];
 
+const HERO_MOBILE_CATS: ServiceCategory[] = [
+  'PLUMBING', 'ELECTRICIAN', 'CLEANING', 'HANDYMAN', 'GARDENING', 'CHEF',
+];
+
+
 // ─── Category Card ───────────────────────────────────────────────────────────
 function CategoryCard({ cat, mobile = false }: { cat: ServiceCategory; mobile?: boolean }) {
+  const catPrices: Partial<Record<ServiceCategory, number>> = {
+    CLEANING: 25, PLUMBING: 45, HAIRDRESSING: 35, BEAUTY: 35,
+    MASSAGE: 50, PERSONAL_TRAINER: 40, GARDENING: 30,
+    ELECTRICIAN: 45, CHEF: 60, HANDYMAN: 35,
+  };
+  const fromPrice = catPrices[cat] ?? 30;
+
   return (
     <Link
       to={`/professionals?category=${cat}`}
-      className={`group relative rounded-2xl overflow-hidden bg-white dark:bg-[#0F1A2E] border border-gray-100 dark:border-[#1E2D45] shadow-sm hover:shadow-2xl hover:shadow-gray-200/80 dark:hover:shadow-black/40 hover:-translate-y-1.5 transition-all duration-300 ${
+      className={`group relative rounded-2xl overflow-hidden bg-white border border-[#E5E7EB] cursor-pointer transition-all duration-300 hover:-translate-y-1.5 ${
         mobile ? 'flex-shrink-0 w-44 snap-start' : 'w-full'
       }`}
+      style={{ boxShadow: '0 1px 3px rgba(10,22,40,0.05)', textDecoration: 'none' }}
+      onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 18px 40px rgba(10,22,40,0.12)')}
+      onMouseLeave={e => (e.currentTarget.style.boxShadow = '0 1px 3px rgba(10,22,40,0.05)')}
     >
       {/* Image with zoom */}
-      <div className="aspect-square overflow-hidden">
-        <img
-          src={CATEGORY_IMAGES[cat]}
-          alt={CATEGORY_LABELS[cat]}
-          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-          loading="lazy"
-          onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+      <div className="aspect-square overflow-hidden relative">
+        <div
+          className="w-full h-full bg-cover bg-center group-hover:scale-110 transition-transform duration-500"
+          style={{ backgroundImage: `url(${CATEGORY_IMAGES[cat]})` }}
         />
-      </div>
-      {/* Info */}
-      <div className="p-3.5">
-        <p className="text-sm font-black text-[#0A1628] dark:text-[#F8FAFF]">{CATEGORY_LABELS[cat]}</p>
-        <p className="text-xs text-gray-400 dark:text-[#94A3B8] mt-0.5">desde 25€</p>
-      </div>
-      {/* Slide-up button */}
-      <div className="absolute bottom-0 left-0 right-0 px-3 pb-3 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out bg-white/95 dark:bg-[#0F1A2E]/95 backdrop-blur-sm pt-2 border-t border-gray-50 dark:border-[#1E2D45]">
-        <div className="py-2 text-center text-xs font-extrabold text-white rounded-xl"
-          style={{ background: '#0A1628' }}
-        >
-          Reservar
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.55), transparent 55%)' }} />
+        <div style={{ position: 'absolute', left: 14, bottom: 12, color: '#fff', fontSize: 18, fontWeight: 800, letterSpacing: '-0.01em', textShadow: '0 1px 4px rgba(0,0,0,0.5)' }}>
+          {CATEGORY_LABELS[cat]}
         </div>
+      </div>
+      {/* Price row */}
+      <div style={{ padding: '12px 16px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+        <div>
+          <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: '#6B7280' }}>desde</div>
+          <div style={{ fontSize: 20, fontWeight: 900, color: '#0A1628', letterSpacing: '-0.02em' }}>{fromPrice}€<span style={{ fontSize: 11, fontWeight: 500, color: '#6B7280' }}>/h</span></div>
+        </div>
+        <ChevronRight size={16} color="#6B7280" />
       </div>
     </Link>
   );
@@ -64,35 +76,37 @@ function CategoryCard({ cat, mobile = false }: { cat: ServiceCategory; mobile?: 
 // ─── Professional Card ────────────────────────────────────────────────────────
 function ProfessionalCard({ pro }: { pro: any }) {
   const service = pro.services?.[0];
-  const img = pro.experienceEntries?.[0]?.images?.[0]?.fileUrl;
+  const img = pro.experienceEntries?.[0]?.images?.[0]?.fileUrl || pro.user?.avatarUrl;
 
   return (
     <Link
       to={`/professionals/${pro.id}`}
-      className="group block bg-white dark:bg-[#0F1A2E] rounded-2xl border border-gray-100 dark:border-[#1E2D45] shadow-sm hover:shadow-xl hover:shadow-gray-200/60 dark:hover:shadow-black/40 hover:-translate-y-1 transition-all duration-300 overflow-hidden"
+      className="group block rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1.5"
+      style={{ background: '#fff', border: '1px solid #E5E7EB', boxShadow: '0 1px 3px rgba(10,22,40,0.05)', textDecoration: 'none' }}
+      onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 18px 40px rgba(10,22,40,0.12)')}
+      onMouseLeave={e => (e.currentTarget.style.boxShadow = '0 1px 3px rgba(10,22,40,0.05)')}
     >
-      <div className="aspect-[4/3] bg-gray-50 dark:bg-[#1E2D45] overflow-hidden relative">
+      <div className="aspect-square overflow-hidden relative">
         {img ? (
-          <img src={img} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-        ) : pro.user?.avatarUrl ? (
-          <img src={pro.user.avatarUrl} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+          <div className="w-full h-full bg-cover bg-center group-hover:scale-110 transition-transform duration-500" style={{ backgroundImage: `url(${img})` }} />
         ) : (
-          <div className="w-full h-full flex items-center justify-center bg-[#0A1628]">
-            <span className="text-4xl font-black text-white/70">{pro.user?.firstName?.[0]}{pro.user?.lastName?.[0]}</span>
+          <div className="w-full h-full flex items-center justify-center" style={{ background: '#0A1628' }}>
+            <span className="text-4xl font-black" style={{ color: 'rgba(255,255,255,0.7)' }}>{pro.user?.firstName?.[0]}{pro.user?.lastName?.[0]}</span>
           </div>
         )}
-      </div>
-      <div className="p-4">
-        <p className="font-bold text-[#0A1628] dark:text-[#F8FAFF] text-sm truncate">{pro.user?.firstName} {pro.user?.lastName}</p>
-        {service && <p className="text-xs text-gray-400 dark:text-[#94A3B8] mt-0.5 truncate">{service.name}</p>}
-        <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-50 dark:border-[#1E2D45]">
-          <div className="flex items-center gap-1">
-            <Star size={12} className="text-amber-400 fill-amber-400" />
-            <span className="text-xs font-bold text-gray-700 dark:text-[#F8FAFF]">{pro.avgRating > 0 ? pro.avgRating.toFixed(1) : '—'}</span>
-            {pro.totalReviews > 0 && <span className="text-xs text-gray-400 dark:text-[#94A3B8]">({pro.totalReviews})</span>}
-          </div>
-          {service && <span className="text-sm font-black text-[#2563EB] dark:text-[#3B82F6]">{service.price}€</span>}
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.55), transparent 55%)' }} />
+        <div style={{ position: 'absolute', left: 14, bottom: 12, color: '#fff' }}>
+          <div style={{ fontSize: 14, fontWeight: 700, letterSpacing: '-0.01em' }}>{pro.user?.firstName} {pro.user?.lastName}</div>
+          {service && <div style={{ fontSize: 11, opacity: 0.8, marginTop: 1 }}>{service.name}</div>}
         </div>
+      </div>
+      <div style={{ padding: '12px 16px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          <Star size={12} fill="#F59E0B" color="#F59E0B" strokeWidth={1.2} />
+          <span style={{ fontSize: 13, fontWeight: 700, color: '#0A1628' }}>{pro.avgRating > 0 ? pro.avgRating.toFixed(1) : '—'}</span>
+          {pro.totalReviews > 0 && <span style={{ fontSize: 11, color: '#6B7280' }}>· {pro.totalReviews} reseñas</span>}
+        </div>
+        {service && <div style={{ fontSize: 9, color: '#6B7280', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', textAlign: 'right' }}>desde <span style={{ fontSize: 16, fontWeight: 900, color: '#0A1628', letterSpacing: '-0.02em', display: 'block' }}>{service.price}€</span></div>}
       </div>
     </Link>
   );
@@ -124,7 +138,13 @@ export default function Home() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [searchValue, setSearchValue] = useState('');
+  const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const visibleCategories = (selectedGroup
+    ? SERVICE_GROUPS.find(g => g.id === selectedGroup)?.categories ?? []
+    : ALL_CATEGORIES
+  ).map(c => c.id as ServiceCategory);
 
   const { data: profData } = useQuery({
     queryKey: ['home-professionals'],
@@ -156,22 +176,52 @@ export default function Home() {
 
             {/* ── Left column ──────────────────────────────────── */}
             <div>
-              {/* Location badge */}
-              <div className="inline-flex items-center gap-1.5 mb-6 px-3.5 py-1.5 bg-white dark:bg-[#0F1A2E] rounded-full border border-gray-200 dark:border-[#1E2D45] shadow-sm text-sm text-gray-500 dark:text-[#94A3B8]">
-                <MapPin size={13} className="text-[#2563EB]" />
-                Barcelona
+              {/* Eyebrow */}
+              <div style={{ fontSize: 12, fontWeight: 900, color: '#2563EB', letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 14 }}>
+                Servicios premium · Barcelona
               </div>
 
               {/* Title */}
-              <h1 className="text-4xl sm:text-5xl lg:text-[3.8rem] xl:text-[4.2rem] font-black text-[#0A1628] dark:text-[#F8FAFF] leading-[1.04] tracking-tight mb-5">
+              <h1 style={{ margin: '0 0 24px', fontSize: 'clamp(40px, 5.5vw, 68px)', fontWeight: 800, letterSpacing: '-0.035em', lineHeight: 1.02, color: '#0A1628' }}>
                 Tu hogar,<br />
-                <span className="text-[#2563EB]">perfectamente</span><br />
-                cuidado
+                <span style={{ color: '#2563EB', fontWeight: 500 }}>perfectamente</span><br />
+                cuidado.
               </h1>
 
-              <p className="text-lg text-gray-500 dark:text-[#94A3B8] font-light mb-10 max-w-md leading-relaxed">
-                Profesionales verificados a domicilio en Barcelona. Reserva en minutos, pago 100% seguro.
+              <p style={{ margin: '0 0 32px', fontSize: 18, fontWeight: 400, color: '#475569', lineHeight: 1.55, maxWidth: 480 }}>
+                Profesionales verificados a domicilio. Pago retenido en custodia hasta que confirmes que el trabajo se ha hecho bien.
               </p>
+
+              {/* ── Hero CTAs ─────────────────────────────────── */}
+              <div style={{ gap: 12, marginBottom: 32 }} className="hidden md:flex">
+                <button
+                  onClick={() => navigate('/professionals')}
+                  style={{ padding: '16px 32px', borderRadius: 9999, fontFamily: 'Inter', fontWeight: 700, fontSize: 15, cursor: 'pointer', color: '#fff', background: '#0A1628', border: 'none', boxShadow: '0 4px 14px rgba(10,22,40,0.30)', transition: 'all 200ms' }}
+                  onMouseEnter={e => { e.currentTarget.style.background = '#2563EB'; e.currentTarget.style.boxShadow = '0 6px 18px rgba(26,120,255,0.45)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = '#0A1628'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(10,22,40,0.30)'; }}
+                >
+                  Explorar servicios
+                </button>
+                <button
+                  onClick={() => navigate('/how-it-works')}
+                  style={{ padding: '16px 32px', borderRadius: 9999, fontFamily: 'Inter', fontWeight: 700, fontSize: 15, cursor: 'pointer', color: '#0A1628', background: '#fff', border: '1px solid #E5E7EB', boxShadow: 'none', transition: 'all 200ms' }}
+                  onMouseEnter={e => { e.currentTarget.style.background = '#0A1628'; e.currentTarget.style.color = '#fff'; e.currentTarget.style.borderColor = '#0A1628'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.color = '#0A1628'; e.currentTarget.style.borderColor = '#E5E7EB'; }}
+                >
+                  Cómo funciona
+                </button>
+              </div>
+
+              {/* ── Trust chips ─────────────────────────────────── */}
+              <div style={{ gap: 20, alignItems: 'center', marginBottom: 32, flexWrap: 'wrap', fontSize: 13, color: '#64748B', fontWeight: 500 }} className="hidden md:flex">
+                {[['check_circle', 'Pago en custodia'], ['check_circle', 'KYC verificado'], ['check_circle', 'Garantía total']].map(([, label], i) => (
+                  <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: 7 }}>
+                    <CheckCircle size={15} style={{ fill: '#2563EB', color: '#fff', flexShrink: 0 }} />
+                    {label}
+                    {i < 2 && <span style={{ width: 1, height: 12, background: '#CBD5E1', marginLeft: 6 }} />}
+                  </span>
+                ))}
+              </div>
 
               {/* ── Airbnb-style segmented search bar ─────────── */}
               <form onSubmit={handleSearch} className="hidden md:block mb-6">
@@ -228,7 +278,7 @@ export default function Home() {
 
               {/* Mobile category grid — replaces search bar on small screens */}
               <div className="md:hidden grid grid-cols-2 gap-3 mb-2">
-                {CATEGORIES.slice(0, 6).map(cat => (
+                {HERO_MOBILE_CATS.map(cat => (
                   <Link
                     key={cat}
                     to={`/professionals?category=${cat}`}
@@ -275,56 +325,62 @@ export default function Home() {
               </div>
             </div>
 
-            {/* ── Right column — photo collage ──────────────── */}
-            <div className="hidden lg:block relative h-[520px] select-none">
-
-              {/* Ambient circle */}
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[380px] h-[380px] rounded-full bg-[#2563EB]/[0.06] pointer-events-none" />
-
-              {/* Card 1 — back, rotated right */}
-              <div
-                className="absolute top-6 right-2 w-[210px] h-[270px] rounded-3xl overflow-hidden shadow-2xl shadow-gray-400/25"
-                style={{ transform: 'rotate(8deg)', zIndex: 1 }}
-              >
-                <img src={CATEGORY_IMAGES['GARDENING']} alt="" className="w-full h-full object-cover" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+            {/* ── Right column — VELORA photo mosaic ──────────── */}
+            <div className="hidden lg:block relative select-none">
+              {/* Grid mosaic: chef spans left 2 rows, living + massage on right */}
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                gridTemplateRows: '220px 220px',
+                gridTemplateAreas: '"a b" "a c"',
+                gap: 12,
+                height: 452,
+              }}>
+                {[
+                  { src: '/velora/img_0.jpg', label: 'Chef privado', from: 60, area: 'a' },
+                  { src: '/velora/img_1.jpg', label: 'Limpieza',     from: 25, area: 'b' },
+                  { src: '/velora/img_2.jpg', label: 'Masajes',      from: 50, area: 'c' },
+                ].map((t, i) => (
+                  <div key={i} style={{
+                    gridArea: t.area, position: 'relative', overflow: 'hidden',
+                    borderRadius: 16,
+                    backgroundImage: `url(${t.src})`,
+                    backgroundSize: 'cover', backgroundPosition: 'center',
+                  }}>
+                    <div style={{
+                      position: 'absolute', inset: 0,
+                      background: 'linear-gradient(to top, rgba(10,22,40,0.55) 0%, rgba(10,22,40,0) 50%)',
+                    }} />
+                    <div style={{ position: 'absolute', left: 14, bottom: 12, color: '#fff' }}>
+                      <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.22em', textTransform: 'uppercase', opacity: 0.85, marginBottom: 2 }}>desde {t.from}€</div>
+                      <div style={{ fontSize: 15, fontWeight: 600, letterSpacing: '-0.01em' }}>{t.label}</div>
+                    </div>
+                  </div>
+                ))}
               </div>
 
-              {/* Card 2 — middle, rotated left */}
-              <div
-                className="absolute top-14 right-[110px] w-[200px] h-[255px] rounded-3xl overflow-hidden shadow-2xl shadow-gray-400/25"
-                style={{ transform: 'rotate(-6deg)', zIndex: 2 }}
-              >
-                <img src={CATEGORY_IMAGES['MASSAGE']} alt="" className="w-full h-full object-cover" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
-              </div>
-
-              {/* Card 3 — front */}
-              <div
-                className="absolute top-44 right-14 w-[230px] h-[285px] rounded-3xl overflow-hidden shadow-2xl shadow-gray-400/30"
-                style={{ transform: 'rotate(3deg)', zIndex: 3 }}
-              >
-                <img src={CATEGORY_IMAGES['CHEF']} alt="" className="w-full h-full object-cover" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
-              </div>
-
-              {/* Floating social proof card */}
-              <div className="absolute bottom-10 left-6 bg-white rounded-2xl shadow-xl border border-gray-100 p-4 z-10 flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-[#2563EB]/10 flex items-center justify-center flex-shrink-0">
-                  <Star size={18} className="text-[#2563EB] fill-[#2563EB]" />
+              {/* Floating verified-pros chip */}
+              <div style={{
+                position: 'absolute', left: -18, bottom: -22, background: '#fff',
+                padding: '12px 18px', borderRadius: 14,
+                boxShadow: '0 12px 32px rgba(10,22,40,0.12), 0 1px 0 rgba(10,22,40,0.04)',
+                border: '1px solid #EEF2F7',
+                display: 'flex', alignItems: 'center', gap: 12, fontSize: 13, fontWeight: 600, color: '#0A1628',
+                zIndex: 10,
+              }}>
+                <div style={{ display: 'flex' }}>
+                  {['/velora/img_3.jpg', '/velora/img_4.jpg', '/velora/img_5.jpg'].map((src, i) => (
+                    <div key={i} style={{
+                      width: 26, height: 26, borderRadius: 9999, marginLeft: i ? -8 : 0,
+                      border: '2px solid #fff',
+                      backgroundImage: `url('${src}')`, backgroundSize: 'cover', backgroundPosition: 'center',
+                    }} />
+                  ))}
                 </div>
-                <div>
-                  <p className="text-sm font-black text-[#0A1628]">4.9 / 5</p>
-                  <p className="text-xs text-gray-400">+2.400 valoraciones</p>
+                <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.2 }}>
+                  <span>+500 profesionales verificados</span>
+                  <span style={{ fontSize: 11, fontWeight: 500, color: '#64748B' }}>Disponibles esta semana</span>
                 </div>
-              </div>
-
-              {/* Floating verified badge */}
-              <div className="absolute top-4 left-8 bg-white rounded-xl shadow-lg border border-gray-100 px-3 py-2 z-10 flex items-center gap-2">
-                <div className="w-6 h-6 rounded-lg bg-emerald-50 flex items-center justify-center flex-shrink-0">
-                  <CheckCircle size={13} className="text-emerald-500" />
-                </div>
-                <span className="text-xs font-bold text-[#0A1628]">500+ profesionales</span>
               </div>
             </div>
 
@@ -338,29 +394,61 @@ export default function Home() {
       {/* ══════════════════════════════════════════════════════════════
           CATEGORÍAS
       ══════════════════════════════════════════════════════════════ */}
-      <section className="bg-white py-20 px-4">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-end justify-between mb-10">
+      <section style={{ background: '#fff', padding: '72px 32px 64px' }}>
+        <div style={{ maxWidth: 1280, margin: '0 auto' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 20, gap: 16 }}>
             <div>
-              <p className="text-xs font-black tracking-widest text-[#2563EB] uppercase mb-2">Especialidades</p>
-              <h2 className="text-3xl sm:text-4xl font-black text-[#0A1628] dark:text-[#F8FAFF] tracking-tight">¿Qué necesitas hoy?</h2>
+              <div style={{ fontSize: 12, fontWeight: 900, color: '#2563EB', letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 8 }}>Categorías</div>
+              <h2 style={{ margin: 0, fontSize: 'clamp(26px,3.5vw,38px)', fontWeight: 900, letterSpacing: '-0.02em', lineHeight: 1.1, color: '#0A1628' }}>Todo lo que necesitas en casa</h2>
             </div>
             <Link
               to="/professionals"
-              className="hidden sm:flex items-center gap-1 text-sm font-bold text-[#0A1628] dark:text-[#F8FAFF] hover:text-[#2563EB] dark:hover:text-[#3B82F6] transition-colors"
+              style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 14, fontWeight: 700, color: '#0A1628', textDecoration: 'none', flexShrink: 0 }}
             >
-              Ver todas <ChevronRight size={16} />
+              Ver todos <ChevronRight size={15} strokeWidth={2.4} />
             </Link>
           </div>
 
+          {/* Group chips */}
+          <div className="flex gap-2 overflow-x-auto no-scrollbar pb-4 mb-6">
+            <button
+              onClick={() => setSelectedGroup(null)}
+              className={`flex-shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold border transition-all duration-200 ${
+                selectedGroup === null
+                  ? 'bg-[#0A1628] text-white border-[#0A1628]'
+                  : 'bg-white text-gray-500 border-gray-200 hover:border-gray-400'
+              }`}
+            >
+              Todos
+            </button>
+            {SERVICE_GROUPS.map(group => {
+              const Icon = GROUP_ICONS[group.id];
+              const active = selectedGroup === group.id;
+              return (
+                <button
+                  key={group.id}
+                  onClick={() => setSelectedGroup(active ? null : group.id)}
+                  className={`flex-shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold border transition-all duration-200 ${
+                    active
+                      ? 'bg-[#0A1628] text-white border-[#0A1628]'
+                      : 'bg-white text-gray-500 border-gray-200 hover:border-gray-400'
+                  }`}
+                >
+                  {Icon && <Icon size={14} />}
+                  {group.label}
+                </button>
+              );
+            })}
+          </div>
+
           {/* Mobile: 2-col grid */}
-          <div className="grid grid-cols-2 sm:hidden gap-3">
-            {CATEGORIES.map(cat => <CategoryCard key={cat} cat={cat} />)}
+          <div className="grid grid-cols-2 sm:hidden gap-[18px]">
+            {visibleCategories.map(cat => <CategoryCard key={cat} cat={cat} />)}
           </div>
 
           {/* Desktop: 4-col grid */}
-          <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {CATEGORIES.map(cat => <CategoryCard key={cat} cat={cat} />)}
+          <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-[18px]">
+            {visibleCategories.map(cat => <CategoryCard key={cat} cat={cat} />)}
           </div>
         </div>
       </section>
@@ -369,103 +457,83 @@ export default function Home() {
           PROFESIONALES DESTACADOS
       ══════════════════════════════════════════════════════════════ */}
       {professionals.length > 0 && (
-        <section className="bg-white dark:bg-[#080F1E] py-6 pb-20 px-4">
-          <div className="max-w-7xl mx-auto">
-            <div className="flex items-end justify-between mb-10">
+        <section style={{ background: '#fff', padding: '0 32px 64px' }}>
+          <div style={{ maxWidth: 1280, margin: '0 auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 32, gap: 16 }}>
               <div>
-                <p className="text-xs font-black tracking-widest text-[#2563EB] uppercase mb-2">Destacados</p>
-                <h2 className="text-3xl font-black text-[#0A1628] dark:text-[#F8FAFF] tracking-tight">Profesionales disponibles</h2>
+                <div style={{ fontSize: 12, fontWeight: 900, color: '#2563EB', letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 8 }}>Destacados</div>
+                <h2 style={{ margin: 0, fontSize: 'clamp(26px,3.5vw,36px)', fontWeight: 900, letterSpacing: '-0.02em', color: '#0A1628' }}>Profesionales disponibles</h2>
               </div>
               <Link
                 to="/professionals"
-                className="flex items-center gap-1 text-sm font-bold text-[#0A1628] dark:text-[#F8FAFF] hover:text-[#2563EB] dark:hover:text-[#3B82F6] transition-colors"
+                style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 14, fontWeight: 700, color: '#0A1628', textDecoration: 'none', flexShrink: 0 }}
               >
-                Ver todos <ChevronRight size={16} />
+                Ver todos <ChevronRight size={15} strokeWidth={2.4} />
               </Link>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-[18px]">
               {professionals.map((pro: any) => <ProfessionalCard key={pro.id} pro={pro} />)}
             </div>
           </div>
         </section>
       )}
 
-      {/* Wave white → navy */}
-      <WaveDown from="#ffffff" to="#0A1628" />
+      {/* Wave white → F8FAFF */}
+      <WaveDown from="#ffffff" to="#F8FAFF" />
 
       {/* ══════════════════════════════════════════════════════════════
-          TRUST / POR QUÉ VELORA
+          TRUST / GARANTÍAS — VELORA style (3 white cards on #F8FAFF)
       ══════════════════════════════════════════════════════════════ */}
-      <section className="bg-[#0A1628] py-20 px-4">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-14">
-            <p className="text-xs font-black tracking-widest text-[#2563EB] uppercase mb-3">Garantías</p>
-            <h2 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
-              Por qué elegir VELORA
-            </h2>
+      <section style={{ padding: '72px 32px', background: '#F8FAFF' }}>
+        <div style={{ maxWidth: 1280, margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: 44 }}>
+            <p style={{ fontSize: 12, fontWeight: 900, color: '#2563EB', letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 12 }}>Garantías</p>
+            <h2 style={{ margin: 0, fontSize: 'clamp(28px,4vw,38px)', fontWeight: 900, letterSpacing: '-0.02em', lineHeight: 1.1, color: '#0A1628' }}>Diseñado para la confianza</h2>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
             {[
-              {
-                icon: <CheckCircle size={30} className="text-emerald-400" />,
-                stat: '500+',
-                label: 'Profesionales verificados',
-                sub: 'KYC completo, antecedentes revisados',
-              },
-              {
-                icon: <Star size={30} className="text-[#2563EB] fill-[#2563EB]" />,
-                stat: '4.9',
-                label: 'Valoración media',
-                sub: 'Basado en opiniones reales de clientes',
-              },
-              {
-                icon: <Award size={30} className="text-amber-400" />,
-                stat: '100%',
-                label: 'Pagos seguros',
-                sub: 'Escrow garantizado, cobras solo al finalizar',
-              },
-            ].map(({ icon, stat, label, sub }) => (
-              <div key={label} className="flex flex-col items-center text-center p-8 rounded-2xl border border-white/[0.07] bg-white/[0.03] hover:bg-white/[0.06] transition-colors">
-                <div className="w-16 h-16 rounded-2xl bg-white/[0.07] border border-white/[0.08] flex items-center justify-center mb-6">
-                  {icon}
+              { icon: <Shield size={22} className="text-[#2563EB]" />, title: 'KYC + verificación manual', body: 'No cualquiera puede registrarse como profesional. Cada perfil se revisa por IA y por nuestro equipo antes de la aprobación.' },
+              { icon: <CheckCircle size={22} className="text-[#2563EB]" />, title: 'Pago en custodia', body: 'Tu dinero queda retenido de forma segura. Solo se libera cuando confirmes que el trabajo se ha hecho bien.' },
+              { icon: <Star size={22} className="text-[#2563EB]" />, title: 'Reseñas verificadas', body: 'Solo quienes han contratado y pagado pueden valorar. Reseñas reales, no opiniones anónimas.' },
+            ].map((p, i) => (
+              <div key={i} style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: 16, padding: 26, boxShadow: '0 1px 3px rgba(10,22,40,0.05)' }}>
+                <div style={{ width: 44, height: 44, borderRadius: 14, background: 'rgba(37,99,235,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+                  {p.icon}
                 </div>
-                <p className="text-5xl font-black text-[#2563EB] mb-2">{stat}</p>
-                <p className="text-base font-bold text-white mb-1">{label}</p>
-                <p className="text-sm text-slate-500 leading-relaxed">{sub}</p>
+                <div style={{ fontSize: 17, fontWeight: 800, color: '#0A1628', letterSpacing: '-0.01em', marginBottom: 8 }}>{p.title}</div>
+                <p style={{ margin: 0, fontSize: 14, fontWeight: 400, color: '#6B7280', lineHeight: 1.6 }}>{p.body}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Wave navy → white */}
-      <WaveUp from="#0A1628" to="#ffffff" />
+      {/* Wave F8FAFF → white */}
+      <WaveUp from="#F8FAFF" to="#ffffff" />
 
       {/* ══════════════════════════════════════════════════════════════
           CTA PROVEEDOR
       ══════════════════════════════════════════════════════════════ */}
       {!user?.isProvider && (
-        <section className="bg-white dark:bg-[#080F1E] py-16 px-4">
-          <div className="max-w-4xl mx-auto">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-8 p-8 sm:p-10 rounded-3xl border border-gray-100 dark:border-[#1E2D45] shadow-xl shadow-gray-100/80 dark:shadow-black/30 dark:bg-[#0F1A2E]">
-              <div className="flex items-center gap-5">
-                <div className="w-16 h-16 rounded-2xl flex items-center justify-center flex-shrink-0"
-                  style={{ background: 'linear-gradient(135deg, #2563EB 0%, #0A1628 100%)' }}>
-                  <Briefcase size={24} className="text-white" />
+        <section style={{ background: '#fff', padding: '64px 32px' }}>
+          <div style={{ maxWidth: 1024, margin: '0 auto' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 32, padding: '32px 40px', borderRadius: 20, border: '1px solid #E5E7EB', boxShadow: '0 8px 32px rgba(10,22,40,0.08)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 20, flex: 1, minWidth: 280 }}>
+                <div style={{ width: 64, height: 64, borderRadius: 18, background: 'linear-gradient(135deg, #2563EB 0%, #0A1628 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <Briefcase size={24} color="#fff" />
                 </div>
                 <div>
-                  <p className="text-xl font-black text-[#0A1628] dark:text-[#F8FAFF] mb-1">¿Quieres ofrecer tus servicios?</p>
-                  <p className="text-gray-500 dark:text-[#94A3B8] text-sm leading-relaxed">
+                  <p style={{ fontSize: 20, fontWeight: 900, color: '#0A1628', margin: '0 0 4px', letterSpacing: '-0.01em' }}>¿Quieres ofrecer tus servicios?</p>
+                  <p style={{ fontSize: 14, color: '#6B7280', margin: 0 }}>
                     Únete a más de 500 profesionales y empieza a ganar en Barcelona
                   </p>
                 </div>
               </div>
               <Link
                 to={user ? '/become-provider' : '/register'}
-                className="flex-shrink-0 px-7 py-3.5 text-sm font-black text-white rounded-full active:scale-95 transition-all"
-                style={{ background: '#0A1628', boxShadow: '0 4px 20px rgba(10,22,40,0.25)' }}
-                onMouseEnter={e => (e.currentTarget.style.background = '#2563EB')}
-                onMouseLeave={e => (e.currentTarget.style.background = '#0A1628')}
+                style={{ padding: '14px 28px', fontSize: 14, fontWeight: 700, color: '#fff', background: '#0A1628', borderRadius: 9999, textDecoration: 'none', flexShrink: 0, boxShadow: '0 4px 20px rgba(10,22,40,0.25)', transition: 'all 200ms' }}
+                onMouseEnter={e => { e.currentTarget.style.background = '#2563EB'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = '#0A1628'; }}
               >
                 Empezar ahora
               </Link>
@@ -474,26 +542,6 @@ export default function Home() {
         </section>
       )}
 
-      {/* ══════════════════════════════════════════════════════════════
-          FOOTER
-      ══════════════════════════════════════════════════════════════ */}
-      <footer className="bg-[#0A1628] border-t border-white/[0.06] py-10 px-4">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-5">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl flex items-center justify-center"
-              style={{ background: 'linear-gradient(135deg, #2563EB 0%, #0A1628 100%)' }}>
-              <Zap size={15} className="text-white" fill="white" />
-            </div>
-            <span className="font-black text-white text-base tracking-tight">VELORA</span>
-          </div>
-          <p className="text-xs text-white/20">© 2026 VELORA. Barcelona, Spain.</p>
-          <div className="flex gap-7 text-xs text-white/35">
-            <Link to="/professionals" className="hover:text-white transition-colors">Servicios</Link>
-            <Link to="/register" className="hover:text-white transition-colors">Registrarse</Link>
-            <Link to="/login" className="hover:text-white transition-colors">Entrar</Link>
-          </div>
-        </div>
-      </footer>
 
     </div>
   );

@@ -8,7 +8,18 @@ export type PaymentStatus = 'PENDING' | 'HELD_IN_ESCROW' | 'RELEASED' | 'REFUNDE
 export type ServiceCategory =
   | 'HAIRDRESSING' | 'BEAUTY' | 'CLEANING' | 'CHEF' | 'HANDYMAN'
   | 'PERSONAL_TRAINER' | 'MASSAGE' | 'ELDERCARE' | 'PET_CARE'
-  | 'TUTORING' | 'PLUMBING' | 'ELECTRICIAN' | 'GARDENING';
+  | 'TUTORING' | 'PLUMBING' | 'ELECTRICIAN' | 'GARDENING'
+  | 'YOGA' | 'PILATES' | 'PAINTING' | 'LOCKSMITH' | 'IRONING'
+  | 'FURNITURE' | 'POOL' | 'UPHOLSTERY' | 'AESTHETICS' | 'MANICURE'
+  | 'MAKEUP' | 'PHYSIOTHERAPY' | 'NUTRITION' | 'TENNIS' | 'PADEL'
+  | 'BOXING' | 'LANGUAGES' | 'MUSIC' | 'ART_CLASSES' | 'DANCE'
+  | 'COOKING_CLASS' | 'ELDERLY_CARE' | 'CHILDCARE' | 'DOG_WALKING'
+  | 'TECH_SUPPORT' | 'WEB_DESIGN' | 'PHOTOGRAPHY' | 'MOVING'
+  | 'CATERING' | 'VIDEO' | 'DJ';
+
+export type ServiceGroup = 'HOGAR' | 'BIENESTAR' | 'DEPORTE' | 'CLASES' | 'CUIDADOS' | 'TECNOLOGIA' | 'OTROS';
+
+export type RecurringFrequency = 'WEEKLY' | 'BIWEEKLY' | 'MONTHLY' | 'CUSTOM';
 
 export interface User {
   id: string;
@@ -18,6 +29,7 @@ export interface User {
   role: Role;
   isProvider: boolean;
   avatarUrl?: string;
+  phone?: string;
   isVerified: boolean;
   createdAt: string;
   language?: string;
@@ -47,6 +59,7 @@ export interface ProfessionalProfile {
   stripeConnectId?: string;
   stripeConnectStatus?: string;
   selfieUrl?: string;
+  rejectionReason?: string;
   user?: { firstName: string; lastName: string; avatarUrl?: string; createdAt?: string };
   services?: Service[];
   experienceEntries?: ExperienceEntry[];
@@ -98,6 +111,8 @@ export interface Service {
   duration: number;
   isActive: boolean;
   professionalId: string;
+  hasAssessmentVisit?: boolean;
+  assessmentPrice?: number;
 }
 
 export interface DisputeAIAnalysis {
@@ -142,6 +157,11 @@ export interface Booking {
   platformFee: number;
   professionalAmount: number;
   clientNotes?: string;
+  isRecurring?: boolean;
+  recurringFrequency?: RecurringFrequency;
+  recurringIntervalDays?: number;
+  recurringEndDate?: string;
+  parentBookingId?: string;
   createdAt: string;
   service?: Service;
   client?: { firstName: string; lastName: string; avatarUrl?: string };
@@ -198,19 +218,50 @@ export const CATEGORY_LABELS: Record<ServiceCategory, string> = {
   HAIRDRESSING: 'Peluquería',
   BEAUTY: 'Estética',
   CLEANING: 'Limpieza',
-  CHEF: 'Chef',
+  CHEF: 'Chef a Domicilio',
   HANDYMAN: 'Manitas',
   PERSONAL_TRAINER: 'Entrenador Personal',
   MASSAGE: 'Masajes',
   ELDERCARE: 'Cuidado de Mayores',
+  ELDERLY_CARE: 'Cuidado de Mayores',
   PET_CARE: 'Cuidado de Mascotas',
   TUTORING: 'Tutorías',
   PLUMBING: 'Fontanería',
   ELECTRICIAN: 'Electricista',
   GARDENING: 'Jardinería',
+  YOGA: 'Yoga',
+  PILATES: 'Pilates',
+  PAINTING: 'Pintura',
+  LOCKSMITH: 'Cerrajería',
+  IRONING: 'Planchado',
+  FURNITURE: 'Montaje de Muebles',
+  POOL: 'Piscinas',
+  UPHOLSTERY: 'Tapicería',
+  AESTHETICS: 'Estética Avanzada',
+  MANICURE: 'Manicura y Pedicura',
+  MAKEUP: 'Maquillaje',
+  PHYSIOTHERAPY: 'Fisioterapia',
+  NUTRITION: 'Nutrición',
+  TENNIS: 'Tenis',
+  PADEL: 'Pádel',
+  BOXING: 'Boxeo',
+  LANGUAGES: 'Idiomas',
+  MUSIC: 'Música',
+  ART_CLASSES: 'Clases de Arte',
+  DANCE: 'Baile',
+  COOKING_CLASS: 'Cocina',
+  CHILDCARE: 'Cuidado de Niños',
+  DOG_WALKING: 'Paseo de Perros',
+  TECH_SUPPORT: 'Soporte Técnico',
+  WEB_DESIGN: 'Diseño Web',
+  PHOTOGRAPHY: 'Fotografía',
+  MOVING: 'Mudanzas',
+  CATERING: 'Catering',
+  VIDEO: 'Video y Edición',
+  DJ: 'DJ',
 };
 
-export const CATEGORY_ICONS: Record<ServiceCategory, string> = {
+export const CATEGORY_ICONS: Partial<Record<ServiceCategory, string>> = {
   HAIRDRESSING: '✂️',
   BEAUTY: '💅',
   CLEANING: '🧹',
@@ -219,6 +270,7 @@ export const CATEGORY_ICONS: Record<ServiceCategory, string> = {
   PERSONAL_TRAINER: '💪',
   MASSAGE: '🧘',
   ELDERCARE: '👴',
+  ELDERLY_CARE: '👴',
   PET_CARE: '🐾',
   TUTORING: '📚',
   PLUMBING: '🚰',
@@ -226,20 +278,40 @@ export const CATEGORY_ICONS: Record<ServiceCategory, string> = {
   GARDENING: '🌿',
 };
 
-export const CATEGORY_IMAGES: Record<ServiceCategory, string> = {
-  HAIRDRESSING:     'https://images.pexels.com/photos/10318038/pexels-photo-10318038.jpeg?auto=compress&cs=tinysrgb&w=800&h=533&fit=crop',
-  BEAUTY:           'https://images.pexels.com/photos/12115045/pexels-photo-12115045.jpeg?auto=compress&cs=tinysrgb&w=800&h=533&fit=crop',
-  CLEANING:         'https://images.pexels.com/photos/9462192/pexels-photo-9462192.jpeg?auto=compress&cs=tinysrgb&w=800&h=533&fit=crop',
-  CHEF:             'https://images.pexels.com/photos/36430249/pexels-photo-36430249.jpeg?auto=compress&cs=tinysrgb&w=800&h=533&fit=crop',
+export const CATEGORY_IMAGES: Partial<Record<ServiceCategory, string>> = {
+  HAIRDRESSING:     '/velora/img_8.jpg',
+  BEAUTY:           '/velora/img_8.jpg',
+  CLEANING:         '/velora/img_6.jpg',
+  CHEF:             '/velora/img_13.jpg',
   HANDYMAN:         'https://images.pexels.com/photos/5691544/pexels-photo-5691544.jpeg?auto=compress&cs=tinysrgb&w=800&h=533&fit=crop',
-  PERSONAL_TRAINER: 'https://images.pexels.com/photos/4587383/pexels-photo-4587383.jpeg?auto=compress&cs=tinysrgb&w=800&h=533&fit=crop',
-  MASSAGE:          'https://images.pexels.com/photos/6629607/pexels-photo-6629607.jpeg?auto=compress&cs=tinysrgb&w=800&h=533&fit=crop',
+  PERSONAL_TRAINER: '/velora/img_10.jpg',
+  MASSAGE:          '/velora/img_9.jpg',
   ELDERCARE:        'https://images.pexels.com/photos/29372722/pexels-photo-29372722.jpeg?auto=compress&cs=tinysrgb&w=800&h=533&fit=crop',
+  ELDERLY_CARE:     'https://images.pexels.com/photos/29372722/pexels-photo-29372722.jpeg?auto=compress&cs=tinysrgb&w=800&h=533&fit=crop',
   PET_CARE:         'https://images.pexels.com/photos/6235650/pexels-photo-6235650.jpeg?auto=compress&cs=tinysrgb&w=800&h=533&fit=crop',
   TUTORING:         'https://images.pexels.com/photos/10222299/pexels-photo-10222299.jpeg?auto=compress&cs=tinysrgb&w=800&h=533&fit=crop',
-  PLUMBING:         'https://images.pexels.com/photos/29226620/pexels-photo-29226620.jpeg?auto=compress&cs=tinysrgb&w=800&h=533&fit=crop',
-  ELECTRICIAN:      'https://images.pexels.com/photos/32497160/pexels-photo-32497160.jpeg?auto=compress&cs=tinysrgb&w=800&h=533&fit=crop',
-  GARDENING:        'https://images.pexels.com/photos/16442678/pexels-photo-16442678.jpeg?auto=compress&cs=tinysrgb&w=800&h=533&fit=crop',
+  PLUMBING:         '/velora/img_7.jpg',
+  ELECTRICIAN:      '/velora/img_12.jpg',
+  GARDENING:        '/velora/img_11.jpg',
+  YOGA:             'https://images.pexels.com/photos/3822622/pexels-photo-3822622.jpeg?auto=compress&cs=tinysrgb&w=800&h=533&fit=crop',
+  PILATES:          'https://images.pexels.com/photos/4056723/pexels-photo-4056723.jpeg?auto=compress&cs=tinysrgb&w=800&h=533&fit=crop',
+  PAINTING:         'https://images.pexels.com/photos/1463530/pexels-photo-1463530.jpeg?auto=compress&cs=tinysrgb&w=800&h=533&fit=crop',
+  MANICURE:         'https://images.pexels.com/photos/3997381/pexels-photo-3997381.jpeg?auto=compress&cs=tinysrgb&w=800&h=533&fit=crop',
+  MAKEUP:           'https://images.pexels.com/photos/2661214/pexels-photo-2661214.jpeg?auto=compress&cs=tinysrgb&w=800&h=533&fit=crop',
+  PHYSIOTHERAPY:    'https://images.pexels.com/photos/5473182/pexels-photo-5473182.jpeg?auto=compress&cs=tinysrgb&w=800&h=533&fit=crop',
+  NUTRITION:        'https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=800&h=533&fit=crop',
+  TENNIS:           'https://images.pexels.com/photos/209977/pexels-photo-209977.jpeg?auto=compress&cs=tinysrgb&w=800&h=533&fit=crop',
+  PADEL:            'https://images.pexels.com/photos/8224707/pexels-photo-8224707.jpeg?auto=compress&cs=tinysrgb&w=800&h=533&fit=crop',
+  BOXING:           'https://images.pexels.com/photos/4754146/pexels-photo-4754146.jpeg?auto=compress&cs=tinysrgb&w=800&h=533&fit=crop',
+  LANGUAGES:        'https://images.pexels.com/photos/5905709/pexels-photo-5905709.jpeg?auto=compress&cs=tinysrgb&w=800&h=533&fit=crop',
+  MUSIC:            'https://images.pexels.com/photos/1407322/pexels-photo-1407322.jpeg?auto=compress&cs=tinysrgb&w=800&h=533&fit=crop',
+  DANCE:            'https://images.pexels.com/photos/1701195/pexels-photo-1701195.jpeg?auto=compress&cs=tinysrgb&w=800&h=533&fit=crop',
+  COOKING_CLASS:    'https://images.pexels.com/photos/2696064/pexels-photo-2696064.jpeg?auto=compress&cs=tinysrgb&w=800&h=533&fit=crop',
+  CHILDCARE:        'https://images.pexels.com/photos/8613089/pexels-photo-8613089.jpeg?auto=compress&cs=tinysrgb&w=800&h=533&fit=crop',
+  DOG_WALKING:      'https://images.pexels.com/photos/4587998/pexels-photo-4587998.jpeg?auto=compress&cs=tinysrgb&w=800&h=533&fit=crop',
+  TECH_SUPPORT:     'https://images.pexels.com/photos/5473337/pexels-photo-5473337.jpeg?auto=compress&cs=tinysrgb&w=800&h=533&fit=crop',
+  PHOTOGRAPHY:      'https://images.pexels.com/photos/1264210/pexels-photo-1264210.jpeg?auto=compress&cs=tinysrgb&w=800&h=533&fit=crop',
+  CATERING:         'https://images.pexels.com/photos/5638732/pexels-photo-5638732.jpeg?auto=compress&cs=tinysrgb&w=800&h=533&fit=crop',
 };
 
 export const BOOKING_STATUS_LABELS: Record<BookingStatus, string> = {

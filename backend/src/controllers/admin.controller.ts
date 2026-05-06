@@ -2,7 +2,7 @@ import { Response } from 'express';
 import prisma from '../utils/prisma';
 import { AuthRequest } from '../middleware/auth.middleware';
 import { checkVisibilityEligibility } from '../services/professional.service';
-import { refundEscrow } from '../services/escrow.service';
+import { refundEscrow, releaseEscrow } from '../services/escrow.service';
 
 export async function getPendingProfessionals(req: AuthRequest, res: Response): Promise<void> {
   const professionals = await prisma.professionalProfile.findMany({
@@ -169,7 +169,6 @@ export async function resolveDispute(req: AuthRequest, res: Response): Promise<v
       data: { status: 'CANCELLED' },
     });
   } else {
-    const { releaseEscrow } = await import('../services/escrow.service');
     await releaseEscrow(dispute.bookingId);
     await prisma.booking.update({
       where: { id: dispute.bookingId },

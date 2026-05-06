@@ -92,6 +92,7 @@ export const bookingsApi = {
   submitEvidence: (id: string, evidenceNote: string) => api.post(`/bookings/${id}/evidence`, { evidenceNote }),
   cancel: (id: string, reason: string) => api.post(`/bookings/${id}/cancel`, { reason }),
   dispute: (id: string, data: any) => api.post(`/bookings/${id}/dispute`, data),
+  getRecurring: (id: string) => api.get(`/bookings/${id}/recurring`),
 };
 
 export const reviewsApi = {
@@ -160,4 +161,17 @@ export const kycApi = {
 export const stripeConnectApi = {
   startOnboarding: () => api.post('/stripe/onboard'),
   getStatus: () => api.get('/stripe/status'),
+  getBalance: () => api.get('/stripe/balance'),
+  requestPayout: () => api.post('/stripe/payout'),
+};
+
+export const opportunityRequestsApi = {
+  list: (params?: any) => api.get('/opportunity-requests', { params }),
+  getById: (id: string) => api.get(`/opportunity-requests/${id}`),
+  create: (data: any) => api.post('/opportunity-requests', data),
+  apply: (id: string, data: { proposedPrice: number; message: string }) =>
+    api.post(`/opportunity-requests/${id}/apply`, data),
+  acceptApplication: (id: string, appId: string) =>
+    api.put(`/opportunity-requests/${id}/applications/${appId}/accept`),
+  cancel: (id: string) => api.delete(`/opportunity-requests/${id}`),
 };

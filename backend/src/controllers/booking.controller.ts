@@ -19,6 +19,10 @@ const createBookingSchema = z.object({
   scheduledAt: z.string().datetime({ offset: true }).or(z.string().regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/)),
   address: z.string().min(5).max(500),
   clientNotes: z.string().max(500).optional(),
+  isRecurring: z.boolean().optional(),
+  recurringFrequency: z.enum(['WEEKLY', 'BIWEEKLY', 'MONTHLY', 'CUSTOM']).optional(),
+  recurringIntervalDays: z.number().int().min(1).max(365).optional(),
+  recurringEndDate: z.string().optional(),
 });
 
 export async function createBooking(req: AuthRequest, res: Response): Promise<void> {
@@ -47,7 +51,7 @@ export async function createBooking(req: AuthRequest, res: Response): Promise<vo
     return;
   }
 
-  const { serviceId, address, clientNotes } = parsed.data;
+  const { serviceId, address, clientNotes, isRecurring, recurringFrequency, recurringIntervalDays, recurringEndDate } = parsed.data;
   const scheduledAt = scheduledAtStr;
 
   const service = await prisma.service.findUnique({
@@ -74,6 +78,8 @@ export async function createBooking(req: AuthRequest, res: Response): Promise<vo
   const platformFee = service.price * PLATFORM_FEE_PERCENTAGE;
   const professionalAmount = service.price - platformFee;
 
+  const recurringEndDateParsed = recurringEndDate ? new Date(recurringEndDate) : undefined;
+
   const booking = await prisma.booking.create({
     data: {
       clientId: req.user!.userId,
@@ -87,12 +93,50 @@ export async function createBooking(req: AuthRequest, res: Response): Promise<vo
       professionalAmount,
       status: 'PENDING',
       paymentStatus: 'PENDING',
+      isRecurring: isRecurring ?? false,
+      recurringFrequency: isRecurring ? recurringFrequency : undefined,
+      recurringIntervalDays: isRecurring ? recurringIntervalDays : undefined,
+      recurringEndDate: isRecurring ? recurringEndDateParsed : undefined,
     },
     include: {
       service: true,
       professional: { include: { user: { select: { firstName: true, lastName: true } } } },
     },
   });
+
+  if (isRecurring && recurringFrequency) {
+    const intervalDays =
+      recurringFrequency === 'WEEKLY' ? 7 :
+      recurringFrequency === 'BIWEEKLY' ? 14 :
+      recurringFrequency === 'MONTHLY' ? 30 :
+      (recurringIntervalDays ?? 7);
+
+    const baseDate = new Date(scheduledAt);
+    for (let i = 1; i <= 3; i++) {
+      const childDate = new Date(baseDate.getTime() + i * intervalDays * 24 * 60 * 60 * 1000);
+      if (recurringEndDateParsed && childDate > recurringEndDateParsed) break;
+      await prisma.booking.create({
+        data: {
+          clientId: req.user!.userId,
+          professionalId: service.professionalId,
+          serviceId,
+          scheduledAt: childDate,
+          address,
+          clientNotes,
+          totalAmount: service.price,
+          platformFee,
+          professionalAmount,
+          status: 'PENDING',
+          paymentStatus: 'PENDING',
+          isRecurring: true,
+          recurringFrequency,
+          recurringIntervalDays: intervalDays,
+          recurringEndDate: recurringEndDateParsed,
+          parentBookingId: booking.id,
+        },
+      });
+    }
+  }
 
   // Notify professional about new booking (async, don't block response)
   notifyBookingCreated(booking.id).catch(() => {});
@@ -652,10 +696,10 @@ export async function cancelBooking(req: AuthRequest, res: Response): Promise<vo
       // Professional cancels → always full refund to client
       await refundEscrow(bookingId);
       refundPolicy = 'full';
-    } else if (hoursUntil >= 48) {
+    } else if (hoursUntil >= 24) {
       await refundEscrow(bookingId);
       refundPolicy = 'full';
-    } else if (hoursUntil >= 24) {
+    } else if (hoursUntil >= 2) {
       // 50% refund to client, 50% to professional
       await partialRefundEscrow(bookingId, booking.totalAmount * 0.5);
       refundPolicy = 'partial';
@@ -671,8 +715,8 @@ export async function cancelBooking(req: AuthRequest, res: Response): Promise<vo
 
   const messages: Record<string, string> = {
     full: 'Reserva cancelada. Reembolso completo al cliente.',
-    partial: 'Reserva cancelada. Reembolso del 50% (cancelación con menos de 48h).',
-    none: 'Reserva cancelada. Sin reembolso (cancelación con menos de 24h).',
+    partial: 'Reserva cancelada. Reembolso del 50% (cancelación con menos de 24h).',
+    none: 'Reserva cancelada. Sin reembolso (cancelación con menos de 2h).',
     none_charged: 'Reserva cancelada.',
   };
   res.json({ message: messages[refundPolicy] || 'Reserva cancelada.' });
@@ -723,22 +767,29 @@ export async function openDispute(req: AuthRequest, res: Response): Promise<void
 }
 
 export async function getMyBookings(req: AuthRequest, res: Response): Promise<void> {
-  const { status, role } = req.query;
+  const { status, role: roleFilter } = req.query;
   const userId = req.user!.userId;
   const userRole = req.user!.role;
 
-  const where: any = {};
-  if (status) where.status = status;
+  const statusFilter = status ? { status: status as string } : {};
 
-  if (userRole === 'CLIENT') {
-    where.clientId = userId;
-  } else if (userRole === 'PROFESSIONAL') {
-    const profile = await prisma.professionalProfile.findUnique({ where: { userId } });
-    if (!profile) {
-      res.json([]);
-      return;
-    }
-    where.professionalId = profile.id;
+  // Build OR conditions: show bookings where user is the client OR the professional
+  const orConditions: any[] = [{ clientId: userId }];
+
+  const profile = await prisma.professionalProfile.findUnique({ where: { userId } });
+  if (profile) {
+    orConditions.push({ professionalId: profile.id });
+  }
+
+  // If a specific role filter is passed in query, narrow down
+  let where: any;
+  if (roleFilter === 'client') {
+    where = { clientId: userId, ...statusFilter };
+  } else if (roleFilter === 'professional' && profile) {
+    where = { professionalId: profile.id, ...statusFilter };
+  } else {
+    // Default: show all bookings for this user (as client or professional)
+    where = { OR: orConditions, ...statusFilter };
   }
 
   const bookings = await prisma.booking.findMany({
@@ -756,6 +807,37 @@ export async function getMyBookings(req: AuthRequest, res: Response): Promise<vo
   });
 
   res.json(bookings);
+}
+
+export async function getRecurringBookings(req: AuthRequest, res: Response): Promise<void> {
+  const { bookingId } = req.params;
+
+  const parent = await prisma.booking.findUnique({ where: { id: bookingId } });
+
+  if (!parent) {
+    res.status(404).json({ error: 'Reserva no encontrada' });
+    return;
+  }
+
+  const isParticipant =
+    parent.clientId === req.user!.userId ||
+    req.user!.role === 'ADMIN';
+
+  if (!isParticipant) {
+    const profile = await prisma.professionalProfile.findUnique({ where: { userId: req.user!.userId } });
+    if (!profile || profile.id !== parent.professionalId) {
+      res.status(403).json({ error: 'No autorizado' });
+      return;
+    }
+  }
+
+  const children = await prisma.booking.findMany({
+    where: { parentBookingId: bookingId },
+    orderBy: { scheduledAt: 'asc' },
+    include: { service: { select: { name: true, category: true } } },
+  });
+
+  res.json(children);
 }
 
 export async function getBookingById(req: AuthRequest, res: Response): Promise<void> {

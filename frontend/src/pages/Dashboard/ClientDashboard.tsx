@@ -1,18 +1,28 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { authApi } from '../../services/api';
 import { useQueryClient } from '@tanstack/react-query';
 import { CATEGORY_LABELS, CATEGORY_IMAGES, ServiceCategory } from '../../types';
-import { Briefcase } from 'lucide-react';
+import { SERVICE_GROUPS, ALL_CATEGORIES } from '../../config/categories';
+import { Briefcase, Home, Heart, Dumbbell, BookOpen, Users, Monitor, Grid } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
-import { useState } from 'react';
 import toast from 'react-hot-toast';
 
-const CATEGORIES = Object.keys(CATEGORY_IMAGES) as ServiceCategory[];
+const GROUP_ICONS: Record<string, React.ElementType> = {
+  HOGAR: Home, BIENESTAR: Heart, DEPORTE: Dumbbell,
+  CLASES: BookOpen, CUIDADOS: Users, TECNOLOGIA: Monitor, OTROS: Grid,
+};
 
 export default function ClientDashboard() {
   const { user, refreshUser } = useAuth();
   const qc = useQueryClient();
   const [activatingProvider, setActivatingProvider] = useState(false);
+  const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
+
+  const visibleCategories = (selectedGroup
+    ? SERVICE_GROUPS.find(g => g.id === selectedGroup)?.categories ?? []
+    : ALL_CATEGORIES
+  ).map(c => c.id as ServiceCategory);
 
   async function handleBecomeProvider() {
     setActivatingProvider(true);
@@ -42,9 +52,41 @@ export default function ClientDashboard() {
         <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">¿Qué necesitas hoy?</p>
       </div>
 
+      {/* Group chips */}
+      <div className="flex gap-2 overflow-x-auto no-scrollbar pb-3 mb-4">
+        <button
+          onClick={() => setSelectedGroup(null)}
+          className={`flex-shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold border transition-all duration-200 ${
+            selectedGroup === null
+              ? 'bg-[#0A1628] text-white border-[#0A1628]'
+              : 'bg-white dark:bg-[#0F1A2E] text-gray-500 dark:text-[#94A3B8] border-gray-200 dark:border-[#1E2D45] hover:border-gray-400'
+          }`}
+        >
+          Todos
+        </button>
+        {SERVICE_GROUPS.map(group => {
+          const Icon = GROUP_ICONS[group.id];
+          const active = selectedGroup === group.id;
+          return (
+            <button
+              key={group.id}
+              onClick={() => setSelectedGroup(active ? null : group.id)}
+              className={`flex-shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold border transition-all duration-200 ${
+                active
+                  ? 'bg-[#0A1628] text-white border-[#0A1628]'
+                  : 'bg-white dark:bg-[#0F1A2E] text-gray-500 dark:text-[#94A3B8] border-gray-200 dark:border-[#1E2D45] hover:border-gray-400'
+              }`}
+            >
+              {Icon && <Icon size={14} />}
+              {group.label}
+            </button>
+          );
+        })}
+      </div>
+
       {/* Categorías */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 mb-10">
-        {CATEGORIES.map(cat => (
+        {visibleCategories.map(cat => (
           <Link
             key={cat}
             to={`/professionals?category=${cat}`}

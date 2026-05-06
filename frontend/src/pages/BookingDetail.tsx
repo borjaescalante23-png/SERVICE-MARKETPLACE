@@ -8,7 +8,7 @@ import StarRating from '../components/common/StarRating';
 import Badge from '../components/common/Badge';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { Send, Lock, CheckCircle, AlertTriangle, MessageSquare, ChevronLeft, Languages, CreditCard, Clock, ShieldCheck, Printer } from 'lucide-react';
+import { Send, Lock, CheckCircle, AlertTriangle, MessageSquare, ChevronLeft, Languages, CreditCard, Clock, ShieldCheck, Printer, Shield, RefreshCw, X } from 'lucide-react';
 import { useI18n } from '../i18n';
 import toast from 'react-hot-toast';
 
@@ -28,6 +28,10 @@ export default function BookingDetail() {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [evidenceNote, setEvidenceNote] = useState('');
   const [showEvidenceForm, setShowEvidenceForm] = useState(false);
+  const [cancelModal, setCancelModal] = useState(false);
+  const [cancelReason, setCancelReason] = useState('');
+  const [disputeModal, setDisputeModal] = useState(false);
+  const [disputeForm, setDisputeForm] = useState({ reason: '', description: '' });
 
   useEffect(() => {
     const payment = searchParams.get('payment');
@@ -41,10 +45,15 @@ export default function BookingDetail() {
     enabled: !!bookingId,
     refetchInterval: (query) => {
       const status = query.state.data?.status;
-      // Solo refrescar automáticamente si el booking está en curso o tiene mensajes activos
       if (status === 'IN_PROGRESS' || status === 'ACCEPTED') return 10000;
       return false;
     },
+  });
+
+  const { data: recurringSeries } = useQuery({
+    queryKey: ['recurring', bookingId],
+    queryFn: () => bookingsApi.getRecurring(bookingId!).then(r => r.data),
+    enabled: !!bookingId && !!(booking?.isRecurring || booking?.parentBookingId),
   });
 
   async function action(key: string, fn: () => Promise<any>, successMsg: string) {
@@ -107,6 +116,9 @@ export default function BookingDetail() {
   const hoursLeft = isProviderCompleted && booking.autoReleaseAt
     ? Math.max(0, Math.round((new Date(booking.autoReleaseAt).getTime() - Date.now()) / 3600000))
     : null;
+
+  const hoursUntilService = (new Date(booking.scheduledAt).getTime() - Date.now()) / 3600000;
+  const cancelRefundPolicy = hoursUntilService >= 24 ? 'full' : hoursUntilService >= 2 ? 'partial' : 'none';
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-6">
@@ -229,11 +241,7 @@ export default function BookingDetail() {
                   </button>
                   <button
                     disabled={actionLoading === 'client-dispute'}
-                    onClick={() => {
-                      const r = prompt('Motivo de la disputa (ej: servicio no completado):');
-                      const d = prompt('Describe el problema en detalle:');
-                      if (r && d) action('client-dispute', () => bookingsApi.clientDispute(bookingId!, { reason: r, description: d }), 'Disputa abierta. La IA la analizará automáticamente.');
-                    }}
+                    onClick={() => setDisputeModal(true)}
                     className="px-4 py-2.5 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm font-medium rounded-xl hover:bg-red-100 transition-colors border border-red-200 dark:border-red-800 flex items-center gap-1.5"
                   >
                     <AlertTriangle size={13} />
@@ -378,10 +386,7 @@ export default function BookingDetail() {
                 {/* Cancel */}
                 <button
                   disabled={actionLoading === 'cancel'}
-                  onClick={() => {
-                    const r = prompt(t('booking.cancel_prompt'));
-                    if (r) action('cancel', () => bookingsApi.cancel(bookingId!, r), t('booking.cancelled_toast'));
-                  }}
+                  onClick={() => setCancelModal(true)}
                   className="px-4 py-2.5 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm font-medium rounded-xl hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors border border-red-200 dark:border-red-800"
                 >
                   {t('booking.cancel')}
@@ -391,11 +396,7 @@ export default function BookingDetail() {
                 {['ACCEPTED', 'IN_PROGRESS'].includes(booking.status) && !booking.dispute && (
                   <button
                     disabled={actionLoading === 'dispute'}
-                    onClick={() => {
-                      const r = prompt(t('booking.dispute_reason_prompt'));
-                      const d = prompt(t('booking.dispute_desc_prompt'));
-                      if (r && d) action('dispute', () => bookingsApi.dispute(bookingId!, { reason: r, description: d }), t('booking.dispute_opened_toast'));
-                    }}
+                    onClick={() => setDisputeModal(true)}
                     className="px-4 py-2.5 bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 text-sm font-medium rounded-xl hover:bg-orange-100 transition-colors border border-orange-200 dark:border-orange-800 flex items-center gap-1.5"
                   >
                     <AlertTriangle size={13} />
@@ -514,6 +515,167 @@ export default function BookingDetail() {
           )}
         </div>
       </div>
+
+      {/* Recurring series */}
+      {recurringSeries && recurringSeries.length > 0 && (
+        <div className="mt-5 bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <RefreshCw size={16} className="text-blue-500" />
+            <h2 className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base">Sesiones de la serie recurrente</h2>
+          </div>
+          <div className="space-y-2">
+            {recurringSeries.map((b: any) => (
+              <div key={b.id} className={`flex items-center justify-between p-3 rounded-xl border text-sm ${
+                b.id === bookingId ? 'border-blue-200 dark:border-blue-700 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-100 dark:border-gray-800'
+              }`}>
+                <span className="text-gray-700 dark:text-gray-300">
+                  {format(new Date(b.scheduledAt), "d MMM yyyy, HH:mm", { locale: es })}
+                </span>
+                <div className="flex items-center gap-2">
+                  <Badge label={BOOKING_STATUS_LABELS[b.status]} type="booking" status={b.status} />
+                  {b.id !== bookingId && (
+                    <button
+                      onClick={() => navigate(`/bookings/${b.id}`)}
+                      className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
+                    >
+                      Ver
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Cancel modal */}
+      {cancelModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setCancelModal(false)}>
+          <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 max-w-md w-full shadow-2xl" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-bold text-gray-900 dark:text-white text-lg">Cancelar reserva</h3>
+              <button onClick={() => setCancelModal(false)} className="text-gray-400 hover:text-gray-600">
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Cancellation policy */}
+            <div className={`mb-4 p-4 rounded-xl border text-sm ${
+              cancelRefundPolicy === 'full' ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-700' :
+              cancelRefundPolicy === 'partial' ? 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-700' :
+              'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-700'
+            }`}>
+              <p className="font-semibold mb-1">
+                {cancelRefundPolicy === 'full' && 'Reembolso completo'}
+                {cancelRefundPolicy === 'partial' && 'Reembolso del 50%'}
+                {cancelRefundPolicy === 'none' && 'Sin reembolso'}
+              </p>
+              <p className="text-xs text-gray-600 dark:text-gray-400">
+                {cancelRefundPolicy === 'full' && 'Cancelas con más de 24h de antelación. Recibirás el importe completo.'}
+                {cancelRefundPolicy === 'partial' && 'Cancelas con menos de 24h. Reembolso del 50% según la política de VELORA.'}
+                {cancelRefundPolicy === 'none' && 'Cancelas con menos de 2h. No aplica reembolso según la política de VELORA.'}
+              </p>
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Motivo de cancelación</label>
+              <textarea
+                value={cancelReason}
+                onChange={e => setCancelReason(e.target.value)}
+                rows={3}
+                placeholder="Explica brevemente el motivo..."
+                className="w-full px-3 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none dark:bg-gray-800 dark:text-white"
+              />
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setCancelModal(false)}
+                className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+              >
+                Volver
+              </button>
+              <button
+                disabled={!cancelReason.trim() || actionLoading === 'cancel'}
+                onClick={() => {
+                  setCancelModal(false);
+                  action('cancel', () => bookingsApi.cancel(bookingId!, cancelReason), t('booking.cancelled_toast'));
+                  setCancelReason('');
+                }}
+                className="flex-1 px-4 py-2.5 text-sm font-semibold text-white bg-red-600 rounded-xl hover:bg-red-700 disabled:opacity-50 transition-colors"
+              >
+                {actionLoading === 'cancel' ? '...' : 'Confirmar cancelación'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Dispute modal */}
+      {disputeModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setDisputeModal(false)}>
+          <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 max-w-md w-full shadow-2xl" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-bold text-gray-900 dark:text-white text-lg">Abrir disputa</h3>
+              <button onClick={() => setDisputeModal(false)} className="text-gray-400 hover:text-gray-600">
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-800 flex items-start gap-2">
+              <Shield size={14} className="text-blue-500 mt-0.5 flex-shrink-0" />
+              <p className="text-xs text-blue-700 dark:text-blue-300">
+                La IA de VELORA analizará la disputa automáticamente y tomará una decisión en minutos. Si no es posible, el equipo la revisará manualmente.
+              </p>
+            </div>
+
+            <div className="space-y-3 mb-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Motivo</label>
+                <input
+                  value={disputeForm.reason}
+                  onChange={e => setDisputeForm(p => ({ ...p, reason: e.target.value }))}
+                  placeholder="Ej: Servicio no completado"
+                  className="w-full px-3 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 dark:bg-gray-800 dark:text-white"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Descripción detallada</label>
+                <textarea
+                  value={disputeForm.description}
+                  onChange={e => setDisputeForm(p => ({ ...p, description: e.target.value }))}
+                  rows={3}
+                  placeholder="Explica con detalle qué ocurrió..."
+                  className="w-full px-3 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none dark:bg-gray-800 dark:text-white"
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setDisputeModal(false)}
+                className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                disabled={!disputeForm.reason.trim() || !disputeForm.description.trim() || actionLoading === 'dispute'}
+                onClick={() => {
+                  setDisputeModal(false);
+                  const fn = booking.status === 'COMPLETED_BY_PROVIDER'
+                    ? () => bookingsApi.clientDispute(bookingId!, disputeForm)
+                    : () => bookingsApi.dispute(bookingId!, disputeForm);
+                  action('dispute', fn, t('booking.dispute_opened_toast'));
+                  setDisputeForm({ reason: '', description: '' });
+                }}
+                className="flex-1 px-4 py-2.5 text-sm font-semibold text-white bg-orange-500 rounded-xl hover:bg-orange-600 disabled:opacity-50 transition-colors"
+              >
+                {actionLoading === 'dispute' ? '...' : 'Abrir disputa'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

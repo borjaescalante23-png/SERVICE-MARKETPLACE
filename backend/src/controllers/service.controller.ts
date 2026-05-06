@@ -57,8 +57,13 @@ export async function updateService(req: AuthRequest, res: Response): Promise<vo
     where: { userId: req.user!.userId },
   });
 
+  if (!profile) {
+    res.status(403).json({ error: 'Perfil profesional no encontrado' });
+    return;
+  }
+
   const service = await prisma.service.findFirst({
-    where: { id: serviceId, professionalId: profile?.id },
+    where: { id: serviceId, professionalId: profile.id },
   });
 
   if (!service) {

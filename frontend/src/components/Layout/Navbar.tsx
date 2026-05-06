@@ -32,11 +32,14 @@ export default function Navbar() {
 
   return (
     <nav
-      className={`sticky top-0 z-50 bg-white dark:bg-[#080F1E] border-b transition-all duration-300 ${
-        scrolled
-          ? 'border-gray-200 dark:border-[#1E2D45] shadow-[0_2px_20px_rgba(0,0,0,0.06)] dark:shadow-[0_2px_20px_rgba(0,0,0,0.3)]'
-          : 'border-gray-100 dark:border-[#1E2D45]/50 shadow-none'
-      }`}
+      className="sticky top-0 z-50 border-b transition-all duration-300"
+      style={{
+        background: scrolled ? 'rgba(255,255,255,0.90)' : 'rgba(255,255,255,1)',
+        backdropFilter: scrolled ? 'blur(12px)' : 'none',
+        WebkitBackdropFilter: scrolled ? 'blur(12px)' : 'none',
+        borderColor: scrolled ? 'rgba(229,231,235,0.6)' : 'rgba(229,231,235,1)',
+        boxShadow: scrolled ? '0 2px 20px rgba(10,22,40,0.06)' : 'none',
+      }}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-14 md:h-[68px]">
@@ -66,14 +69,17 @@ export default function Navbar() {
                   <Link
                     key={to}
                     to={to}
-                    className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-xl transition-all ${
-                      isActive
-                        ? 'text-[#0A1628] dark:text-[#F8FAFF] bg-gray-100 dark:bg-[#0F1A2E]'
-                        : 'text-gray-500 dark:text-[#94A3B8] hover:text-[#0A1628] dark:hover:text-[#F8FAFF] hover:bg-gray-50 dark:hover:bg-[#0F1A2E]'
-                    }`}
+                    className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold transition-all relative"
+                    style={{ color: isActive ? '#0A1628' : '#6B7280' }}
                   >
                     {icon}
                     {label}
+                    {isActive && (
+                      <span style={{
+                        position: 'absolute', left: 16, right: 16, bottom: 0,
+                        height: 2, background: '#2563EB', borderRadius: 9999,
+                      }} />
+                    )}
                   </Link>
                 );
               })}
@@ -141,11 +147,11 @@ export default function Navbar() {
                 <Link
                   to="/register"
                   className="px-5 py-2.5 text-sm font-bold text-white rounded-full active:scale-95 transition-all"
-                  style={{ background: '#0A1628' }}
-                  onMouseEnter={e => (e.currentTarget.style.background = '#2563EB')}
-                  onMouseLeave={e => (e.currentTarget.style.background = '#0A1628')}
+                  style={{ background: '#0A1628', boxShadow: '0 4px 14px rgba(10,22,40,0.30)' }}
+                  onMouseEnter={e => { e.currentTarget.style.background = '#2563EB'; e.currentTarget.style.boxShadow = '0 6px 18px rgba(26,120,255,0.45)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = '#0A1628'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(10,22,40,0.30)'; }}
                 >
-                  {t('nav.register')}
+                  Empezar
                 </Link>
               </>
             )}
