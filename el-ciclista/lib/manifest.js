@@ -1,10 +1,9 @@
 /* ============================================================================
    manifest.js — datos editables de El Ciclista Cocktail Bar
    ============================================================================
-   Puedes cambiar cualquier texto, foto o número de aquí abriendo este archivo
-   con TextEdit (Mac) o Notepad (Windows). NO toques los nombres entre
-   comillas a la izquierda de los dos puntos (eso son las "etiquetas" que
-   usa la web). Sólo cambia los valores a la derecha.
+   Edítalo con TextEdit (Mac) o Notepad (Windows). Sólo cambia lo que está
+   entre comillas a la derecha de los dos puntos. Mantén siempre las comas
+   y los corchetes en su sitio.
    ============================================================================ */
 (function () {
   "use strict";
@@ -15,7 +14,7 @@
       kind:        "Cocktail bar",
       city:        "Barcelona",
       tagline:     "La noche en primera marcha.",
-      kicker:      "Coctelería de autor · Música en directo",
+      kicker:      "Coctelería de autor · Gin tonics del pelotón",
       location:    "Gràcia · Barcelona",
       address:     "Carrer de Mozart, 18",
       addressFull: "Carrer de Mozart, 18 · 08012 Gràcia · Barcelona",
@@ -23,66 +22,56 @@
       phone:       "692 80 57 16",
       phoneIntl:   "+34 692 80 57 16",
       whatsapp:    "34692805716",
-      instagram:   "@elciclistabar",
-      instagramURL:"https://instagram.com/elciclistabar",
-      hours:       "20:00 → 02:30",
-      hoursLong:   "Cada noche · 20:00 → 02:30 (V-S hasta 03:00)",
+      instagram:   "@elciclistabcn",
+      instagramURL:"https://www.instagram.com/elciclistabcn/",
+      email:       "ciclistagracia@gmail.com",
       since:       "2015",
+      owners:      "Fernando Oviedo & Santi Mosquera",
       capacity:    "Aforo íntimo",
-      reservation: "Reserva recomendada jue–sáb"
+      reservation: "Reserva recomendada jue–sáb",
+      menuURL:     "https://www.elciclista-bar.com/menus",
+      siteURL:     "https://www.elciclista-bar.com/es"
     },
 
-    /* 8 cócteles. Cada uno se dibuja en line-art SVG (no foto). El campo
-       glass elige el tipo de copa: highball, old_fashioned, martini, rocks,
-       flute, coupe. El campo liquid es el color del líquido dentro del
-       dibujo. accent colorea la etiqueta y los detalles. */
-    cocktails: [
-      { id:"pedal",       serie:"Casa",      name:"Pedal",        subtitle:"El arranque de la casa",
-        glass:"highball", liquid:"#d4b483", accent:"#C49A3C",
-        ingredients:["Gin cítrica","Tónica seca","Piel de limón"],
-        description:"Fresco, limpio e inevitable. El cóctel con el que El Ciclista da la bienvenida a la noche. Highball alto, hielo limpio, sin adornos." },
-      { id:"rueda-libre", serie:"Casa",      name:"Rueda Libre",  subtitle:"Sin frenos",
-        glass:"old_fashioned", liquid:"#7a3e1a", accent:"#8B3A1A",
-        ingredients:["Mezcal ahumado","Vermut rojo","Amargo de naranja"],
-        description:"El más atrevido de la casa. Mezcal ahumado con vermut rojo y un toque amargo que se queda. Old fashioned, hielo macizo, piel de naranja." },
-      { id:"cadena",      serie:"Casa",      name:"Cadena",       subtitle:"El espresso martini de la casa",
-        glass:"martini", liquid:"#1c0e08", accent:"#C49A3C",
-        ingredients:["Espresso reciente","Vodka","Licor de café"],
-        description:"Engranaje perfecto. Café recién hecho y vodka helado, batido hasta la espuma del color del cobre. Para cuando la pista empieza a calentar." },
-      { id:"palanca",     serie:"Temporada", name:"Palanca",      subtitle:"Sour de whisky y miel",
-        glass:"rocks", liquid:"#c49a3c", accent:"#F2EBDA",
-        ingredients:["Whisky","Miel de romero","Limón"],
-        description:"Sube suave, baja despacio. El equilibrio entre lo dulce y lo ácido, con el whisky llevando la voz cantante." },
-      { id:"tubular",     serie:"Temporada", name:"Tubular",      subtitle:"Spritz de temporada",
-        glass:"flute", liquid:"#cc4a26", accent:"#8B3A1A",
-        ingredients:["Cava brut","Aperol","Soda"],
-        description:"Ligero como una rueda de carbono. Para empezar sin pesar, con el cava seco poniendo la burbuja justa." },
-      { id:"faro",        serie:"Temporada", name:"Faro",         subtitle:"Dark & Stormy de autor",
-        glass:"highball", liquid:"#4a1f0a", accent:"#C49A3C",
-        ingredients:["Ron añejo","Lima","Jengibre fresco"],
-        description:"Ilumina el camino de vuelta. Ron añejo, lima exprimida al momento y jengibre fresco. Para los que se quedan al final." },
-      { id:"manillar",    serie:"Temporada", name:"Manillar",     subtitle:"Pisco sour de la casa",
-        glass:"coupe", liquid:"#d4c97a", accent:"#F2EBDA",
-        ingredients:["Pisco peruano","Limón","Clara de huevo"],
-        description:"Toma el control. Pisco, limón y espuma de clara. Suave en boca, largo en cabeza." },
-      { id:"pinon",       serie:"Temporada", name:"Piñón",        subtitle:"Manhattan de la casa",
-        glass:"coupe", liquid:"#3d0f0f", accent:"#8B3A1A",
-        ingredients:["Bourbon","Vermut negro","Cereza"],
-        description:"El clásico sin concesiones. Bourbon de calidad, vermut negro y una cereza. Para los que saben lo que piden." }
+    /* Horario real (panel de Google):
+       Cerrado lun y mar. Mié–jue–dom hasta 02:00, vie y sáb hasta 03:00. */
+    hours: [
+      { day:"Lunes",     range:"Cerrado",      closed:true },
+      { day:"Martes",    range:"Cerrado",      closed:true },
+      { day:"Miércoles", range:"20:00 → 02:00" },
+      { day:"Jueves",    range:"20:00 → 02:00" },
+      { day:"Viernes",   range:"20:00 → 03:00", late:true },
+      { day:"Sábado",    range:"20:00 → 03:00", late:true },
+      { day:"Domingo",   range:"20:00 → 02:00" }
     ],
 
+    /* La carta vive en su web. Aquí solo el concepto y la puerta. */
+    carta: {
+      eyebrow: "La carta",
+      heading: "Más de veinte gin tonics con nombres del pelotón.",
+      lead:    "El sello de la casa: una lista larga de gin tonics de autor bautizados con guiños al ciclismo y a sus héroes. Acompañando, los clásicos sin concesiones — Old Fashioned, Negroni, Mojito, Pisco Sour — vermuts de barrio y la Moritz Epidor de tipo.",
+      hints:   ["Anti Doping", "Fixed Sprocket", "Más de 20 gin tonics", "Clásicos de coctelería", "Long drinks desde 5€"],
+      ctaLabel:"Ver la carta completa",
+      ctaURL:  "https://www.elciclista-bar.com/menus",
+      footnote:"La carta cambia con la temporada y con lo que entra en barra. Lo más fiable: preguntar al bartender."
+    },
+
+    /* Música — sesiones cuidadas, vinilo, volumen para hablar. */
     sessions: [
-      { id:"thu", day:"Jueves",   genre:"Soul & Funk",                 line:"Vinilo y criterio.",       icon:"vinyl", accent:"#C49A3C" },
-      { id:"fri", day:"Viernes",  genre:"House selectivo",             line:"La selección de la casa.", icon:"house", accent:"#8B3A1A" },
-      { id:"sat", day:"Sábado",   genre:"Disco & Nu-Disco",            line:"Pista llena, pies sueltos.", icon:"disco", accent:"#C49A3C" },
-      { id:"sun", day:"Domingo",  genre:"Jazz & electrónica suave",    line:"Para cerrar sin prisa.",    icon:"wave",  accent:"#F2EBDA" }
+      { id:"thu", day:"Jueves",   genre:"Soul & Funk",              line:"Vinilo y criterio.",         icon:"vinyl", accent:"#D8B458" },
+      { id:"fri", day:"Viernes",  genre:"House selectivo",          line:"La selección de la casa.",   icon:"house", accent:"#A24521" },
+      { id:"sat", day:"Sábado",   genre:"Disco & Nu-Disco",         line:"Pista llena, pies sueltos.", icon:"disco", accent:"#D8B458" },
+      { id:"sun", day:"Domingo",  genre:"Jazz & electrónica suave", line:"Para cerrar sin prisa.",     icon:"wave",  accent:"#F2EBDA" }
     ],
 
-    gallery: [
-      "assets/img/gallery-01.svg","assets/img/gallery-02.svg","assets/img/gallery-03.svg","assets/img/gallery-04.svg",
-      "assets/img/gallery-05.svg","assets/img/gallery-06.svg","assets/img/gallery-07.svg","assets/img/gallery-08.svg",
-      "assets/img/gallery-09.svg","assets/img/gallery-10.svg","assets/img/gallery-11.svg","assets/img/gallery-12.svg",
-      "assets/img/gallery-13.svg","assets/img/gallery-14.svg","assets/img/gallery-15.svg","assets/img/gallery-16.svg"
+    /* Detalles del local — entran en el grid editorial. */
+    details: [
+      { tag:"Mesas",      title:"Ruedas de bicicleta",  copy:"Mesas hechas con ruedas recicladas. Beber sobre los radios.", art:"wheel" },
+      { tag:"Manillares", title:"Pomos y reposavasos",  copy:"Manillares como pomos y radios sosteniendo la copa.",         art:"handlebar" },
+      { tag:"DJ booth",   title:"Semáforo y vinilo",    copy:"Un semáforo de calle preside la cabina. Verde para bailar.",  art:"trafficlight" },
+      { tag:"Paredes",    title:"Bicis de coleccionista",copy:"Bicis colgadas como Picassos. Cuadros con historia.",         art:"bike" },
+      { tag:"Barra",      title:"Latón y madera oscura",copy:"Latón, madera vieja, luz baja. Para hablar a media voz.",     art:"counter" },
+      { tag:"Concepto",   title:"Minimalismo romántico",copy:"Fernando Oviedo y Santi Mosquera lo abrieron en 2015.",       art:"frame" }
     ]
   };
 })();

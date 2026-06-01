@@ -3,18 +3,18 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#0E0B09" />
+  <meta name="theme-color" content="#181210" />
   <title>El Ciclista · Coctelería de autor · Gràcia, Barcelona</title>
-  <meta name="description" content="Coctelería de autor con música en directo en el corazón de Gràcia. La noche en primera marcha. Carrer de Mozart 18, Barcelona. Reserva por WhatsApp." />
+  <meta name="description" content="Coctelería de autor con gin tonics del pelotón en el corazón de Gràcia. La noche en primera marcha. Carrer de Mozart 18, Barcelona. Reserva por WhatsApp." />
   <meta property="og:title" content="El Ciclista · La noche en primera marcha" />
-  <meta property="og:description" content="Coctelería de autor con música en directo. Gràcia, Barcelona." />
+  <meta property="og:description" content="Coctelería de autor con gin tonics del pelotón. Gràcia, Barcelona." />
   <meta property="og:type" content="website" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..700,30..100&family=Inter:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap" />
   <link rel="preload" as="image" href="assets/img/hero-bar.svg" fetchpriority="high" />
-  <link rel="stylesheet" href="styles.css?v=20260601" />
+  <link rel="stylesheet" href="styles.css?v=20260602" />
 </head>
 <body>
   <a class="skip-link" href="#main">Saltar al contenido</a>
@@ -35,17 +35,17 @@
     </div>
   </div>
 
-  <!-- ================== AURORA + GRAIN GLOBAL ================== -->
+  <!-- ================== AURORA + GRAIN ================== -->
   <div class="aurora" aria-hidden="true"></div>
   <div class="grain" aria-hidden="true"></div>
 
   <!-- ================== SIDE MARK ================== -->
-  <aside class="side-mark" aria-hidden="true">
+  <aside class="side-mark" aria-hidden="true" data-side-mark>
     <span class="side-mark-dot"></span>
-    <span>ABIERTO · CADA NOCHE · 20:00 → 02:30</span>
+    <span data-side-mark-text>Abierto · 20:00 → 02:00</span>
   </aside>
 
-  <!-- ================== CUSTOM CURSOR ================== -->
+  <!-- ================== CURSOR ================== -->
   <div class="cursor" aria-hidden="true">
     <div class="cursor-ring"><span class="cursor-label" data-cursor-label></span></div>
     <div class="cursor-dot"></div>
@@ -58,13 +58,13 @@
       <span class="nav-brand-name">El Ciclista</span>
     </a>
     <ul class="nav-list">
-      <li><a href="#local"     data-cursor-hover="leer"><span class="nav-num">01</span>El local</a></li>
-      <li><a href="#coctel"    data-cursor-hover="ver"><span class="nav-num">02</span>Cócteles</a></li>
-      <li><a href="#musica"    data-cursor-hover="escuchar"><span class="nav-num">03</span>Música</a></li>
-      <li><a href="#galeria"   data-cursor-hover="explorar"><span class="nav-num">04</span>Galería</a></li>
-      <li><a href="#privados"  data-cursor-hover="privado"><span class="nav-num">05</span>Privados</a></li>
+      <li><a href="#local"    data-cursor-hover="leer"><span class="nav-num">01</span>El local</a></li>
+      <li><a href="#carta"    data-cursor-hover="ver"><span class="nav-num">02</span>La carta</a></li>
+      <li><a href="#musica"   data-cursor-hover="escuchar"><span class="nav-num">03</span>Música</a></li>
+      <li><a href="#detalles" data-cursor-hover="mirar"><span class="nav-num">04</span>Detalles</a></li>
+      <li><a href="#visitar"  data-cursor-hover="venir"><span class="nav-num">05</span>Visitar</a></li>
     </ul>
-    <a class="nav-cta" href="#reserva" data-cursor-hover="reservar">
+    <a class="nav-cta" href="#visitar" data-cursor-hover="reservar">
       <span>Reservar</span>
       <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M1 7h12M7 1l6 6-6 6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </a>
@@ -76,7 +76,7 @@
   <!-- ================== HERO ================== -->
   <header class="hero" id="top">
     <div class="hero-bg">
-      <img src="assets/img/hero-bar.svg" alt="Ambiente de El Ciclista" fetchpriority="high" />
+      <img src="assets/img/hero-bar.svg" alt="Ambiente de El Ciclista — barra, copa y luz cálida" fetchpriority="high" />
       <div class="hero-veil"></div>
     </div>
     <div class="hero-mesh" aria-hidden="true"></div>
@@ -84,7 +84,7 @@
     <div class="hero-inner">
       <div class="hero-meta">
         <span class="hero-meta-dot"></span>
-        <span class="hero-meta-line">Coctelería de autor · Música en directo</span>
+        <span class="hero-meta-line">Coctelería de autor · Gin tonics del pelotón</span>
         <span class="hero-meta-sep">/</span>
         <span class="hero-meta-loc">Gràcia · Barcelona</span>
       </div>
@@ -97,11 +97,11 @@
       <p class="hero-tagline reveal">La noche en <em>primera marcha</em>.</p>
 
       <div class="hero-actions">
-        <a class="btn btn-primary" href="#reserva" data-cursor-hover="reservar">
+        <a class="btn btn-primary" href="#visitar" data-cursor-hover="reservar">
           <span>Reservar mesa</span>
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M1 8h13M8 1l7 7-7 7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </a>
-        <a class="btn btn-ghost" href="#coctel" data-cursor-hover="ver">
+        <a class="btn btn-ghost" href="#carta" data-cursor-hover="ver">
           <span>Ver la carta</span>
           <span class="btn-ghost-mute">más quieto</span>
         </a>
@@ -113,8 +113,8 @@
           <span class="hero-foot-value">2015 · BCN</span>
         </div>
         <div class="hero-foot-block">
-          <span class="hero-foot-label">Horario</span>
-          <span class="hero-foot-value">20:00 → 02:30</span>
+          <span class="hero-foot-label">Esta noche</span>
+          <span class="hero-foot-value" data-tonight>20:00 → 02:00</span>
         </div>
         <div class="hero-foot-block">
           <span class="hero-foot-label">Dirección</span>
@@ -133,16 +133,16 @@
   <div class="marquee marquee-neon" aria-hidden="true">
     <div class="marquee-track">
       <span>Coctelería de autor</span><span class="marquee-dot">·</span>
-      <span>Música en directo jue → dom</span><span class="marquee-dot">·</span>
+      <span>Gin tonics del pelotón</span><span class="marquee-dot">·</span>
       <span>Carrer de Mozart 18</span><span class="marquee-dot">·</span>
       <span>Gràcia</span><span class="marquee-dot">·</span>
-      <span>Aforo íntimo</span><span class="marquee-dot">·</span>
+      <span>Vinilo jue → dom</span><span class="marquee-dot">·</span>
       <span>La noche en primera marcha</span><span class="marquee-dot">·</span>
       <span>Coctelería de autor</span><span class="marquee-dot">·</span>
-      <span>Música en directo jue → dom</span><span class="marquee-dot">·</span>
+      <span>Gin tonics del pelotón</span><span class="marquee-dot">·</span>
       <span>Carrer de Mozart 18</span><span class="marquee-dot">·</span>
       <span>Gràcia</span><span class="marquee-dot">·</span>
-      <span>Aforo íntimo</span><span class="marquee-dot">·</span>
+      <span>Vinilo jue → dom</span><span class="marquee-dot">·</span>
       <span>La noche en primera marcha</span><span class="marquee-dot">·</span>
     </div>
   </div>
@@ -160,104 +160,88 @@
       </h2>
       <aside class="section-aside">
         <span class="aside-tag">EST · 2015 · BCN</span>
-        <p class="aside-quote">"Un sitio para empezar la noche sin prisa. Buena copa, buena música, silla cómoda."</p>
+        <p class="aside-quote">"Mesas de rueda de bici, semáforo sobre la cabina, bicis colgadas como Picassos. Y veintitantos gin tonics con nombre de ciclista."</p>
         <p class="aside-meta">Carrer de Mozart, 18 · Gràcia</p>
       </aside>
     </header>
 
     <div class="local-collage" data-collage>
       <figure class="collage-item collage-item-1">
-        <img src="assets/img/local-1.svg" alt="Detalle de la barra" loading="lazy" />
+        <img src="assets/img/local-1.svg" alt="Rueda de bicicleta reciclada en el local" loading="lazy" />
         <span class="collage-tape">EST · 2015</span>
       </figure>
       <figure class="collage-item collage-item-2">
-        <img src="assets/img/local-2.svg" alt="Bicicleta reciclada como decoración" loading="lazy" />
+        <img src="assets/img/local-2.svg" alt="Semáforo sobre la cabina del DJ" loading="lazy" />
       </figure>
       <figure class="collage-item collage-item-3">
-        <img src="assets/img/local-3.svg" alt="Cócteles servidos en cristal" loading="lazy" />
+        <img src="assets/img/local-3.svg" alt="Estantería de gins y barra" loading="lazy" />
       </figure>
     </div>
 
     <div class="local-body">
       <p class="lead reveal">
-        El Ciclista nació en 2015 en una esquina silenciosa de Gràcia. Latón, madera oscura,
-        ruedas de bici recicladas colgando del techo, luz cálida tamizada, vinilo en la aguja.
-        No somos discoteca. No somos restaurante. Somos el sitio donde la noche empieza con calma
-        y termina sin que te des cuenta.
+        El Ciclista lo abrieron Fernando Oviedo y Santi Mosquera en 2015 en una esquina silenciosa
+        de Gràcia. Latón, madera oscura, ruedas de bici recicladas hechas mesa, manillares
+        haciendo de pomos, un semáforo presidiendo la cabina del DJ y bicis de coleccionista
+        colgadas como Picassos.
       </p>
       <p class="reveal">
-        Coctelería de autor con criterio: clásicos sin concesiones y creaciones de temporada
-        que cambian cuando el barrio cambia. Música en vivo y sesiones cuidadas de jueves a domingo.
-        Aforo íntimo. Sí, casi siempre hay sitio si vienes pronto. Y sí, mejor reserva.
+        Coctelería de autor con criterio: una lista larga de gin tonics bautizados con guiños
+        al ciclismo y los clásicos sin concesiones. Música cuidada, volumen para hablar a media
+        voz, sesiones de jueves a domingo. Aforo íntimo. Reserva recomendada de jueves a sábado.
       </p>
 
       <dl class="local-meta">
         <div><dt>Aforo</dt><dd>Íntimo</dd></div>
-        <div><dt>Apertura</dt><dd>Todos los días</dd></div>
-        <div><dt>Horario</dt><dd>20:00 → 02:30</dd></div>
+        <div><dt>Especialidad</dt><dd>+20 gin tonics</dd></div>
+        <div><dt>Música</dt><dd>Vinilo jue–dom</dd></div>
         <div><dt>Reserva</dt><dd>Recomendada jue–sáb</dd></div>
       </dl>
     </div>
   </section>
 
-  <!-- ================== 02 CÓCTELES (showcase horizontal pinned) ================== -->
-  <section class="section section-coctel" id="coctel" data-coctel>
-    <div class="coctel-head">
-      <p class="kicker reveal"><span class="kicker-num">02</span> La carta</p>
-      <h2 class="section-title reveal" data-split="lines">
-        Ocho copas, <em>una sola noche</em>.
-      </h2>
-      <p class="coctel-deck reveal">
-        Tres insignias de la casa que no se mueven y cinco de temporada que viajan con el calendario.
-        Hielo limpio, cítricos del día, brazo firme.
-      </p>
-    </div>
+  <!-- ================== 02 LA CARTA ================== -->
+  <section class="section section-carta" id="carta">
+    <span class="section-num" aria-hidden="true">02</span>
 
-    <div class="coctel-pin" data-coctel-pin>
-      <div class="coctel-pin-head">
-        <div class="coctel-progress">
-          <span class="coctel-progress-now" data-coctel-now>01</span>
-          <span class="coctel-progress-sep">/</span>
-          <span class="coctel-progress-total">08</span>
+    <div class="carta-grid">
+      <figure class="carta-art" aria-hidden="true">
+        <img src="assets/img/carta-art.svg" alt="" loading="lazy" />
+      </figure>
+
+      <div class="carta-body">
+        <p class="kicker reveal"><span class="kicker-num">02</span> La carta</p>
+        <h2 class="section-title reveal" data-split="lines">
+          Más de veinte gin tonics <em>con nombres del pelotón</em>.
+        </h2>
+        <p class="carta-lead reveal">
+          El sello de la casa: una lista larga de gin tonics de autor bautizados con guiños al
+          ciclismo y a sus héroes. Acompañando, los clásicos sin concesiones — Old Fashioned,
+          Negroni, Mojito, Pisco Sour — vermuts de barrio y la Moritz Epidor de tipo.
+        </p>
+
+        <ul class="carta-hints" aria-label="Algunos nombres de la carta">
+          <li><span class="hint-tag">Gin tonic</span> Anti Doping</li>
+          <li><span class="hint-tag">Gin tonic</span> Fixed Sprocket</li>
+          <li><span class="hint-tag">Selección</span> +20 gin tonics</li>
+          <li><span class="hint-tag">Clásicos</span> Old Fashioned · Negroni · Mojito</li>
+          <li><span class="hint-tag">De tipo</span> Moritz Epidor</li>
+        </ul>
+
+        <div class="carta-actions">
+          <a class="btn btn-primary" href="https://www.elciclista-bar.com/menus" target="_blank" rel="noopener" data-cursor-hover="abrir">
+            <span>Ver la carta completa</span>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M1 8h13M8 1l7 7-7 7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+          <a class="btn btn-ghost" href="https://www.instagram.com/elciclistabcn/" target="_blank" rel="noopener" data-cursor-hover="instagram">
+            <span>Ver últimas creaciones</span>
+            <span class="btn-ghost-mute">en Instagram</span>
+          </a>
         </div>
-        <div class="coctel-progress-bar"><span data-coctel-fill></span></div>
-        <p class="coctel-hint"><span class="coctel-hint-desktop">Desplázate para avanzar</span><span class="coctel-hint-mobile">Desliza con el dedo</span></p>
-      </div>
 
-      <div class="coctel-track" data-coctel-track>
-        <!-- 8 cards renderizadas por JS desde manifest, con fallback HTML aquí -->
-        <article class="cocktail cocktail-pedal">
-          <div class="cocktail-art" data-cocktail-art="pedal"></div>
-          <div class="cocktail-body">
-            <span class="cocktail-serie">Casa · 01</span>
-            <h3 class="cocktail-name">Pedal</h3>
-            <p class="cocktail-sub">El arranque de la casa</p>
-            <ul class="cocktail-ing"><li>Gin cítrica</li><li>Tónica seca</li><li>Piel de limón</li></ul>
-            <p class="cocktail-desc">Fresco, limpio e inevitable. El cóctel con el que El Ciclista da la bienvenida a la noche.</p>
-          </div>
-        </article>
-      </div>
-    </div>
-
-    <!-- marquee de ingredientes inferior, sentido inverso -->
-    <div class="marquee marquee-ing" aria-hidden="true">
-      <div class="marquee-track marquee-track-reverse">
-        <span>Gin cítrica</span><span class="marquee-dot">·</span>
-        <span>Mezcal ahumado</span><span class="marquee-dot">·</span>
-        <span>Vermut rojo</span><span class="marquee-dot">·</span>
-        <span>Espresso reciente</span><span class="marquee-dot">·</span>
-        <span>Whisky</span><span class="marquee-dot">·</span>
-        <span>Miel de romero</span><span class="marquee-dot">·</span>
-        <span>Cava brut</span><span class="marquee-dot">·</span>
-        <span>Aperol</span><span class="marquee-dot">·</span>
-        <span>Ron añejo</span><span class="marquee-dot">·</span>
-        <span>Jengibre fresco</span><span class="marquee-dot">·</span>
-        <span>Pisco peruano</span><span class="marquee-dot">·</span>
-        <span>Bourbon</span><span class="marquee-dot">·</span>
-        <span>Vermut negro</span><span class="marquee-dot">·</span>
-        <span>Gin cítrica</span><span class="marquee-dot">·</span>
-        <span>Mezcal ahumado</span><span class="marquee-dot">·</span>
-        <span>Vermut rojo</span><span class="marquee-dot">·</span>
+        <p class="carta-footnote">
+          La carta cambia con la temporada y con lo que entra en barra. Lo más fiable: preguntar al bartender.
+        </p>
       </div>
     </div>
   </section>
@@ -272,8 +256,8 @@
         Cuatro noches, <em>cuatro pulsos</em>.
       </h2>
       <aside class="section-aside">
-        <p class="aside-quote">"Música cuidada. Volumen para hablar a media voz. Pista que se llena cuando toca."</p>
-        <p class="aside-meta">Sesiones programadas semana a semana.</p>
+        <p class="aside-quote">"Volumen para hablar a media voz. Pista que se llena cuando toca."</p>
+        <p class="aside-meta">Sesiones de jueves a domingo.</p>
       </aside>
     </header>
 
@@ -313,33 +297,84 @@
     </div>
   </section>
 
-  <!-- ================== 04 GALERÍA ================== -->
-  <section class="section section-galeria" id="galeria">
+  <!-- ================== 04 DETALLES ================== -->
+  <section class="section section-detalles" id="detalles">
     <span class="section-num" aria-hidden="true">04</span>
 
     <header class="section-head section-head-tight">
-      <p class="kicker reveal"><span class="kicker-num">04</span> Galería</p>
+      <p class="kicker reveal"><span class="kicker-num">04</span> Detalles</p>
       <h2 class="section-title reveal" data-split="lines">
-        Tres carriles, <em>una sola noche</em>.
+        Lo que hace el bar, <em>lo cuenta el bar</em>.
       </h2>
+      <p class="detalles-deck reveal">
+        Seis señales de cómo está cosido el local. Ruedas, manillares, semáforos, latón.
+      </p>
     </header>
 
-    <div class="gallery" data-gallery>
-      <div class="gallery-row gallery-row-fast" data-gallery-row="fast"></div>
-      <div class="gallery-row gallery-row-slow" data-gallery-row="slow"></div>
-      <div class="gallery-row gallery-row-rev"  data-gallery-row="rev"></div>
+    <div class="detalles-grid" data-detalles>
+      <article class="detalle detalle-large">
+        <figure class="detalle-art"><img src="assets/img/detail-wheel.svg" alt="Rueda de bicicleta" loading="lazy"/></figure>
+        <div class="detalle-body">
+          <span class="detalle-tag">Mesas</span>
+          <h3 class="detalle-title">Ruedas de bicicleta.</h3>
+          <p class="detalle-copy">Mesas hechas con ruedas recicladas. Beber sobre los radios — el cóctel no se cae, lo prometemos.</p>
+        </div>
+      </article>
+
+      <article class="detalle">
+        <figure class="detalle-art"><img src="assets/img/detail-handlebar.svg" alt="Manillares" loading="lazy"/></figure>
+        <div class="detalle-body">
+          <span class="detalle-tag">Manillares</span>
+          <h3 class="detalle-title">Pomos y reposavasos.</h3>
+          <p class="detalle-copy">Manillares como pomos. Radios sosteniendo la copa.</p>
+        </div>
+      </article>
+
+      <article class="detalle detalle-tall">
+        <figure class="detalle-art"><img src="assets/img/detail-trafficlight.svg" alt="Semáforo sobre la cabina del DJ" loading="lazy"/></figure>
+        <div class="detalle-body">
+          <span class="detalle-tag">DJ booth</span>
+          <h3 class="detalle-title">Semáforo y vinilo.</h3>
+          <p class="detalle-copy">Un semáforo de calle preside la cabina. Verde para bailar.</p>
+        </div>
+      </article>
+
+      <article class="detalle">
+        <figure class="detalle-art"><img src="assets/img/detail-bike.svg" alt="Bici de coleccionista" loading="lazy"/></figure>
+        <div class="detalle-body">
+          <span class="detalle-tag">Paredes</span>
+          <h3 class="detalle-title">Bicis de coleccionista.</h3>
+          <p class="detalle-copy">Cuadros con historia, colgados como Picassos.</p>
+        </div>
+      </article>
+
+      <article class="detalle">
+        <figure class="detalle-art"><img src="assets/img/detail-counter.svg" alt="Barra de latón y madera oscura" loading="lazy"/></figure>
+        <div class="detalle-body">
+          <span class="detalle-tag">Barra</span>
+          <h3 class="detalle-title">Latón y madera oscura.</h3>
+          <p class="detalle-copy">Luz baja. Para hablar a media voz.</p>
+        </div>
+      </article>
+
+      <article class="detalle detalle-wide">
+        <figure class="detalle-art"><img src="assets/img/detail-frame.svg" alt="EST 2015 BCN" loading="lazy"/></figure>
+        <div class="detalle-body">
+          <span class="detalle-tag">Concepto</span>
+          <h3 class="detalle-title">Minimalismo romántico.</h3>
+          <p class="detalle-copy">Fernando Oviedo y Santi Mosquera lo abrieron en 2015. Sigue igual de quieto y de despierto.</p>
+        </div>
+      </article>
     </div>
   </section>
 
-  <!-- ================== 05 EVENTOS PRIVADOS ================== -->
+  <!-- ================== 05 PRIVADOS ================== -->
   <section class="section section-privados" id="privados">
-    <span class="section-num" aria-hidden="true">05</span>
-
     <div class="privados-card" data-privados>
       <img class="privados-bg" src="assets/img/event-bg.svg" alt="" aria-hidden="true" loading="lazy" />
       <div class="privados-veil"></div>
       <div class="privados-inner">
-        <p class="kicker">05 · Eventos privados</p>
+        <p class="kicker">Eventos privados</p>
         <h2 class="privados-title reveal" data-split="lines">
           Cierra El Ciclista <em>para los tuyos</em>.
         </h2>
@@ -357,19 +392,34 @@
     </div>
   </section>
 
-  <!-- ================== 06 RESERVA ================== -->
-  <section class="section section-reserva" id="reserva">
-    <span class="section-num" aria-hidden="true">06</span>
+  <!-- ================== 06 VISITAR (horarios + reserva) ================== -->
+  <section class="section section-visitar" id="visitar">
+    <span class="section-num" aria-hidden="true">05</span>
 
     <header class="section-head section-head-tight">
-      <p class="kicker reveal"><span class="kicker-num">06</span> Reserva</p>
+      <p class="kicker reveal"><span class="kicker-num">05</span> Visitar</p>
       <h2 class="section-title reveal" data-split="lines">
         Te guardamos <em>silla y copa</em>.
       </h2>
     </header>
 
-    <div class="reserva-grid">
+    <div class="visitar-grid">
+      <div class="visitar-hours">
+        <h3 class="block-h">Horario</h3>
+        <dl class="hours-list" data-hours>
+          <div class="hours-row hours-closed"><dt>Lunes</dt><dd>Cerrado</dd></div>
+          <div class="hours-row hours-closed"><dt>Martes</dt><dd>Cerrado</dd></div>
+          <div class="hours-row"><dt>Miércoles</dt><dd>20:00 → 02:00</dd></div>
+          <div class="hours-row"><dt>Jueves</dt><dd>20:00 → 02:00</dd></div>
+          <div class="hours-row hours-late"><dt>Viernes</dt><dd>20:00 → 03:00</dd></div>
+          <div class="hours-row hours-late"><dt>Sábado</dt><dd>20:00 → 03:00</dd></div>
+          <div class="hours-row"><dt>Domingo</dt><dd>20:00 → 02:00</dd></div>
+        </dl>
+        <p class="hours-note">Cocina seca: aquí solo se bebe. Reserva recomendada de jueves a sábado.</p>
+      </div>
+
       <form class="reserva-form" data-reserva action="https://wa.me/34692805716" method="get" novalidate>
+        <h3 class="block-h">Reservar</h3>
         <div class="field">
           <span class="field-num">01</span>
           <label>
@@ -390,7 +440,7 @@
           <span class="field-num">03</span>
           <div class="field-split-cols">
             <label>
-              <span class="field-label">Día</span>
+              <span class="field-label">Día y hora</span>
               <input type="text" name="dia" required placeholder="Vie 5 de junio · 21:30" />
             </label>
             <label>
@@ -419,23 +469,24 @@
         </p>
       </form>
 
-      <aside class="reserva-side">
-        <dl class="reserva-info">
+      <aside class="visitar-side">
+        <h3 class="block-h">Encontrarnos</h3>
+        <dl class="contact-info">
           <div>
             <dt>Tel</dt>
             <dd><a href="tel:+34692805716">+34 692 80 57 16</a></dd>
           </div>
           <div>
+            <dt>Email</dt>
+            <dd><a href="mailto:ciclistagracia@gmail.com">ciclistagracia@gmail.com</a></dd>
+          </div>
+          <div>
             <dt>IG</dt>
-            <dd><a href="https://instagram.com/elciclistabar" target="_blank" rel="noopener">@elciclistabar</a></dd>
+            <dd><a href="https://www.instagram.com/elciclistabcn/" target="_blank" rel="noopener">@elciclistabcn</a></dd>
           </div>
           <div>
             <dt>Dirección</dt>
-            <dd>Carrer de Mozart, 18<br>08012 Gràcia · Barcelona</dd>
-          </div>
-          <div>
-            <dt>Horario</dt>
-            <dd>Cada noche<br>20:00 → 02:30<br><span class="mute">(V-S hasta 03:00)</span></dd>
+            <dd>Carrer de Mozart, 18<br>08012 Gràcia · Barcelona<br><span class="mute">Metro Diagonal · Fontana</span></dd>
           </div>
         </dl>
       </aside>
@@ -467,7 +518,8 @@
         <h4>Contacto</h4>
         <p>Tel · <a href="tel:+34692805716">+34 692 80 57 16</a></p>
         <p>WhatsApp · <a href="https://wa.me/34692805716" target="_blank" rel="noopener">+34 692 80 57 16</a></p>
-        <p>IG · <a href="https://instagram.com/elciclistabar" target="_blank" rel="noopener">@elciclistabar</a></p>
+        <p>IG · <a href="https://www.instagram.com/elciclistabcn/" target="_blank" rel="noopener">@elciclistabcn</a></p>
+        <p>Web · <a href="https://www.elciclista-bar.com/es" target="_blank" rel="noopener">elciclista-bar.com</a></p>
       </div>
       <div class="footer-block footer-map">
         <h4>Mapa</h4>
@@ -490,9 +542,9 @@
   </footer>
 
   <!-- ================== SCRIPTS ================== -->
-  <script defer src="lib/gsap.min.js?v=20260601"></script>
-  <script defer src="lib/ScrollTrigger.min.js?v=20260601"></script>
-  <script defer src="lib/manifest.js?v=20260601"></script>
-  <script defer src="main.js?v=20260601"></script>
+  <script defer src="lib/gsap.min.js?v=20260602"></script>
+  <script defer src="lib/ScrollTrigger.min.js?v=20260602"></script>
+  <script defer src="lib/manifest.js?v=20260602"></script>
+  <script defer src="main.js?v=20260602"></script>
 </body>
 </html>

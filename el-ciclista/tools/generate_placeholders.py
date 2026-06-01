@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-"""Generate moody SVG placeholders for El Ciclista (dark warm bar imagery).
-Client will replace these with real photos later. Each file is hand-shaped
-so the gallery doesn't look algorithmic.
+"""Generate moody SVG placeholders for El Ciclista (slightly warmer / lighter
+palette than v1; motifs that evoke the real local: bike wheel, handlebar,
+traffic light, espresso martini glass, vintage bottles).
+Client will replace these with real photos later.
 """
 import os, math, random
 from pathlib import Path
@@ -9,212 +10,316 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent / "assets" / "img"
 ROOT.mkdir(parents=True, exist_ok=True)
 
-PALETTE = {
-    "bg":      "#0E0B09",
-    "bg2":     "#15110E",
-    "bg3":     "#1E1813",
-    "gold":    "#C49A3C",
-    "gold2":   "#9B7926",
-    "terra":   "#8B3A1A",
-    "terra2":  "#6A2A11",
-    "cream":   "#F2EBDA",
-    "cream2":  "#DDD2BC",
-    "amber":   "#cc4a26",
-    "smoke":   "#3a302a",
+P = {
+    "bg":      "#181210",
+    "bg2":     "#1F1714",
+    "bg3":     "#2A1F19",
+    "gold":    "#D8B458",   # un punto más claro y dorado
+    "gold2":   "#A88536",
+    "terra":   "#A24521",
+    "terra2":  "#75301A",
+    "cream":   "#F3E9CC",
+    "cream2":  "#E2D2A8",
+    "amber":   "#D9582B",
+    "smoke":   "#3A302A",
+    "brass":   "#C9A961",
 }
 
-def wrap(w, h, body, defs=""):
+def grain_filter(seed):
+    return f'<filter id="g{seed}"><feTurbulence type="fractalNoise" baseFrequency="0.95" numOctaves="2" stitchTiles="stitch" seed="{seed}"/><feColorMatrix values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.16 0"/></filter>'
+
+def wrap(w, h, body, seed=1, defs=""):
     return f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {w} {h}" preserveAspectRatio="xMidYMid slice">
-<defs>
-  <filter id="grain"><feTurbulence type="fractalNoise" baseFrequency="0.95" numOctaves="2" stitchTiles="stitch" seed="{random.randint(1,99)}"/><feColorMatrix values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.18 0"/></filter>
-  <filter id="blur"><feGaussianBlur stdDeviation="60"/></filter>
-  {defs}
-</defs>
+<defs>{grain_filter(seed)}<filter id="bl"><feGaussianBlur stdDeviation="55"/></filter>{defs}</defs>
 {body}
-<rect width="100%" height="100%" filter="url(#grain)" opacity="0.55"/>
+<rect width="100%" height="100%" filter="url(#g{seed})" opacity="0.55"/>
 </svg>'''
 
-def hero_bar(seed=1):
-    random.seed(seed)
+def wheel(cx, cy, r, color=P["cream2"], opacity=0.7, spokes=24):
+    out = [f'<circle cx="{cx}" cy="{cy}" r="{r}" fill="none" stroke="{color}" stroke-width="2" opacity="{opacity}"/>']
+    out.append(f'<circle cx="{cx}" cy="{cy}" r="{r-12}" fill="none" stroke="{color}" stroke-width="0.6" opacity="{opacity*0.5}"/>')
+    out.append(f'<circle cx="{cx}" cy="{cy}" r="14" fill="{P["bg"]}" stroke="{P["gold"]}" stroke-width="1.6" opacity="{opacity}"/>')
+    for a in range(0, 360, 360//spokes):
+        x2 = cx + r*math.cos(math.radians(a))
+        y2 = cy + r*math.sin(math.radians(a))
+        out.append(f'<line x1="{cx}" y1="{cy}" x2="{x2:.1f}" y2="{y2:.1f}" stroke="{color}" stroke-width="0.55" opacity="{opacity*0.7}"/>')
+    return "".join(out)
+
+def martini_glass(cx, cy, color=P["cream"], liquid=P["terra2"], scale=1.0):
+    s = scale
+    return f'''<g transform="translate({cx} {cy})" opacity="0.95">
+<path d="M {-110*s} {-130*s} L {110*s} {-130*s} L {8*s} {30*s} L {8*s} {140*s} L {55*s} {155*s} L {-55*s} {155*s} L {-8*s} {140*s} L {-8*s} {30*s} Z"
+      fill="none" stroke="{color}" stroke-width="1.4"/>
+<path d="M {-92*s} {-120*s} L {92*s} {-120*s} L {7*s} {18*s} L {-7*s} {18*s} Z" fill="{liquid}" opacity="0.85"/>
+<ellipse cx="0" cy="{-120*s}" rx="{94*s}" ry="6" fill="{color}" opacity="0.6"/>
+<!-- crema espuma -->
+<ellipse cx="0" cy="{-115*s}" rx="{86*s}" ry="4" fill="{P['cream']}" opacity="0.55"/>
+<circle cx="{-15*s}" cy="{-108*s}" r="{3.5*s}" fill="{P['gold']}" opacity="0.85"/>
+<circle cx="{12*s}"  cy="{-112*s}" r="{2.6*s}" fill="{P['gold']}" opacity="0.75"/>
+<circle cx="{-2*s}"  cy="{-105*s}" r="{2.0*s}" fill="{P['gold']}" opacity="0.6"/>
+</g>'''
+
+def traffic_light(cx, cy):
+    return f'''<g transform="translate({cx} {cy})" opacity="0.78">
+<rect x="-22" y="-50" width="44" height="120" rx="8" fill="{P['bg3']}" stroke="{P['cream2']}" stroke-width="1.2"/>
+<circle cx="0" cy="-26" r="11" fill="{P['terra']}" opacity="0.95"/>
+<circle cx="0" cy="2"   r="11" fill="{P['gold']}" opacity="0.85"/>
+<circle cx="0" cy="30"  r="11" fill="#2B6A3F" opacity="0.9"/>
+<rect x="-3" y="-100" width="6" height="50" fill="{P['cream2']}"/>
+</g>'''
+
+def handlebar(cx, cy):
+    return f'''<g transform="translate({cx} {cy})" opacity="0.8">
+<path d="M -200 0 Q -180 -30 -150 -30 L 150 -30 Q 180 -30 200 0" fill="none" stroke="{P['cream2']}" stroke-width="6" stroke-linecap="round"/>
+<rect x="-216" y="-2" width="32" height="14" rx="3" fill="{P['bg3']}" stroke="{P['cream2']}" stroke-width="1.2"/>
+<rect x="184"  y="-2" width="32" height="14" rx="3" fill="{P['bg3']}" stroke="{P['cream2']}" stroke-width="1.2"/>
+<line x1="0" y1="-30" x2="0" y2="60" stroke="{P['cream2']}" stroke-width="3"/>
+</g>'''
+
+def bottle(x, y, h, c1, c2, label=""):
+    return f'''<g transform="translate({x} {y})" opacity="0.85">
+<rect x="0" y="{int(h*0.18)}" width="46" height="{int(h*0.82)}" rx="3" fill="{c1}" stroke="{P['cream2']}" stroke-width="0.8"/>
+<rect x="12" y="0" width="22" height="{int(h*0.18)+4}" fill="{c1}" stroke="{P['cream2']}" stroke-width="0.8"/>
+<rect x="0" y="{int(h*0.46)}" width="46" height="{int(h*0.18)}" fill="{P['cream']}" opacity="0.85"/>
+<text x="23" y="{int(h*0.58)}" font-family="serif" font-size="9" text-anchor="middle" fill="{P['bg']}" font-style="italic" letter-spacing="1">{label}</text>
+</g>'''
+
+# ============================================================
+# HERO — composición editorial bar + copa
+# ============================================================
+def hero_bar():
     body = f'''
-<rect width="1600" height="1000" fill="{PALETTE['bg']}"/>
-<g opacity="0.85" filter="url(#blur)">
-  <circle cx="1240" cy="220" r="280" fill="{PALETTE['terra']}" opacity="0.45"/>
-  <circle cx="320"  cy="320" r="220" fill="{PALETTE['gold']}"  opacity="0.30"/>
-  <circle cx="900"  cy="780" r="340" fill="{PALETTE['gold2']}" opacity="0.22"/>
-  <ellipse cx="800" cy="520" rx="900" ry="120" fill="{PALETTE['terra2']}" opacity="0.30"/>
+<rect width="1600" height="1000" fill="{P['bg']}"/>
+<!-- glow cálido -->
+<g opacity="0.85" filter="url(#bl)">
+  <circle cx="1280" cy="240" r="280" fill="{P['terra']}" opacity="0.50"/>
+  <circle cx="320"  cy="320" r="240" fill="{P['gold']}"  opacity="0.34"/>
+  <circle cx="950"  cy="800" r="380" fill="{P['gold2']}" opacity="0.26"/>
+  <ellipse cx="800" cy="540" rx="980" ry="120" fill="{P['terra2']}" opacity="0.30"/>
 </g>
-<!-- counter line -->
-<rect x="0" y="680" width="1600" height="320" fill="url(#counter)"/>
-<defs><linearGradient id="counter" x1="0" x2="0" y1="0" y2="1">
-  <stop offset="0" stop-color="{PALETTE['smoke']}" stop-opacity="0.65"/>
-  <stop offset="1" stop-color="#000" stop-opacity="0.95"/>
-</linearGradient></defs>
-<!-- silhouette of bottles in background -->
+<!-- back wall: bottles -->
 <g opacity="0.55">
-  <rect x="80"  y="380" width="38" height="280" fill="#1c1410"/>
-  <rect x="78"  y="350" width="42" height="40"  fill="#1c1410"/>
-  <rect x="150" y="400" width="32" height="260" fill="#231914"/>
-  <rect x="148" y="378" width="36" height="30"  fill="#231914"/>
-  <rect x="210" y="370" width="44" height="290" fill="#1c1410"/>
-  <rect x="208" y="338" width="48" height="40"  fill="#1c1410"/>
-  <rect x="1380" y="380" width="38" height="280" fill="#1c1410"/>
-  <rect x="1378" y="350" width="42" height="40"  fill="#1c1410"/>
-  <rect x="1450" y="400" width="32" height="260" fill="#231914"/>
-  <rect x="1448" y="378" width="36" height="30"  fill="#231914"/>
+{bottle(80, 320, 320, P['bg3'], P['bg3'], "GIN")}
+{bottle(150, 350, 300, P['terra2'], P['terra2'], "")}
+{bottle(220, 340, 310, P['bg3'], P['bg3'], "VERMUT")}
+{bottle(295, 360, 290, P['gold2'], P['gold2'], "")}
+{bottle(365, 330, 320, P['bg3'], P['bg3'], "")}
+{bottle(1280, 320, 320, P['bg3'], P['bg3'], "")}
+{bottle(1350, 350, 300, P['terra2'], P['terra2'], "BITTER")}
+{bottle(1420, 340, 310, P['bg3'], P['bg3'], "")}
+{bottle(1495, 360, 290, P['gold2'], P['gold2'], "")}
 </g>
-<!-- cocktail glass center -->
-<g transform="translate(800 540)" opacity="0.95">
-  <path d="M -110 -120 L 110 -120 L 10 30 L 10 130 L 60 140 L -60 140 L -10 130 L -10 30 Z"
-        fill="none" stroke="{PALETTE['cream2']}" stroke-width="1.2" opacity="0.55"/>
-  <path d="M -90 -110 L 90 -110 L 8 18 L -8 18 Z" fill="{PALETTE['terra2']}" opacity="0.65"/>
-  <ellipse cx="0" cy="-110" rx="92" ry="6" fill="{PALETTE['cream']}" opacity="0.35"/>
-  <circle cx="-20" cy="-90" r="3" fill="{PALETTE['gold']}"/>
-  <circle cx="14"  cy="-94" r="2.4" fill="{PALETTE['gold']}"/>
+<!-- counter -->
+<rect x="0" y="700" width="1600" height="300" fill="url(#cnt)"/>
+<defs><linearGradient id="cnt" x1="0" x2="0" y1="0" y2="1">
+  <stop offset="0" stop-color="#3a2a22" stop-opacity="0.7"/>
+  <stop offset="1" stop-color="#000" stop-opacity="0.92"/>
+</linearGradient></defs>
+<!-- wheel as table on the right (subtle) -->
+<g opacity="0.16">
+{wheel(1380, 680, 200, P['cream2'], 1.0, 28)}
+</g>
+<!-- espresso martini glass front-center -->
+<g transform="translate(800 560)">
+{martini_glass(0, 0, P['cream'], "#2a120a", 1.05)}
 </g>
 <!-- vignette -->
 <rect width="1600" height="1000" fill="url(#vig)"/>
-<defs><radialGradient id="vig" cx="50%" cy="50%" r="75%">
-  <stop offset="0" stop-color="#000" stop-opacity="0"/>
+<defs><radialGradient id="vig" cx="50%" cy="55%" r="78%">
+  <stop offset="0" stop-color="#000" stop-opacity="0.0"/>
   <stop offset="1" stop-color="#000" stop-opacity="0.78"/>
 </radialGradient></defs>
 '''
-    return wrap(1600, 1000, body)
+    return wrap(1600, 1000, body, seed=11)
 
-def local_collage(idx, seed):
-    random.seed(seed)
-    palettes = [
-        (PALETTE['gold'],  PALETTE['terra2']),
-        (PALETTE['terra'], PALETTE['gold2']),
-        (PALETTE['amber'], PALETTE['terra2']),
-    ]
-    p1, p2 = palettes[idx % 3]
+# ============================================================
+# LOCAL collage (3 photos) — bike wheel + bottles + DJ
+# ============================================================
+def local_wheel():
     body = f'''
-<rect width="900" height="1100" fill="{PALETTE['bg2']}"/>
-<g opacity="0.7" filter="url(#blur)">
-  <circle cx="{random.randint(150,750)}" cy="{random.randint(200,500)}" r="240" fill="{p1}" opacity="0.55"/>
-  <circle cx="{random.randint(150,750)}" cy="{random.randint(500,900)}" r="280" fill="{p2}" opacity="0.50"/>
+<rect width="900" height="1100" fill="{P['bg2']}"/>
+<g opacity="0.8" filter="url(#bl)">
+  <circle cx="450" cy="380" r="280" fill="{P['gold']}" opacity="0.45"/>
+  <circle cx="600" cy="800" r="220" fill="{P['terra']}" opacity="0.40"/>
 </g>
-<!-- bike wheel as recurring motif -->
-<g transform="translate({random.randint(180,720)} {random.randint(380,700)}) rotate({random.randint(-20,20)})" opacity="0.55">
-  <circle r="170" fill="none" stroke="{PALETTE['cream2']}" stroke-width="2"/>
-  <circle r="156" fill="none" stroke="{PALETTE['cream2']}" stroke-width="0.6" opacity="0.55"/>
-  <circle r="18"  fill="{PALETTE['bg']}" stroke="{PALETTE['gold']}" stroke-width="1.5"/>
-  {''.join(f'<line x1="0" y1="0" x2="{170*math.cos(math.radians(a)):.1f}" y2="{170*math.sin(math.radians(a)):.1f}" stroke="{PALETTE["cream2"]}" stroke-width="0.6"/>' for a in range(0,360,18))}
+{wheel(450, 580, 290, P['cream2'], 0.85, 32)}
+<rect width="900" height="1100" fill="url(#v1)"/>
+<defs><radialGradient id="v1" cx="50%" cy="50%" r="78%"><stop offset="0" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="0.72"/></radialGradient></defs>'''
+    return wrap(900, 1100, body, seed=21)
+
+def local_dj():
+    body = f'''
+<rect width="900" height="1100" fill="{P['bg2']}"/>
+<g opacity="0.78" filter="url(#bl)">
+  <circle cx="280" cy="320" r="240" fill="{P['amber']}" opacity="0.40"/>
+  <circle cx="700" cy="780" r="280" fill="{P['gold2']}" opacity="0.35"/>
 </g>
-<!-- glass silhouette -->
-<g transform="translate({random.randint(220,680)} {random.randint(700,950)})" opacity="0.85">
-  <path d="M -60 -90 L 60 -90 L 8 12 L 8 80 L 36 90 L -36 90 L -8 80 L -8 12 Z"
-        fill="none" stroke="{PALETTE['cream']}" stroke-width="1.4"/>
-  <path d="M -48 -82 L 48 -82 L 6 4 L -6 4 Z" fill="{p1}" opacity="0.78"/>
+{traffic_light(450, 380)}
+<!-- DJ booth desk -->
+<rect x="160" y="780" width="580" height="220" fill="{P['bg3']}" opacity="0.85" stroke="{P['cream2']}" stroke-width="1"/>
+<rect x="280" y="820" width="180" height="130" rx="4" fill="{P['bg']}" stroke="{P['cream2']}" stroke-width="1.2"/>
+<rect x="490" y="820" width="180" height="130" rx="4" fill="{P['bg']}" stroke="{P['cream2']}" stroke-width="1.2"/>
+<!-- vinyl on left deck -->
+<circle cx="370" cy="885" r="48" fill="{P['bg']}" stroke="{P['cream2']}" stroke-width="0.8"/>
+<circle cx="370" cy="885" r="10" fill="{P['gold']}"/>
+<circle cx="580" cy="885" r="48" fill="{P['bg']}" stroke="{P['cream2']}" stroke-width="0.8"/>
+<circle cx="580" cy="885" r="10" fill="{P['gold']}"/>
+<rect width="900" height="1100" fill="url(#v2)"/>
+<defs><radialGradient id="v2" cx="50%" cy="50%" r="78%"><stop offset="0" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="0.74"/></radialGradient></defs>'''
+    return wrap(900, 1100, body, seed=22)
+
+def local_bar():
+    body = f'''
+<rect width="900" height="1100" fill="{P['bg2']}"/>
+<g opacity="0.78" filter="url(#bl)">
+  <circle cx="450" cy="350" r="280" fill="{P['gold']}" opacity="0.45"/>
+  <circle cx="450" cy="900" r="320" fill="{P['terra2']}" opacity="0.35"/>
 </g>
-<rect width="900" height="1100" fill="url(#vig{idx})"/>
-<defs><radialGradient id="vig{idx}" cx="50%" cy="50%" r="80%">
-  <stop offset="0" stop-color="#000" stop-opacity="0"/>
-  <stop offset="1" stop-color="#000" stop-opacity="0.7"/>
-</radialGradient></defs>
-'''
-    return wrap(900, 1100, body)
+<!-- bottles -->
+<g opacity="0.85">
+{bottle(180, 380, 360, P['bg3'], P['bg3'], "GIN 1")}
+{bottle(260, 410, 330, P['terra2'], P['terra2'], "GIN 2")}
+{bottle(340, 380, 360, P['bg3'], P['bg3'], "GIN 3")}
+{bottle(420, 410, 330, P['gold2'], P['gold2'], "GIN 4")}
+{bottle(500, 380, 360, P['bg3'], P['bg3'], "GIN 5")}
+{bottle(580, 410, 330, P['terra2'], P['terra2'], "GIN 6")}
+{bottle(660, 380, 360, P['bg3'], P['bg3'], "GIN 7")}
+</g>
+<!-- bar counter -->
+<rect x="0" y="820" width="900" height="280" fill="#2a1d17" opacity="0.85"/>
+<!-- glass on bar -->
+{martini_glass(450, 880, P['cream'], P['gold'], 0.55)}
+<rect width="900" height="1100" fill="url(#v3)"/>
+<defs><radialGradient id="v3" cx="50%" cy="50%" r="78%"><stop offset="0" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="0.72"/></radialGradient></defs>'''
+    return wrap(900, 1100, body, seed=23)
 
-def gallery_tile(idx, seed):
-    random.seed(seed)
-    motifs = ["wheel", "glass", "bottle", "neon", "bokeh", "smoke", "ice", "wood"]
-    motif = motifs[idx % len(motifs)]
-    palettes = [
-        (PALETTE['gold'],  PALETTE['terra2']),
-        (PALETTE['terra'], PALETTE['gold']),
-        (PALETTE['amber'], PALETTE['gold2']),
-        (PALETTE['gold2'], PALETTE['terra']),
-        (PALETTE['cream2'], PALETTE['terra2']),
-    ]
-    p1, p2 = palettes[idx % 5]
-    w, h = 800, 1000
-    body_parts = [f'<rect width="{w}" height="{h}" fill="{PALETTE["bg2"]}"/>']
-    # bokeh blobs
-    body_parts.append('<g opacity="0.65" filter="url(#blur)">')
-    for _ in range(3):
-        body_parts.append(f'<circle cx="{random.randint(80,720)}" cy="{random.randint(80,920)}" r="{random.randint(110,240)}" fill="{random.choice([p1,p2,PALETTE["gold"]])}" opacity="{random.uniform(0.30,0.6):.2f}"/>')
-    body_parts.append('</g>')
+# ============================================================
+# DETAIL TILES — editorial grid replacement for the marquee gallery
+# ============================================================
+def tile_wheel():
+    body = f'''<rect width="900" height="900" fill="{P['bg2']}"/>
+<g opacity="0.75" filter="url(#bl)"><circle cx="450" cy="450" r="320" fill="{P['gold']}" opacity="0.42"/></g>
+{wheel(450, 450, 320, P['cream2'], 0.85, 32)}'''
+    return wrap(900, 900, body, seed=31)
 
-    if motif == "wheel":
-        body_parts.append(f'''<g transform="translate({w//2} {h//2}) rotate({random.randint(-30,30)})" opacity="0.78">
-  <circle r="220" fill="none" stroke="{PALETTE['cream2']}" stroke-width="2"/>
-  <circle r="200" fill="none" stroke="{PALETTE['cream2']}" stroke-width="0.5" opacity="0.4"/>
-  <circle r="20" fill="{PALETTE['bg']}" stroke="{PALETTE['gold']}" stroke-width="2"/>
-  {''.join(f'<line x1="0" y1="0" x2="{220*math.cos(math.radians(a)):.1f}" y2="{220*math.sin(math.radians(a)):.1f}" stroke="{PALETTE["cream2"]}" stroke-width="0.6"/>' for a in range(0,360,15))}
-</g>''')
-    elif motif == "glass":
-        body_parts.append(f'''<g transform="translate({w//2} {h//2 + 80})" opacity="0.92">
-  <path d="M -160 -240 L 160 -240 L 14 20 L 14 200 L 70 220 L -70 220 L -14 200 L -14 20 Z"
-        fill="none" stroke="{PALETTE['cream']}" stroke-width="1.6"/>
-  <path d="M -140 -228 L 140 -228 L 12 0 L -12 0 Z" fill="{p1}" opacity="0.82"/>
-  <ellipse cx="0" cy="-228" rx="142" ry="8" fill="{PALETTE['cream']}" opacity="0.5"/>
-</g>''')
-    elif motif == "bottle":
-        body_parts.append(f'''<g transform="translate({w//2-40} {180})" opacity="0.88">
-  <rect x="0" y="80" width="80" height="540" rx="4" fill="{p2}" stroke="{PALETTE['cream2']}" stroke-width="1"/>
-  <rect x="20" y="0" width="40" height="100" fill="{p2}" stroke="{PALETTE['cream2']}" stroke-width="1"/>
-  <rect x="0" y="280" width="80" height="80" fill="{PALETTE['cream']}" opacity="0.65"/>
-  <text x="40" y="328" font-family="serif" font-size="20" text-anchor="middle" fill="{PALETTE['bg']}" font-style="italic">EST. 2015</text>
-</g>''')
-    elif motif == "neon":
-        body_parts.append(f'''<g opacity="0.85">
-  <path d="M 80 {h//2} Q {w//2} {h//2-220} {w-80} {h//2}" fill="none" stroke="{p1}" stroke-width="3" stroke-linecap="round"/>
-  <path d="M 80 {h//2+40} Q {w//2} {h//2-180} {w-80} {h//2+40}" fill="none" stroke="{p1}" stroke-width="14" stroke-linecap="round" opacity="0.18" filter="url(#blur)"/>
-  <text x="{w//2}" y="{h//2+120}" font-family="serif" font-size="62" font-style="italic" text-anchor="middle" fill="{PALETTE['cream']}" opacity="0.85">la noche</text>
-</g>''')
-    elif motif == "bokeh":
-        for _ in range(12):
-            body_parts.append(f'<circle cx="{random.randint(40,w-40)}" cy="{random.randint(40,h-40)}" r="{random.randint(20,80)}" fill="{random.choice([p1,p2,PALETTE["gold"]])}" opacity="{random.uniform(0.25,0.55):.2f}"/>')
-    elif motif == "smoke":
-        for i in range(7):
-            body_parts.append(f'<ellipse cx="{w//2+random.randint(-100,100)}" cy="{h-100-i*100}" rx="{180+i*20}" ry="{40+i*10}" fill="{PALETTE["cream2"]}" opacity="{0.1-i*0.012:.3f}"/>')
-        body_parts.append(f'<circle cx="{w//2}" cy="{h-50}" r="6" fill="{PALETTE["amber"]}"/>')
-    elif motif == "ice":
-        for _ in range(9):
-            x = random.randint(60, w-60); y = random.randint(60, h-60); s = random.randint(50, 110)
-            body_parts.append(f'<rect x="{x}" y="{y}" width="{s}" height="{s}" rx="6" fill="{PALETTE["cream2"]}" opacity="{random.uniform(0.18,0.38):.2f}" transform="rotate({random.randint(-30,30)} {x+s//2} {y+s//2})"/>')
-    elif motif == "wood":
-        for i in range(0, h, 28):
-            body_parts.append(f'<rect x="0" y="{i}" width="{w}" height="20" fill="{PALETTE["bg3"]}" opacity="{0.5+random.uniform(-0.2,0.2):.2f}"/>')
-        body_parts.append(f'<circle cx="{w//2}" cy="{h//2}" r="180" fill="{p1}" opacity="0.35" filter="url(#blur)"/>')
+def tile_handlebar():
+    body = f'''<rect width="900" height="900" fill="{P['bg2']}"/>
+<g opacity="0.7" filter="url(#bl)"><circle cx="450" cy="450" r="280" fill="{P['terra']}" opacity="0.40"/></g>
+<g transform="translate(450 450) scale(1.5)">{handlebar(0, 0)}</g>'''
+    return wrap(900, 900, body, seed=32)
 
-    body_parts.append(f'''<rect width="{w}" height="{h}" fill="url(#vigT{idx})"/>
-<defs><radialGradient id="vigT{idx}" cx="50%" cy="50%" r="78%">
-  <stop offset="0" stop-color="#000" stop-opacity="0"/>
-  <stop offset="1" stop-color="#000" stop-opacity="0.78"/>
-</radialGradient></defs>''')
-    return wrap(w, h, "\n".join(body_parts))
+def tile_traffic():
+    body = f'''<rect width="900" height="900" fill="{P['bg2']}"/>
+<g opacity="0.7" filter="url(#bl)"><circle cx="450" cy="450" r="260" fill="{P['gold2']}" opacity="0.4"/></g>
+<g transform="translate(450 450) scale(2.2)">{traffic_light(0, 0)}</g>'''
+    return wrap(900, 900, body, seed=33)
 
+def tile_bike():
+    # silhouette of a road bike
+    body = f'''<rect width="900" height="900" fill="{P['bg2']}"/>
+<g opacity="0.7" filter="url(#bl)"><circle cx="450" cy="450" r="300" fill="{P['amber']}" opacity="0.35"/></g>
+<g transform="translate(450 480)" opacity="0.85" stroke="{P['cream2']}" stroke-width="3" fill="none" stroke-linecap="round">
+  <!-- wheels -->
+  <circle cx="-180" cy="80" r="115"/>
+  <circle cx="180"  cy="80" r="115"/>
+  <!-- frame triangle -->
+  <line x1="-180" y1="80" x2="-30" y2="-90"/>
+  <line x1="-30" y1="-90" x2="120" y2="-90"/>
+  <line x1="120" y1="-90" x2="180" y2="80"/>
+  <line x1="-30" y1="-90" x2="50" y2="80"/>
+  <line x1="50" y1="80" x2="180" y2="80"/>
+  <line x1="50" y1="80" x2="-180" y2="80"/>
+  <!-- seat post + saddle -->
+  <line x1="50" y1="80" x2="80" y2="-110"/>
+  <path d="M 40 -110 Q 80 -120 130 -110"/>
+  <!-- handlebar -->
+  <line x1="120" y1="-90" x2="200" y2="-140"/>
+  <path d="M 180 -150 Q 220 -150 200 -110"/>
+  <!-- pedal/spokes hint -->
+  <circle cx="0" cy="80" r="18"/>
+</g>'''
+    return wrap(900, 900, body, seed=34)
+
+def tile_counter():
+    body = f'''<rect width="900" height="900" fill="{P['bg2']}"/>
+<g opacity="0.75" filter="url(#bl)"><circle cx="450" cy="320" r="260" fill="{P['gold']}" opacity="0.40"/></g>
+<rect x="0" y="540" width="900" height="360" fill="#2a1d17" opacity="0.92"/>
+{martini_glass(310, 620, P['cream'], "#2a120a", 0.85)}
+<g transform="translate(620 660)" opacity="0.85">
+  <rect x="-30" y="-40" width="60" height="120" rx="3" fill="{P['terra2']}" stroke="{P['cream2']}" stroke-width="1"/>
+  <rect x="-12" y="-70" width="24" height="35" fill="{P['terra2']}" stroke="{P['cream2']}" stroke-width="1"/>
+</g>'''
+    return wrap(900, 900, body, seed=35)
+
+def tile_frame():
+    # vintage portrait frame with EST. 2015
+    body = f'''<rect width="900" height="900" fill="{P['bg2']}"/>
+<g opacity="0.75" filter="url(#bl)"><circle cx="450" cy="450" r="280" fill="{P['terra2']}" opacity="0.40"/></g>
+<rect x="180" y="180" width="540" height="540" fill="none" stroke="{P['gold']}" stroke-width="4"/>
+<rect x="160" y="160" width="580" height="580" fill="none" stroke="{P['gold']}" stroke-width="1" opacity="0.55"/>
+<g transform="translate(450 470)">
+{wheel(0, 0, 160, P['cream2'], 0.7, 24)}
+</g>
+<text x="450" y="660" font-family="serif" font-size="34" font-style="italic" text-anchor="middle" fill="{P['cream']}" letter-spacing="6">EST · 2015 · BCN</text>'''
+    return wrap(900, 900, body, seed=36)
+
+# ============================================================
+# CARTA art — single elegant glass + bike silhouette nested
+# ============================================================
+def carta_art():
+    body = f'''
+<rect width="900" height="1100" fill="{P['bg2']}"/>
+<g opacity="0.85" filter="url(#bl)">
+  <circle cx="450" cy="300" r="320" fill="{P['gold']}" opacity="0.48"/>
+  <circle cx="500" cy="900" r="300" fill="{P['terra2']}" opacity="0.42"/>
+</g>
+<!-- big wheel halo -->
+<g opacity="0.18">{wheel(450, 600, 360, P['cream2'], 1.0, 36)}</g>
+<!-- glass front -->
+{martini_glass(450, 580, P['cream'], "#2a120a", 1.4)}
+<rect width="900" height="1100" fill="url(#cv)"/>
+<defs><radialGradient id="cv" cx="50%" cy="50%" r="80%"><stop offset="0" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="0.7"/></radialGradient></defs>'''
+    return wrap(900, 1100, body, seed=41)
+
+# ============================================================
+# EVENTOS background (sigue siendo full-bleed)
+# ============================================================
 def event_bg():
     body = f'''
-<rect width="1600" height="900" fill="{PALETTE['bg']}"/>
-<g opacity="0.75" filter="url(#blur)">
-  <circle cx="380"  cy="280" r="320" fill="{PALETTE['terra']}" opacity="0.55"/>
-  <circle cx="1200" cy="640" r="380" fill="{PALETTE['gold2']}" opacity="0.45"/>
+<rect width="1600" height="900" fill="{P['bg']}"/>
+<g opacity="0.85" filter="url(#bl)">
+  <circle cx="380"  cy="280" r="320" fill="{P['terra']}" opacity="0.55"/>
+  <circle cx="1200" cy="640" r="380" fill="{P['gold2']}" opacity="0.45"/>
 </g>
-<!-- glassware row -->
-<g opacity="0.82" transform="translate(0 520)">
-  {''.join(f'<g transform="translate({i*220+120} 0)"><path d="M -50 -90 L 50 -90 L 6 14 L 6 90 L 30 100 L -30 100 L -6 90 L -6 14 Z" fill="none" stroke="{PALETTE["cream2"]}" stroke-width="1.2"/><path d="M -42 -82 L 42 -82 L 5 6 L -5 6 Z" fill="{[PALETTE["gold"], PALETTE["terra2"], PALETTE["amber"], PALETTE["gold2"]][i%4]}" opacity="0.78"/></g>' for i in range(7))}
+<g opacity="0.18">{wheel(220, 720, 240, P['cream2'], 1.0, 32)}</g>
+<g opacity="0.55" transform="translate(0 540)">
+  {''.join(f'<g transform="translate({i*210+200} 0)">{martini_glass(0, 0, P["cream"], [P["gold"], P["terra2"], P["amber"], P["gold2"]][i%4], 0.4)}</g>' for i in range(7))}
 </g>
 <rect width="1600" height="900" fill="url(#evg)"/>
-<defs><radialGradient id="evg" cx="50%" cy="50%" r="75%">
-  <stop offset="0" stop-color="#000" stop-opacity="0.2"/>
-  <stop offset="1" stop-color="#000" stop-opacity="0.85"/>
-</radialGradient></defs>'''
-    return wrap(1600, 900, body)
+<defs><radialGradient id="evg" cx="50%" cy="50%" r="78%"><stop offset="0" stop-color="#000" stop-opacity="0.15"/><stop offset="1" stop-color="#000" stop-opacity="0.82"/></radialGradient></defs>'''
+    return wrap(1600, 900, body, seed=51)
 
-# Generate all files
+# ============================================================
+# GENERATE all
+# ============================================================
+# Clean up old gallery tiles
+for old in ROOT.glob("gallery-*.svg"):
+    old.unlink()
+
 files = {
-    "hero-bar.svg":    hero_bar(7),
-    "local-1.svg":     local_collage(0, 11),
-    "local-2.svg":     local_collage(1, 23),
-    "local-3.svg":     local_collage(2, 37),
-    "event-bg.svg":    event_bg(),
+    "hero-bar.svg":       hero_bar(),
+    "local-1.svg":        local_wheel(),
+    "local-2.svg":        local_dj(),
+    "local-3.svg":        local_bar(),
+    "carta-art.svg":      carta_art(),
+    "event-bg.svg":       event_bg(),
+    "detail-wheel.svg":      tile_wheel(),
+    "detail-handlebar.svg":  tile_handlebar(),
+    "detail-trafficlight.svg": tile_traffic(),
+    "detail-bike.svg":       tile_bike(),
+    "detail-counter.svg":    tile_counter(),
+    "detail-frame.svg":      tile_frame(),
 }
-for i in range(16):
-    files[f"gallery-{i+1:02d}.svg"] = gallery_tile(i, 100+i*7)
-
 for name, content in files.items():
     (ROOT / name).write_text(content, encoding="utf-8")
     print(f"wrote {name} ({len(content)//1024} KB)")
