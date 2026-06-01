@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" preserveAspectRatio="xMidYMid slice">
+<defs>
+  <filter id="grain"><feTurbulence type="fractalNoise" baseFrequency="0.95" numOctaves="2" stitchTiles="stitch" seed="15"/><feColorMatrix values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.18 0"/></filter>
+  <filter id="blur"><feGaussianBlur stdDeviation="60"/></filter>
+  
+</defs>
+<rect width="800" height="1000" fill="#15110E"/>
+<g opacity="0.65" filter="url(#blur)">
+<circle cx="322" cy="495" r="240" fill="#6A2A11" opacity="0.34"/>
+<circle cx="109" cy="237" r="191" fill="#C49A3C" opacity="0.46"/>
+<circle cx="669" cy="810" r="186" fill="#DDD2BC" opacity="0.53"/>
+</g>
+<circle cx="70" cy="337" r="68" fill="#6A2A11" opacity="0.29"/>
+<circle cx="699" cy="491" r="78" fill="#DDD2BC" opacity="0.54"/>
+<circle cx="572" cy="404" r="73" fill="#6A2A11" opacity="0.35"/>
+<circle cx="368" cy="579" r="42" fill="#6A2A11" opacity="0.45"/>
+<circle cx="300" cy="242" r="78" fill="#C49A3C" opacity="0.50"/>
+<circle cx="184" cy="616" r="29" fill="#DDD2BC" opacity="0.27"/>
+<circle cx="510" cy="312" r="48" fill="#C49A3C" opacity="0.36"/>
+<circle cx="621" cy="473" r="41" fill="#DDD2BC" opacity="0.49"/>
+<circle cx="452" cy="795" r="29" fill="#6A2A11" opacity="0.25"/>
+<circle cx="499" cy="583" r="37" fill="#6A2A11" opacity="0.40"/>
+<circle cx="445" cy="825" r="70" fill="#C49A3C" opacity="0.37"/>
+<circle cx="270" cy="472" r="30" fill="#C49A3C" opacity="0.26"/>
+<rect width="800" height="1000" fill="url(#vigT4)"/>
+<defs><radialGradient id="vigT4" cx="50%" cy="50%" r="78%">
+  <stop offset="0" stop-color="#000" stop-opacity="0"/>
+  <stop offset="1" stop-color="#000" stop-opacity="0.78"/>
+</radialGradient></defs>
+<rect width="100%" height="100%" filter="url(#grain)" opacity="0.55"/>
+</svg>

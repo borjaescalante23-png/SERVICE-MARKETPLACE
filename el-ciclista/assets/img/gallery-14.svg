@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" preserveAspectRatio="xMidYMid slice">
+<defs>
+  <filter id="grain"><feTurbulence type="fractalNoise" baseFrequency="0.95" numOctaves="2" stitchTiles="stitch" seed="2"/><feColorMatrix values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.18 0"/></filter>
+  <filter id="blur"><feGaussianBlur stdDeviation="60"/></filter>
+  
+</defs>
+<rect width="800" height="1000" fill="#15110E"/>
+<g opacity="0.65" filter="url(#blur)">
+<circle cx="620" cy="885" r="238" fill="#9B7926" opacity="0.53"/>
+<circle cx="570" cy="138" r="139" fill="#9B7926" opacity="0.42"/>
+<circle cx="454" cy="515" r="204" fill="#9B7926" opacity="0.52"/>
+</g>
+<ellipse cx="460" cy="900" rx="180" ry="40" fill="#DDD2BC" opacity="0.100"/>
+<ellipse cx="357" cy="800" rx="200" ry="50" fill="#DDD2BC" opacity="0.088"/>
+<ellipse cx="375" cy="700" rx="220" ry="60" fill="#DDD2BC" opacity="0.076"/>
+<ellipse cx="306" cy="600" rx="240" ry="70" fill="#DDD2BC" opacity="0.064"/>
+<ellipse cx="431" cy="500" rx="260" ry="80" fill="#DDD2BC" opacity="0.052"/>
+<ellipse cx="442" cy="400" rx="280" ry="90" fill="#DDD2BC" opacity="0.040"/>
+<ellipse cx="392" cy="300" rx="300" ry="100" fill="#DDD2BC" opacity="0.028"/>
+<circle cx="400" cy="950" r="6" fill="#cc4a26"/>
+<rect width="800" height="1000" fill="url(#vigT13)"/>
+<defs><radialGradient id="vigT13" cx="50%" cy="50%" r="78%">
+  <stop offset="0" stop-color="#000" stop-opacity="0"/>
+  <stop offset="1" stop-color="#000" stop-opacity="0.78"/>
+</radialGradient></defs>
+<rect width="100%" height="100%" filter="url(#grain)" opacity="0.55"/>
+</svg>

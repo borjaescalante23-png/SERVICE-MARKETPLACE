@@ -1,0 +1,14 @@
+{
+  "note": "Las imágenes en assets/img/ son placeholders SVG generados localmente que evocan la paleta noche-cálida de El Ciclista (latón, terracota, crema, negro cálido). Están pensadas para sustituirse por fotos reales del local. Sin créditos externos: todo es contenido propio del proyecto y puede modificarse libremente.",
+  "placeholders": [
+    "hero-bar.svg",
+    "local-1.svg", "local-2.svg", "local-3.svg",
+    "event-bg.svg",
+    "gallery-01.svg → gallery-16.svg"
+  ],
+  "fontsCredits": [
+    { "family": "Fraunces", "by": "Undercase Type", "license": "OFL", "url": "https://fonts.google.com/specimen/Fraunces" },
+    { "family": "Inter", "by": "Rasmus Andersson", "license": "OFL", "url": "https://fonts.google.com/specimen/Inter" },
+    { "family": "Space Mono", "by": "Colophon Foundry", "license": "OFL", "url": "https://fonts.google.com/specimen/Space+Mono" }
+  ]
+}

@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" preserveAspectRatio="xMidYMid slice">
+<defs>
+  <filter id="grain"><feTurbulence type="fractalNoise" baseFrequency="0.95" numOctaves="2" stitchTiles="stitch" seed="67"/><feColorMatrix values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.18 0"/></filter>
+  <filter id="blur"><feGaussianBlur stdDeviation="60"/></filter>
+  
+</defs>
+<rect width="800" height="1000" fill="#15110E"/>
+<g opacity="0.65" filter="url(#blur)">
+<circle cx="524" cy="573" r="135" fill="#C49A3C" opacity="0.55"/>
+<circle cx="559" cy="801" r="167" fill="#C49A3C" opacity="0.35"/>
+<circle cx="281" cy="835" r="168" fill="#C49A3C" opacity="0.59"/>
+</g>
+<rect x="0" y="0" width="800" height="20" fill="#1E1813" opacity="0.57"/>
+<rect x="0" y="28" width="800" height="20" fill="#1E1813" opacity="0.38"/>
+<rect x="0" y="56" width="800" height="20" fill="#1E1813" opacity="0.69"/>
+<rect x="0" y="84" width="800" height="20" fill="#1E1813" opacity="0.43"/>
+<rect x="0" y="112" width="800" height="20" fill="#1E1813" opacity="0.68"/>
+<rect x="0" y="140" width="800" height="20" fill="#1E1813" opacity="0.30"/>
+<rect x="0" y="168" width="800" height="20" fill="#1E1813" opacity="0.42"/>
+<rect x="0" y="196" width="800" height="20" fill="#1E1813" opacity="0.55"/>
+<rect x="0" y="224" width="800" height="20" fill="#1E1813" opacity="0.41"/>
+<rect x="0" y="252" width="800" height="20" fill="#1E1813" opacity="0.43"/>
+<rect x="0" y="280" width="800" height="20" fill="#1E1813" opacity="0.34"/>
+<rect x="0" y="308" width="800" height="20" fill="#1E1813" opacity="0.54"/>
+<rect x="0" y="336" width="800" height="20" fill="#1E1813" opacity="0.64"/>
+<rect x="0" y="364" width="800" height="20" fill="#1E1813" opacity="0.42"/>
+<rect x="0" y="392" width="800" height="20" fill="#1E1813" opacity="0.57"/>
+<rect x="0" y="420" width="800" height="20" fill="#1E1813" opacity="0.51"/>
+<rect x="0" y="448" width="800" height="20" fill="#1E1813" opacity="0.58"/>
+<rect x="0" y="476" width="800" height="20" fill="#1E1813" opacity="0.70"/>
+<rect x="0" y="504" width="800" height="20" fill="#1E1813" opacity="0.52"/>
+<rect x="0" y="532" width="800" height="20" fill="#1E1813" opacity="0.45"/>
+<rect x="0" y="560" width="800" height="20" fill="#1E1813" opacity="0.49"/>
+<rect x="0" y="588" width="800" height="20" fill="#1E1813" opacity="0.59"/>
+<rect x="0" y="616" width="800" height="20" fill="#1E1813" opacity="0.70"/>
+<rect x="0" y="644" width="800" height="20" fill="#1E1813" opacity="0.69"/>
+<rect x="0" y="672" width="800" height="20" fill="#1E1813" opacity="0.42"/>
+<rect x="0" y="700" width="800" height="20" fill="#1E1813" opacity="0.34"/>
+<rect x="0" y="728" width="800" height="20" fill="#1E1813" opacity="0.68"/>
+<rect x="0" y="756" width="800" height="20" fill="#1E1813" opacity="0.38"/>
+<rect x="0" y="784" width="800" height="20" fill="#1E1813" opacity="0.57"/>
+<rect x="0" y="812" width="800" height="20" fill="#1E1813" opacity="0.36"/>
+<rect x="0" y="840" width="800" height="20" fill="#1E1813" opacity="0.50"/>
+<rect x="0" y="868" width="800" height="20" fill="#1E1813" opacity="0.59"/>
+<rect x="0" y="896" width="800" height="20" fill="#1E1813" opacity="0.68"/>
+<rect x="0" y="924" width="800" height="20" fill="#1E1813" opacity="0.44"/>
+<rect x="0" y="952" width="800" height="20" fill="#1E1813" opacity="0.47"/>
+<rect x="0" y="980" width="800" height="20" fill="#1E1813" opacity="0.62"/>
+<circle cx="400" cy="500" r="180" fill="#C49A3C" opacity="0.35" filter="url(#blur)"/>
+<rect width="800" height="1000" fill="url(#vigT15)"/>
+<defs><radialGradient id="vigT15" cx="50%" cy="50%" r="78%">
+  <stop offset="0" stop-color="#000" stop-opacity="0"/>
+  <stop offset="1" stop-color="#000" stop-opacity="0.78"/>
+</radialGradient></defs>
+<rect width="100%" height="100%" filter="url(#grain)" opacity="0.55"/>
+</svg>

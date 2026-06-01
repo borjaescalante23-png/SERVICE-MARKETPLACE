@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" preserveAspectRatio="xMidYMid slice">
+<defs>
+  <filter id="grain"><feTurbulence type="fractalNoise" baseFrequency="0.95" numOctaves="2" stitchTiles="stitch" seed="9"/><feColorMatrix values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.18 0"/></filter>
+  <filter id="blur"><feGaussianBlur stdDeviation="60"/></filter>
+  
+</defs>
+<rect width="800" height="1000" fill="#15110E"/>
+<g opacity="0.65" filter="url(#blur)">
+<circle cx="634" cy="716" r="227" fill="#C49A3C" opacity="0.35"/>
+<circle cx="371" cy="301" r="200" fill="#DDD2BC" opacity="0.41"/>
+<circle cx="220" cy="224" r="155" fill="#C49A3C" opacity="0.32"/>
+</g>
+<g transform="translate(400 580)" opacity="0.92">
+  <path d="M -160 -240 L 160 -240 L 14 20 L 14 200 L 70 220 L -70 220 L -14 200 L -14 20 Z"
+        fill="none" stroke="#F2EBDA" stroke-width="1.6"/>
+  <path d="M -140 -228 L 140 -228 L 12 0 L -12 0 Z" fill="#DDD2BC" opacity="0.82"/>
+  <ellipse cx="0" cy="-228" rx="142" ry="8" fill="#F2EBDA" opacity="0.5"/>
+</g>
+<rect width="800" height="1000" fill="url(#vigT9)"/>
+<defs><radialGradient id="vigT9" cx="50%" cy="50%" r="78%">
+  <stop offset="0" stop-color="#000" stop-opacity="0"/>
+  <stop offset="1" stop-color="#000" stop-opacity="0.78"/>
+</radialGradient></defs>
+<rect width="100%" height="100%" filter="url(#grain)" opacity="0.55"/>
+</svg>

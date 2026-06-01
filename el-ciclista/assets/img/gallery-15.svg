@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" preserveAspectRatio="xMidYMid slice">
+<defs>
+  <filter id="grain"><feTurbulence type="fractalNoise" baseFrequency="0.95" numOctaves="2" stitchTiles="stitch" seed="14"/><feColorMatrix values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.18 0"/></filter>
+  <filter id="blur"><feGaussianBlur stdDeviation="60"/></filter>
+  
+</defs>
+<rect width="800" height="1000" fill="#15110E"/>
+<g opacity="0.65" filter="url(#blur)">
+<circle cx="134" cy="666" r="233" fill="#DDD2BC" opacity="0.50"/>
+<circle cx="569" cy="547" r="123" fill="#C49A3C" opacity="0.39"/>
+<circle cx="522" cy="266" r="208" fill="#DDD2BC" opacity="0.48"/>
+</g>
+<rect x="606" y="653" width="98" height="98" rx="6" fill="#DDD2BC" opacity="0.30" transform="rotate(-14 655 702)"/>
+<rect x="393" y="300" width="89" height="89" rx="6" fill="#DDD2BC" opacity="0.30" transform="rotate(29 437 344)"/>
+<rect x="117" y="669" width="93" height="93" rx="6" fill="#DDD2BC" opacity="0.22" transform="rotate(4 163 715)"/>
+<rect x="259" y="578" width="97" height="97" rx="6" fill="#DDD2BC" opacity="0.27" transform="rotate(-22 307 626)"/>
+<rect x="175" y="350" width="80" height="80" rx="6" fill="#DDD2BC" opacity="0.34" transform="rotate(-6 215 390)"/>
+<rect x="391" y="771" width="53" height="53" rx="6" fill="#DDD2BC" opacity="0.23" transform="rotate(-12 417 797)"/>
+<rect x="265" y="128" width="53" height="53" rx="6" fill="#DDD2BC" opacity="0.26" transform="rotate(26 291 154)"/>
+<rect x="593" y="442" width="81" height="81" rx="6" fill="#DDD2BC" opacity="0.30" transform="rotate(1 633 482)"/>
+<rect x="402" y="742" width="78" height="78" rx="6" fill="#DDD2BC" opacity="0.23" transform="rotate(-6 441 781)"/>
+<rect width="800" height="1000" fill="url(#vigT14)"/>
+<defs><radialGradient id="vigT14" cx="50%" cy="50%" r="78%">
+  <stop offset="0" stop-color="#000" stop-opacity="0"/>
+  <stop offset="1" stop-color="#000" stop-opacity="0.78"/>
+</radialGradient></defs>
+<rect width="100%" height="100%" filter="url(#grain)" opacity="0.55"/>
+</svg>
