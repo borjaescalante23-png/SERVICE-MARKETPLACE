@@ -278,21 +278,6 @@ em { font-style: italic; font-variation-settings: "SOFT" 100; color: var(--gold)
 .hero-title-dot { color: var(--gold); }
 .hero-tagline { font-family: var(--serif); font-size: clamp(1.1rem, 2vw, 1.6rem); color: var(--cream-2); margin-bottom: 2.2rem; font-style: italic; font-variation-settings: "SOFT" 100; max-width: 36ch; }
 .hero-tagline em { color: var(--gold); font-variation-settings: "SOFT" 100; }
-.hero-review {
-  display: inline-flex; align-items: center; gap: .55rem;
-  margin-bottom: 1.6rem;
-  padding: .45rem .9rem;
-  border: 1px solid rgba(243,233,204,.15);
-  border-radius: 999px;
-  background: rgba(24,18,16,.45);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-}
-.hero-review-stars { color: #FBBC04; font-size: .95rem; letter-spacing: .05em; line-height: 1; }
-.hero-review-half { opacity: .65; }
-.hero-review-score { font-family: var(--mono); font-size: 12px; color: var(--cream); letter-spacing: .06em; font-weight: 700; }
-.hero-review-sep { color: var(--cream-3); font-size: .8rem; }
-.hero-review-count { font-family: var(--mono); font-size: 11px; color: var(--cream-3); letter-spacing: .06em; }
 .hero-actions { display: inline-flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 3rem; }
 .hero-foot { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.4rem; border-top: 1px solid var(--line); padding-top: 1.4rem; max-width: 760px; }
 .hero-foot-block { display: flex; flex-direction: column; gap: .2rem; }
@@ -698,7 +683,63 @@ em { font-style: italic; font-variation-settings: "SOFT" 100; color: var(--gold)
 .footer-legal-dot { color: var(--gold); }
 
 /* =============================================================
-  20. Menu — tabs + panels
+  20. Reviews strip
+  ============================================================= */
+.reviews-strip {
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  background: var(--bg-2);
+  padding: clamp(2.4rem, 5vw, 4rem) var(--gutter);
+}
+.reviews-inner {
+  max-width: 1480px; margin: 0 auto;
+  display: flex; align-items: center; gap: clamp(2rem, 6vw, 6rem);
+  flex-wrap: wrap;
+}
+.reviews-left {
+  display: flex; align-items: center; gap: 1.4rem; flex-shrink: 0;
+}
+.reviews-num {
+  font-family: var(--serif);
+  font-size: clamp(3.6rem, 10vw, 7rem);
+  font-style: italic; font-variation-settings: "SOFT" 100;
+  color: var(--cream); line-height: 1;
+  letter-spacing: -0.04em;
+}
+.reviews-stars {
+  display: flex; gap: .3rem; align-items: center;
+}
+.reviews-stars .star {
+  width: clamp(24px, 4vw, 36px);
+  height: clamp(24px, 4vw, 36px);
+  color: var(--gold); fill: currentColor;
+}
+.reviews-stars .star-half {
+  color: var(--gold);
+}
+.reviews-right {
+  border-left: 1px solid var(--line-2);
+  padding-left: clamp(2rem, 4vw, 4rem);
+}
+.reviews-label {
+  font-family: var(--serif); font-style: italic; font-variation-settings: "SOFT" 100;
+  font-size: clamp(1.4rem, 3vw, 2.4rem);
+  color: var(--cream); line-height: 1.15; max-width: 28ch;
+  margin-bottom: .7rem;
+}
+.reviews-meta {
+  font-family: var(--mono); font-size: 12px; letter-spacing: .18em;
+  text-transform: uppercase; color: var(--cream-3);
+}
+.reviews-google {
+  color: var(--cream-2);
+}
+@media (max-width: 640px) {
+  .reviews-right { border-left: 0; padding-left: 0; border-top: 1px solid var(--line-2); padding-top: 1.4rem; width: 100%; }
+}
+
+/* =============================================================
+  21. Menu — tabs + panels
   ============================================================= */
 .section-carta { max-width: none; }
 .menu-header {
@@ -781,7 +822,7 @@ em { font-style: italic; font-variation-settings: "SOFT" 100; color: var(--gold)
 }
 
 /* =============================================================
-  21. Reduced motion
+  22. Reduced motion
   ============================================================= */
 @media (prefers-reduced-motion: reduce) {
   .aurora, .hero-mesh, .splash-bar-fill, .splash-letters span,
