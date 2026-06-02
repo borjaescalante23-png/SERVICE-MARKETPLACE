@@ -17,6 +17,69 @@
   <link rel="stylesheet" href="styles.css?v=20260602c" />
 </head>
 <body>
+
+  <!-- Password gate -->
+  <div id="gate" style="
+    position:fixed;inset:0;z-index:99999;
+    background:#181210;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:1.6rem;padding:2rem;font-family:'Inter',sans-serif;
+  ">
+    <svg width="48" height="48" viewBox="0 0 90 90" fill="none" xmlns="http://www.w3.org/2000/svg" style="color:#D8B458;opacity:.8">
+      <circle cx="22" cy="62" r="16" stroke="currentColor" stroke-width="2.2"/>
+      <circle cx="68" cy="62" r="16" stroke="currentColor" stroke-width="2.2"/>
+      <line x1="22" y1="62" x2="42" y2="50" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+      <line x1="42" y1="50" x2="36" y2="28" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+      <line x1="42" y1="50" x2="22" y2="62" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+      <line x1="36" y1="28" x2="60" y2="28" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+      <line x1="60" y1="28" x2="42" y2="50" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+      <line x1="60" y1="28" x2="68" y2="62" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+      <line x1="36" y1="28" x2="34" y2="20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      <line x1="28" y1="18" x2="40" y2="18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+      <line x1="60" y1="28" x2="62" y2="20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      <line x1="57" y1="18" x2="67" y2="22" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+      <circle cx="42" cy="50" r="3.5" stroke="currentColor" stroke-width="1.8"/>
+    </svg>
+    <p style="font-family:'Fraunces',serif;font-style:italic;font-size:1.3rem;color:#F3E9CC;margin:0;text-align:center;max-width:28ch;line-height:1.3">
+      Acceso privado — introduce la clave para ver la preview
+    </p>
+    <div style="display:flex;gap:.6rem;width:100%;max-width:320px">
+      <input id="gate-input" type="password" placeholder="Contraseña" autocomplete="off" style="
+        flex:1;background:transparent;border:1px solid rgba(243,233,204,.25);
+        border-radius:999px;padding:.75rem 1.2rem;
+        font-family:'Fraunces',serif;font-style:italic;font-size:1.05rem;
+        color:#F3E9CC;outline:none;
+      " />
+      <button onclick="checkGate()" style="
+        background:#D8B458;color:#181210;border:0;border-radius:999px;
+        padding:.75rem 1.4rem;font-family:'Inter',sans-serif;font-size:.92rem;
+        font-weight:500;cursor:pointer;white-space:nowrap;
+      ">Entrar</button>
+    </div>
+    <p id="gate-err" style="color:#A24521;font-size:.85rem;margin:0;min-height:1.1em"></p>
+  </div>
+  <script>
+    (function(){
+      var pw = "ciclista2025";
+      if(sessionStorage.getItem("ec_auth") === "1"){
+        document.getElementById("gate").style.display = "none";
+      }
+      document.getElementById("gate-input").addEventListener("keydown", function(e){
+        if(e.key === "Enter") checkGate();
+      });
+      window.checkGate = function(){
+        if(document.getElementById("gate-input").value === pw){
+          sessionStorage.setItem("ec_auth","1");
+          document.getElementById("gate").style.display = "none";
+        } else {
+          document.getElementById("gate-err").textContent = "Contraseña incorrecta";
+          document.getElementById("gate-input").value = "";
+          document.getElementById("gate-input").focus();
+        }
+      };
+    })();
+  </script>
+
   <a class="skip-link" href="#main">Saltar al contenido</a>
 
   <!-- ================== SPLASH ================== -->
