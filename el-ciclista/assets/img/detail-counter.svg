@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 900" preserveAspectRatio="xMidYMid slice">
+<defs><filter id="g35"><feTurbulence type="fractalNoise" baseFrequency="0.95" numOctaves="2" stitchTiles="stitch" seed="35"/><feColorMatrix values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.16 0"/></filter><filter id="bl"><feGaussianBlur stdDeviation="55"/></filter></defs>
+<rect width="900" height="900" fill="#1F1714"/>
+<g opacity="0.75" filter="url(#bl)"><circle cx="450" cy="320" r="260" fill="#D8B458" opacity="0.40"/></g>
+<rect x="0" y="540" width="900" height="360" fill="#2a1d17" opacity="0.92"/>
+<g transform="translate(310 620)" opacity="0.95">
+<path d="M -93.5 -110.5 L 93.5 -110.5 L 6.8 25.5 L 6.8 119.0 L 46.75 131.75 L -46.75 131.75 L -6.8 119.0 L -6.8 25.5 Z"
+      fill="none" stroke="#F3E9CC" stroke-width="1.4"/>
+<path d="M -78.2 -102.0 L 78.2 -102.0 L 5.95 15.299999999999999 L -5.95 15.299999999999999 Z" fill="#2a120a" opacity="0.85"/>
+<ellipse cx="0" cy="-102.0" rx="79.89999999999999" ry="6" fill="#F3E9CC" opacity="0.6"/>
+<!-- crema espuma -->
+<ellipse cx="0" cy="-97.75" rx="73.1" ry="4" fill="#F3E9CC" opacity="0.55"/>
+<circle cx="-12.75" cy="-91.8" r="2.975" fill="#D8B458" opacity="0.85"/>
+<circle cx="10.2"  cy="-95.2" r="2.21" fill="#D8B458" opacity="0.75"/>
+<circle cx="-1.7"  cy="-89.25" r="1.7" fill="#D8B458" opacity="0.6"/>
+</g>
+<g transform="translate(620 660)" opacity="0.85">
+  <rect x="-30" y="-40" width="60" height="120" rx="3" fill="#75301A" stroke="#E2D2A8" stroke-width="1"/>
+  <rect x="-12" y="-70" width="24" height="35" fill="#75301A" stroke="#E2D2A8" stroke-width="1"/>
+</g>
+<rect width="100%" height="100%" filter="url(#g35)" opacity="0.55"/>
+</svg>

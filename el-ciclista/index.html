@@ -1,0 +1,758 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#181210" />
+  <title>El Ciclista · Coctelería de autor · Gràcia, Barcelona</title>
+  <meta name="description" content="Coctelería de autor con gin tonics del pelotón en el corazón de Gràcia. La noche en primera marcha. Carrer de Mozart 18, Barcelona. Reserva por WhatsApp." />
+  <meta property="og:title" content="El Ciclista · La noche en primera marcha" />
+  <meta property="og:description" content="Coctelería de autor con gin tonics del pelotón. Gràcia, Barcelona." />
+  <meta property="og:type" content="website" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..700,30..100&family=Inter:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap" />
+  <link rel="preload" as="image" href="assets/img/hero-bar.webp" fetchpriority="high" />
+  <link rel="stylesheet" href="styles.css?v=20260602c" />
+</head>
+<body>
+
+  <!-- Password gate -->
+  <div id="gate" style="
+    position:fixed;inset:0;z-index:99999;
+    background:#181210;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:1.6rem;padding:2rem;font-family:'Inter',sans-serif;
+  ">
+    <svg width="48" height="48" viewBox="0 0 90 90" fill="none" xmlns="http://www.w3.org/2000/svg" style="color:#D8B458;opacity:.8">
+      <circle cx="22" cy="62" r="16" stroke="currentColor" stroke-width="2.2"/>
+      <circle cx="68" cy="62" r="16" stroke="currentColor" stroke-width="2.2"/>
+      <line x1="22" y1="62" x2="42" y2="50" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+      <line x1="42" y1="50" x2="36" y2="28" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+      <line x1="42" y1="50" x2="22" y2="62" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+      <line x1="36" y1="28" x2="60" y2="28" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+      <line x1="60" y1="28" x2="42" y2="50" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+      <line x1="60" y1="28" x2="68" y2="62" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+      <line x1="36" y1="28" x2="34" y2="20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      <line x1="28" y1="18" x2="40" y2="18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+      <line x1="60" y1="28" x2="62" y2="20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      <line x1="57" y1="18" x2="67" y2="22" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+      <circle cx="42" cy="50" r="3.5" stroke="currentColor" stroke-width="1.8"/>
+    </svg>
+    <p style="font-family:'Fraunces',serif;font-style:italic;font-size:1.3rem;color:#F3E9CC;margin:0;text-align:center;max-width:28ch;line-height:1.3">
+      Acceso privado — introduce la clave para ver la preview
+    </p>
+    <div style="display:flex;gap:.6rem;width:100%;max-width:320px">
+      <input id="gate-input" type="password" placeholder="Contraseña" autocomplete="off" style="
+        flex:1;background:transparent;border:1px solid rgba(243,233,204,.25);
+        border-radius:999px;padding:.75rem 1.2rem;
+        font-family:'Fraunces',serif;font-style:italic;font-size:1.05rem;
+        color:#F3E9CC;outline:none;
+      " />
+      <button onclick="checkGate()" style="
+        background:#D8B458;color:#181210;border:0;border-radius:999px;
+        padding:.75rem 1.4rem;font-family:'Inter',sans-serif;font-size:.92rem;
+        font-weight:500;cursor:pointer;white-space:nowrap;
+      ">Entrar</button>
+    </div>
+    <p id="gate-err" style="color:#A24521;font-size:.85rem;margin:0;min-height:1.1em"></p>
+  </div>
+  <script>
+    (function(){
+      var pw = "ciclista2025";
+      if(sessionStorage.getItem("ec_auth") === "1"){
+        document.getElementById("gate").style.display = "none";
+      }
+      document.getElementById("gate-input").addEventListener("keydown", function(e){
+        if(e.key === "Enter") checkGate();
+      });
+      window.checkGate = function(){
+        if(document.getElementById("gate-input").value === pw){
+          sessionStorage.setItem("ec_auth","1");
+          document.getElementById("gate").style.display = "none";
+        } else {
+          document.getElementById("gate-err").textContent = "Contraseña incorrecta";
+          document.getElementById("gate-input").value = "";
+          document.getElementById("gate-input").focus();
+        }
+      };
+    })();
+  </script>
+
+  <a class="skip-link" href="#main">Saltar al contenido</a>
+
+  <!-- ================== SPLASH ================== -->
+  <div class="splash" data-splash aria-hidden="true">
+    <div class="splash-inner">
+      <div class="splash-letters" aria-label="EL CICLISTA">
+        <span>E</span><span>L</span><span class="gap"></span>
+        <span>C</span><span>I</span><span>C</span><span>L</span><span>I</span><span>S</span><span>T</span><span>A</span>
+      </div>
+      <div class="splash-meta">
+        <span class="splash-tag">EST · 2015 · BCN</span>
+        <span class="splash-dot">·</span>
+        <span class="splash-tag splash-tag-mute">Coctelería de autor</span>
+      </div>
+      <div class="splash-bar"><div class="splash-bar-fill"></div></div>
+    </div>
+  </div>
+
+  <!-- ================== AURORA + GRAIN ================== -->
+  <div class="aurora" aria-hidden="true"></div>
+  <div class="grain" aria-hidden="true"></div>
+
+  <!-- ================== SIDE MARK ================== -->
+  <aside class="side-mark" aria-hidden="true" data-side-mark>
+    <span class="side-mark-dot"></span>
+    <span data-side-mark-text>Abierto · 20:00 → 02:00</span>
+  </aside>
+
+  <!-- ================== CURSOR ================== -->
+  <div class="cursor" aria-hidden="true">
+    <div class="cursor-ring"><span class="cursor-label" data-cursor-label></span></div>
+    <div class="cursor-dot"></div>
+  </div>
+
+  <!-- ================== NAV ================== -->
+  <nav class="nav" data-nav>
+    <a class="nav-brand" href="#top" data-cursor-hover="arriba">
+      <span class="nav-brand-mark"><img src="assets/img/logo.webp" alt="El Ciclista" class="nav-logo-img" /></span>
+      <span class="nav-brand-name">El Ciclista</span>
+    </a>
+    <ul class="nav-list">
+      <li><a href="#local"    data-cursor-hover="leer"><span class="nav-num">01</span>El local</a></li>
+      <li><a href="#carta"    data-cursor-hover="ver"><span class="nav-num">02</span>La carta</a></li>
+      <li><a href="#detalles" data-cursor-hover="mirar"><span class="nav-num">03</span>Detalles</a></li>
+      <li><a href="#visitar"  data-cursor-hover="venir"><span class="nav-num">04</span>Visitar</a></li>
+      <li class="nav-list-cta-item"><a href="#visitar" class="nav-list-cta" data-cursor-hover="reservar">Reservar mesa <span aria-hidden="true">→</span></a></li>
+    </ul>
+    <a class="nav-cta" href="#visitar" data-cursor-hover="reservar">
+      <span>Reservar</span>
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M1 7h12M7 1l6 6-6 6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+    <button class="nav-burger" data-burger aria-label="Menú" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+
+  <!-- ================== HERO ================== -->
+  <header class="hero" id="top">
+    <div class="hero-bg">
+      <img src="assets/img/hero-bar.webp" alt="Ambiente de El Ciclista — cócteles, bici, interior y cabina" fetchpriority="high" />
+      <div class="hero-veil"></div>
+    </div>
+    <div class="hero-mesh" aria-hidden="true"></div>
+
+    <div class="hero-inner">
+      <div class="hero-eyebrow">
+        <span class="hero-eyebrow-dot"></span>
+        <span>Gràcia · Barcelona · Desde 2015</span>
+      </div>
+
+      <h1 class="hero-title">
+        <span class="hero-title-main">El Ciclista</span>
+        <span class="hero-title-sub">Coctelería de autor</span>
+      </h1>
+
+      <p class="hero-tagline">La noche en <em>primera marcha</em>.</p>
+
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="#visitar" data-cursor-hover="reservar">
+          <span>Reservar mesa</span>
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M1 8h13M8 1l7 7-7 7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+        <a class="btn btn-ghost" href="#carta" data-cursor-hover="ver">
+          <span>Ver la carta</span>
+        </a>
+      </div>
+
+      <div class="hero-foot">
+        <div class="hero-foot-block">
+          <span class="hero-foot-label">Esta noche</span>
+          <span class="hero-foot-value" data-tonight>20:00 → 02:00</span>
+        </div>
+        <div class="hero-foot-block">
+          <span class="hero-foot-label">Dirección</span>
+          <span class="hero-foot-value">Mozart 18 · Gràcia</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-scroll" aria-hidden="true">
+      <span>Sigue bajando</span>
+      <span class="hero-scroll-line"></span>
+    </div>
+  </header>
+
+  <!-- ================== MARQUEE NEÓN ================== -->
+  <div class="marquee marquee-neon" aria-hidden="true">
+    <div class="marquee-track">
+      <span>Coctelería de autor</span><span class="marquee-dot">·</span>
+      <span>Gin tonics del pelotón</span><span class="marquee-dot">·</span>
+      <span>Carrer de Mozart 18</span><span class="marquee-dot">·</span>
+      <span>Gràcia</span><span class="marquee-dot">·</span>
+<span>La noche en primera marcha</span><span class="marquee-dot">·</span>
+      <span>Coctelería de autor</span><span class="marquee-dot">·</span>
+      <span>Gin tonics del pelotón</span><span class="marquee-dot">·</span>
+      <span>Carrer de Mozart 18</span><span class="marquee-dot">·</span>
+      <span>Gràcia</span><span class="marquee-dot">·</span>
+<span>La noche en primera marcha</span><span class="marquee-dot">·</span>
+    </div>
+  </div>
+
+  <main id="main">
+
+  <!-- ================== 01 EL LOCAL ================== -->
+  <section class="section section-local" id="local">
+    <span class="section-num" aria-hidden="true">01</span>
+
+    <div class="local-head-wrap">
+      <figure class="local-portrait">
+        <img src="assets/img/local-4.webp?v=20260602" alt="Cócteles cítricos servidos en la barra de El Ciclista" loading="lazy" />
+      </figure>
+
+      <header class="section-head section-head-stack">
+        <p class="kicker reveal"><span class="kicker-num">01</span> El local</p>
+        <h2 class="section-title reveal" data-split="lines">
+          Un bar para que la noche <em>dure de verdad</em>.
+        </h2>
+      </header>
+    </div>
+
+    <div class="local-collage" data-collage>
+      <figure class="collage-item">
+        <img src="assets/img/local-1.webp" alt="Expresso Martini en la barra de El Ciclista" loading="lazy" />
+      </figure>
+      <figure class="collage-item">
+        <img src="assets/img/local-2.png" alt="Clientes en El Ciclista" loading="lazy" />
+      </figure>
+      <figure class="collage-item">
+        <img src="assets/img/local-3.webp" alt="El equipo de El Ciclista" loading="lazy" />
+      </figure>
+    </div>
+
+    <div class="local-body">
+      <p class="lead reveal">
+        El Ciclista lo abrieron Fernando Oviedo y Santi Mosquera en 2015 en una esquina silenciosa
+        de Gràcia. Latón, madera oscura, ruedas de bici recicladas hechas mesa, manillares
+        haciendo de pomos, un semáforo presidiendo la cabina del DJ y bicis de coleccionista
+        colgadas como Picassos.
+      </p>
+      <p class="reveal">
+        Coctelería de autor con criterio: una lista larga de gin tonics bautizados con guiños
+        al ciclismo y los clásicos sin concesiones. Volumen para hablar a media voz.
+        Aforo íntimo. Reserva recomendada de jueves a sábado.
+      </p>
+
+      <dl class="local-meta">
+        <div><dt>Aforo</dt><dd>Íntimo</dd></div>
+        <div><dt>Especialidad</dt><dd>+20 gin tonics</dd></div>
+<div><dt>Reserva</dt><dd>Recomendada jue–sáb</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <!-- ================== RESEÑAS ================== -->
+  <div class="reviews-strip">
+    <div class="reviews-inner">
+      <div class="reviews-left">
+        <span class="reviews-num">4,5</span>
+        <div class="reviews-stars" aria-label="4,5 sobre 5 estrellas">
+          <!-- 4 estrellas llenas + 1 media estrella -->
+          <svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          <svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          <svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          <svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          <svg class="star star-half" viewBox="0 0 24 24" aria-hidden="true">
+            <defs>
+              <linearGradient id="half-fill" x1="0" x2="1" y1="0" y2="0">
+                <stop offset="50%" stop-color="currentColor"/>
+                <stop offset="50%" stop-color="transparent"/>
+              </linearGradient>
+            </defs>
+            <path fill="url(#half-fill)" stroke="currentColor" stroke-width=".6" d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>
+        </div>
+      </div>
+      <div class="reviews-right">
+        <p class="reviews-label">Lo que dicen los que vienen.</p>
+        <p class="reviews-meta">+500 reseñas en <span class="reviews-google">Google</span></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================== 02 LA CARTA ================== -->
+  <section class="section section-carta" id="carta">
+    <span class="section-num" aria-hidden="true">02</span>
+
+    <div class="menu-header">
+      <div>
+        <p class="kicker reveal"><span class="kicker-num">02</span> La carta</p>
+        <h2 class="section-title reveal" data-split="lines">
+          Más de veinte gin tonics <em>del pelotón</em>.
+        </h2>
+        <p class="menu-deck reveal">Clásicos, frutales, sours, mules, especiales y mucho más. Todos los precios son reales.</p>
+      </div>
+    </div>
+
+    <nav class="menu-tabs" aria-label="Categorías" data-menu-tabs>
+      <button class="menu-tab is-active" data-tab="gintonic" aria-selected="true">Gin Tonics</button>
+      <button class="menu-tab" data-tab="frutales" aria-selected="false">Frutales</button>
+      <button class="menu-tab" data-tab="clasicos" aria-selected="false">Clásicos del Tour</button>
+      <button class="menu-tab" data-tab="sours" aria-selected="false">Sour's</button>
+      <button class="menu-tab" data-tab="mules" aria-selected="false">Mule's</button>
+      <button class="menu-tab" data-tab="especiales" aria-selected="false">Especiales</button>
+      <button class="menu-tab" data-tab="mocktels" aria-selected="false">Mocktels</button>
+      <button class="menu-tab" data-tab="bebidas" aria-selected="false">Cerveza &amp; Vinos</button>
+    </nav>
+
+    <div class="menu-panels" data-menu-panels>
+
+      <!-- GIN TONICS -->
+      <div class="menu-panel is-active" data-panel="gintonic">
+        <div class="menu-grid">
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Tres Cítricos</span><span class="menu-item-price">10€</span></div><p class="menu-item-ing">Seagrams, limón, naranja y lima</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Piñon Fijo</span><span class="menu-item-price">11€</span></div><p class="menu-item-ing">Hendricks, pepino y albahaca</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Biela</span><span class="menu-item-price">11€</span></div><p class="menu-item-ing">Gin Raw, piña y jengibre</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Tour de France</span><span class="menu-item-price">11€</span></div><p class="menu-item-ing">Saffron, canela y naranja</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Antidoping</span><span class="menu-item-price">11€</span></div><p class="menu-item-ing">Portobello, pomelo y menta</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Maillot Amarillo</span><span class="menu-item-price">11€</span></div><p class="menu-item-ing">Martin Millers y piel de lima</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Meta Volante</span><span class="menu-item-price">11€</span></div><p class="menu-item-ing">Nordes, manzana y laurel</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Monkey Bussines</span><span class="menu-item-price">13€</span></div><p class="menu-item-ing">Monkey 47, infusión de lavanda y lima</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Atribute</span><span class="menu-item-price">13€</span></div><p class="menu-item-ing">Le Tribute y lima</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Vuelta 23</span><span class="menu-item-price">11€</span></div><p class="menu-item-ing">Santuna Gin y pomelo</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Giro de Italia</span><span class="menu-item-price">13€</span></div><p class="menu-item-ing">Bombay premier CRU, miel, pepino y antica</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Vuelta de Alemania</span><span class="menu-item-price">13€</span></div><p class="menu-item-ing">The Botanist, St Germain y lima</p></article>
+        </div>
+        <div class="menu-subsec">
+          <h3 class="menu-subsec-title">Gin Tonics de la casa</h3>
+          <div class="menu-grid">
+            <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Ciclista</span><span class="menu-item-price">7€</span></div></article>
+            <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Macerado</span><span class="menu-item-price">9€</span></div></article>
+          </div>
+        </div>
+        <div class="menu-subsec">
+          <h3 class="menu-subsec-title">Vodkas tónics</h3>
+          <div class="menu-grid">
+            <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Canela</span><span class="menu-item-price">11€</span></div><p class="menu-item-ing">Purity, canela y naranja</p></article>
+            <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Trigo</span><span class="menu-item-price">11€</span></div><p class="menu-item-ing">Zubrowka, menta y zumo de manzana</p></article>
+            <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Balsamo</span><span class="menu-item-price">11€</span></div><p class="menu-item-ing">Ciroc, fresa y albahaca</p></article>
+          </div>
+        </div>
+      </div>
+
+      <!-- FRUTALES -->
+      <div class="menu-panel" data-panel="frutales">
+        <div class="menu-grid">
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Mojito</span><span class="menu-item-price">8€</span></div><p class="menu-item-ing">Bacardi, Santa Teresa, lima, limón, menta, sour</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Mojito Frutal</span><span class="menu-item-price">9€</span></div><p class="menu-item-ing">Fresa, mango o maracuyá</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Caipirinha</span><span class="menu-item-price">8€</span></div></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Caipiroska</span><span class="menu-item-price">8€</span></div><p class="menu-item-ing">Vodka Eristoff, lima, limón, azúcar</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Caipiroska Frutal</span><span class="menu-item-price">9€</span></div><p class="menu-item-ing">Fresa, mango o maracuyá</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Caipitopo</span><span class="menu-item-price">11€</span></div><p class="menu-item-ing">Bacardi, malibu, lima, piña y azúcar</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Daiquiri</span><span class="menu-item-price">8€</span></div><p class="menu-item-ing">Bacardi, limón y azúcar</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Daiquiri Frutal</span><span class="menu-item-price">9€</span></div><p class="menu-item-ing">Fresa, mango o maracuyá</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Piña Colada</span><span class="menu-item-price">8€</span></div><p class="menu-item-ing">Bacardi, leche condensada, coco y piña</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Margarita</span><span class="menu-item-price">8€</span></div><p class="menu-item-ing">Cazadores, cointreau, limón</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Frozen Margarita</span><span class="menu-item-price">8€</span></div></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Margarita Fresa</span><span class="menu-item-price">9€</span></div></article>
+        </div>
+      </div>
+
+      <!-- CLÁSICOS DEL TOUR -->
+      <div class="menu-panel" data-panel="clasicos">
+        <div class="menu-grid">
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Dry Martini</span><span class="menu-item-price">9€</span></div><p class="menu-item-ing">Gin, Martini Dry, olivas</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Apple Martini</span><span class="menu-item-price">10€</span></div><p class="menu-item-ing">Vodka Eristoff, licor manzana</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Expresso Martini</span><span class="menu-item-price">11€</span></div><p class="menu-item-ing">Vodka Eristoff, Kahlua, café</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Old Fashioned</span><span class="menu-item-price">11€</span></div><p class="menu-item-ing">Bourbon, bitter Angostura</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Negroni</span><span class="menu-item-price">9€</span></div><p class="menu-item-ing">Gin, Campari, Martini Rosso</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Tom Collins</span><span class="menu-item-price">9€</span></div><p class="menu-item-ing">Gin, limón, bitter angostura, azúcar y soda</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Boulevardier</span><span class="menu-item-price">9€</span></div><p class="menu-item-ing">Dewar's caribbean, Campari, Martini Rosso</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Cosmopolitan</span><span class="menu-item-price">9€</span></div><p class="menu-item-ing">Vodka, Cointreau, arándanos</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Bloody Mary</span><span class="menu-item-price">9€</span></div><p class="menu-item-ing">Vodka, tomate, Tabasco y salsa de tomate</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Aperol Spritz</span><span class="menu-item-price">7€</span></div><p class="menu-item-ing">Aperol, cava y soda</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Americano</span><span class="menu-item-price">8€</span></div><p class="menu-item-ing">Campari, Martini Rosso</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Manhattan</span><span class="menu-item-price">9€</span></div><p class="menu-item-ing">Bourbon, Martini Rosso</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Aperol Gin Tonic</span><span class="menu-item-price">8€</span></div></article>
+        </div>
+      </div>
+
+      <!-- SOUR'S -->
+      <div class="menu-panel" data-panel="sours">
+        <div class="menu-grid">
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Amaretto</span><span class="menu-item-price">9€</span></div><p class="menu-item-ing">Disaronno, clara de huevo, lima y limón</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Pisco</span><span class="menu-item-price">9€</span></div><p class="menu-item-ing">Pisco, clara de huevo, lima y limón</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Tequila Golden</span><span class="menu-item-price">9€</span></div><p class="menu-item-ing">Cazadores Reposado, clara de huevo, lima y limón</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Mezcal Spicy</span><span class="menu-item-price">13€</span></div><p class="menu-item-ing">Mezcal, clara de huevo, lima, limón y tabasco</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Bourbon</span><span class="menu-item-price">9€</span></div><p class="menu-item-ing">Four Roses, clara de huevo, lima y limón</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Bullet</span><span class="menu-item-price">10€</span></div><p class="menu-item-ing">Bullet Bourbon, clara de huevo, lima y limón</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Bullet Rye</span><span class="menu-item-price">11€</span></div><p class="menu-item-ing">Bullet Rye Bourbon, clara de huevo, lima y limón</p></article>
+        </div>
+      </div>
+
+      <!-- MULE'S -->
+      <div class="menu-panel" data-panel="mules">
+        <div class="menu-grid">
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Jamaica</span><span class="menu-item-price">11€</span></div><p class="menu-item-ing">Bacardi, lima, jengibre, cardamomo y ginger ale</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Moscow</span><span class="menu-item-price">11€</span></div><p class="menu-item-ing">Vodka, lima, jengibre, cardamomo y ginger beer</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Jagger</span><span class="menu-item-price">11€</span></div><p class="menu-item-ing">Jagermeister, lima, jengibre, cardamomo y ginger beer</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Mezcal</span><span class="menu-item-price">13€</span></div><p class="menu-item-ing">Mezcal, lima, limón, jengibre, chili y ginger beer</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">London</span><span class="menu-item-price">11€</span></div><p class="menu-item-ing">Gin, lima, limón, jengibre y ginger beer</p></article>
+        </div>
+      </div>
+
+      <!-- ESPECIALES + SUGERENCIAS -->
+      <div class="menu-panel" data-panel="especiales">
+        <div class="menu-subsec">
+          <h3 class="menu-subsec-title">Especiales</h3>
+          <div class="menu-grid">
+            <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Yuzu</span><span class="menu-item-price">13€</span></div><p class="menu-item-ing">Sake de yuzu, gin, lima y licor de bergamota</p></article>
+            <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">KM 50</span><span class="menu-item-price">11€</span></div><p class="menu-item-ing">Vodka, lima, fresa y pepino</p></article>
+            <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Billy Coco Expreso</span><span class="menu-item-price">11€</span></div><p class="menu-item-ing">Tequila, malibu, Kahlua y espresso</p></article>
+            <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">La Bicla</span><span class="menu-item-price">13€</span></div><p class="menu-item-ing">Mezcal, orgeat, chilly y piña</p></article>
+          </div>
+        </div>
+        <div class="menu-subsec">
+          <h3 class="menu-subsec-title">Sugerencias</h3>
+          <div class="menu-grid">
+            <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Mojito Azteca</span><span class="menu-item-price">11€</span></div><p class="menu-item-ing">Tequila, naranja, lima, maracuyá, canela y tabasco</p></article>
+            <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Caipi Power</span><span class="menu-item-price">11€</span></div><p class="menu-item-ing">Cachaça, naranja, pomelo y maracuyá</p></article>
+            <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Ron Cooler</span><span class="menu-item-price">11€</span></div><p class="menu-item-ing">Bacardi, lima, limón, bitter angostura y 7up</p></article>
+            <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Ron Fresh</span><span class="menu-item-price">11€</span></div><p class="menu-item-ing">Bacardi, naranja, maracuyá, fresa, canela y soda</p></article>
+            <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Draque Melocotón</span><span class="menu-item-price">11€</span></div><p class="menu-item-ing">Vodka melocotón, lima, menta y cava</p></article>
+            <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Pera Mint</span><span class="menu-item-price">11€</span></div><p class="menu-item-ing">Vodka pera, lima, menta y 7up</p></article>
+            <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Mezcal Margarita Spicy</span><span class="menu-item-price">11€</span></div><p class="menu-item-ing">Mezcal, cointreau, limón y chilly</p></article>
+            <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Poloma Mezcal</span><span class="menu-item-price">13€</span></div><p class="menu-item-ing">Mezcal, lima, pomelo, naranja, chile y sal ahumada</p></article>
+          </div>
+        </div>
+      </div>
+
+      <!-- MOCKTELS -->
+      <div class="menu-panel" data-panel="mocktels">
+        <div class="menu-grid">
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Mojito</span><span class="menu-item-price">7€</span></div><p class="menu-item-ing">Lima, limón, menta y 7up</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Piña Colada</span><span class="menu-item-price">7€</span></div><p class="menu-item-ing">Jugo de piña, leche condensada, piña y coco</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Gin Tonic s/a</span><span class="menu-item-price">9€</span></div><p class="menu-item-ing">Seedlip Spirit, tónica</p></article>
+        </div>
+      </div>
+
+      <!-- CERVEZA & VINOS -->
+      <div class="menu-panel" data-panel="bebidas">
+        <div class="menu-subsec">
+          <h3 class="menu-subsec-title">De la casa</h3>
+          <div class="menu-grid">
+            <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Gin Tonic</span><span class="menu-item-price">7€</span></div></article>
+            <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Vodka Tonic</span><span class="menu-item-price">7€</span></div></article>
+            <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Whisky Cola</span><span class="menu-item-price">7€</span></div></article>
+            <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Bacardi Cola</span><span class="menu-item-price">7€</span></div></article>
+            <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Santa Teresa Cola</span><span class="menu-item-price">8€</span></div></article>
+          </div>
+        </div>
+        <div class="menu-subsec">
+          <h3 class="menu-subsec-title">Cerveza</h3>
+          <div class="menu-grid">
+            <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Brutus (tirador)</span><span class="menu-item-price">4€</span></div><p class="menu-item-ing">Copa 33cl</p></article>
+            <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Alhambra Roja</span><span class="menu-item-price">4€</span></div></article>
+            <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Alhambra Verde</span><span class="menu-item-price">4€</span></div></article>
+            <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Corona</span><span class="menu-item-price">4€</span></div></article>
+          </div>
+        </div>
+        <div class="menu-subsec">
+          <h3 class="menu-subsec-title">Vinos y Cavas</h3>
+          <div class="menu-grid">
+            <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Copa de Rioja</span><span class="menu-item-price">4€</span></div></article>
+            <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Copa de Verdejo</span><span class="menu-item-price">4€</span></div></article>
+            <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Copa de Cava</span><span class="menu-item-price">5€</span></div></article>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <p class="menu-footnote">La carta cambia con la temporada y con lo que entra en barra. Lo más fiable: preguntar al bartender.</p>
+  </section>
+
+  <!-- ================== 03 DETALLES ================== -->
+  <section class="section section-detalles" id="detalles">
+    <span class="section-num" aria-hidden="true">03</span>
+
+    <header class="section-head section-head-tight">
+      <p class="kicker reveal"><span class="kicker-num">03</span> Detalles</p>
+      <h2 class="section-title reveal" data-split="lines">
+        Lo que hace el bar, <em>lo cuenta el bar</em>.
+      </h2>
+      <p class="detalles-deck reveal">
+        Seis señales de cómo está cosido el local. Ruedas, manillares, semáforos, latón.
+      </p>
+    </header>
+
+    <div class="detalles-grid" data-detalles>
+      <article class="detalle detalle-large">
+        <figure class="detalle-art"><img src="assets/img/detail-wheel.svg" alt="Rueda de bicicleta" loading="lazy"/></figure>
+        <div class="detalle-body">
+          <span class="detalle-tag">Mesas</span>
+          <h3 class="detalle-title">Ruedas de bicicleta.</h3>
+          <p class="detalle-copy">Mesas hechas con ruedas recicladas. Beber sobre los radios — el cóctel no se cae, lo prometemos.</p>
+        </div>
+      </article>
+
+      <article class="detalle">
+        <figure class="detalle-art"><img src="assets/img/detail-handlebar.svg" alt="Manillares" loading="lazy"/></figure>
+        <div class="detalle-body">
+          <span class="detalle-tag">Manillares</span>
+          <h3 class="detalle-title">Pomos y reposavasos.</h3>
+          <p class="detalle-copy">Manillares como pomos. Radios sosteniendo la copa.</p>
+        </div>
+      </article>
+
+      <article class="detalle detalle-tall">
+        <figure class="detalle-art"><img src="assets/img/detail-trafficlight.svg" alt="Semáforo sobre la cabina del DJ" loading="lazy"/></figure>
+        <div class="detalle-body">
+          <span class="detalle-tag">DJ booth</span>
+          <h3 class="detalle-title">Semáforo y vinilo.</h3>
+          <p class="detalle-copy">Un semáforo de calle preside la cabina. Verde para bailar.</p>
+        </div>
+      </article>
+
+      <article class="detalle">
+        <figure class="detalle-art"><img src="assets/img/detail-bike.svg" alt="Bici de coleccionista" loading="lazy"/></figure>
+        <div class="detalle-body">
+          <span class="detalle-tag">Paredes</span>
+          <h3 class="detalle-title">Bicis de coleccionista.</h3>
+          <p class="detalle-copy">Cuadros con historia, colgados como Picassos.</p>
+        </div>
+      </article>
+
+      <article class="detalle">
+        <figure class="detalle-art"><img src="assets/img/detail-counter.svg" alt="Barra de latón y madera oscura" loading="lazy"/></figure>
+        <div class="detalle-body">
+          <span class="detalle-tag">Barra</span>
+          <h3 class="detalle-title">Latón y madera oscura.</h3>
+          <p class="detalle-copy">Luz baja. Para hablar a media voz.</p>
+        </div>
+      </article>
+
+      <article class="detalle detalle-wide">
+        <figure class="detalle-art"><img src="assets/img/detail-frame.svg" alt="EST 2015 BCN" loading="lazy"/></figure>
+        <div class="detalle-body">
+          <span class="detalle-tag">Concepto</span>
+          <h3 class="detalle-title">Minimalismo romántico.</h3>
+          <p class="detalle-copy">Fernando Oviedo y Santi Mosquera lo abrieron en 2015. Sigue igual de quieto y de despierto.</p>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- ================== PRIVADOS ================== -->
+  <section class="section section-privados" id="privados">
+    <div class="privados-card" data-privados>
+      <img class="privados-bg" src="assets/img/event-bg.webp" alt="" aria-hidden="true" loading="lazy" />
+      <div class="privados-veil"></div>
+      <div class="privados-inner">
+        <p class="kicker">Eventos privados</p>
+        <h2 class="privados-title reveal" data-split="lines">
+          Cierra El Ciclista <em>para los tuyos</em>.
+        </h2>
+        <p class="privados-copy reveal">
+          Cumpleaños sin coreografías. Despedidas con la primera copa a las ocho. Empresa con criterio.
+          Quedadas de grupo en barra y mesa, con coctelería propia y la música que tú elijas.
+          Aforo íntimo, tarifa cerrada, todo dentro.
+        </p>
+        <a class="btn btn-primary" href="https://wa.me/34692805716?text=Hola%2C%20me%20gustar%C3%ADa%20privatizar%20El%20Ciclista%20para%20un%20evento."
+           target="_blank" rel="noopener" data-cursor-hover="WhatsApp">
+          <span>Hablamos por WhatsApp</span>
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M1 8h13M8 1l7 7-7 7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================== 04 VISITAR (horarios + reserva) ================== -->
+  <section class="section section-visitar" id="visitar">
+    <span class="section-num" aria-hidden="true">04</span>
+
+    <header class="section-head section-head-tight">
+      <p class="kicker reveal"><span class="kicker-num">04</span> Visitar</p>
+      <h2 class="section-title reveal" data-split="lines">
+        Te guardamos <em>silla y copa</em>.
+      </h2>
+    </header>
+
+    <div class="visitar-grid">
+      <div class="visitar-hours">
+        <h3 class="block-h">Horario</h3>
+        <dl class="hours-list" data-hours>
+          <div class="hours-row hours-closed"><dt>Lunes</dt><dd>Cerrado</dd></div>
+          <div class="hours-row hours-closed"><dt>Martes</dt><dd>Cerrado</dd></div>
+          <div class="hours-row"><dt>Miércoles</dt><dd>20:00 → 02:00</dd></div>
+          <div class="hours-row"><dt>Jueves</dt><dd>20:00 → 02:00</dd></div>
+          <div class="hours-row hours-late"><dt>Viernes</dt><dd>20:00 → 03:00</dd></div>
+          <div class="hours-row hours-late"><dt>Sábado</dt><dd>20:00 → 03:00</dd></div>
+          <div class="hours-row"><dt>Domingo</dt><dd>20:00 → 02:00</dd></div>
+        </dl>
+        <p class="hours-note">Cocina seca: aquí solo se bebe. Reserva recomendada de jueves a sábado.</p>
+      </div>
+
+      <form class="reserva-form" data-reserva action="https://wa.me/34692805716" method="get" novalidate>
+        <h3 class="block-h">Reservar</h3>
+        <div class="field">
+          <span class="field-num">01</span>
+          <label>
+            <span class="field-label">Nombre</span>
+            <input type="text" name="nombre" required autocomplete="name" placeholder="Cómo te llamamos" />
+          </label>
+        </div>
+
+        <div class="field">
+          <span class="field-num">02</span>
+          <label>
+            <span class="field-label">Teléfono</span>
+            <input type="tel" name="telefono" required autocomplete="tel" placeholder="600 00 00 00" inputmode="tel" />
+          </label>
+        </div>
+
+        <div class="field field-split">
+          <span class="field-num">03</span>
+          <div class="field-split-cols">
+            <label>
+              <span class="field-label">Día y hora</span>
+              <input type="text" name="dia" required placeholder="Vie 5 de junio · 21:30" />
+            </label>
+            <label>
+              <span class="field-label">Personas</span>
+              <input type="number" name="personas" required min="1" max="14" placeholder="2" />
+            </label>
+          </div>
+        </div>
+
+        <div class="field">
+          <span class="field-num">04</span>
+          <label>
+            <span class="field-label">Nota <span class="field-mute">(opcional)</span></span>
+            <textarea name="nota" rows="2" placeholder="Cumpleaños, alergia, mesa cerca de la barra…"></textarea>
+          </label>
+        </div>
+
+        <button class="btn btn-primary btn-submit" type="submit" data-cursor-hover="enviar">
+          <span>Mandar a WhatsApp</span>
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M1 8h13M8 1l7 7-7 7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+
+        <p class="reserva-alt">
+          …o más rápido por
+          <a href="https://wa.me/34692805716" target="_blank" rel="noopener" data-cursor-hover="WhatsApp">WhatsApp →</a>
+        </p>
+      </form>
+
+      <aside class="visitar-side">
+        <h3 class="block-h">Encontrarnos</h3>
+        <dl class="contact-info">
+          <div>
+            <dt>Tel</dt>
+            <dd><a href="tel:+34692805716">+34 692 80 57 16</a></dd>
+          </div>
+          <div>
+            <dt>Email</dt>
+            <dd><a href="mailto:ciclistagracia@gmail.com">ciclistagracia@gmail.com</a></dd>
+          </div>
+          <div>
+            <dt>IG</dt>
+            <dd><a href="https://www.instagram.com/elciclistabcn/" target="_blank" rel="noopener">@elciclistabcn</a></dd>
+          </div>
+          <div>
+            <dt>Dirección</dt>
+            <dd>Carrer de Mozart, 18<br>08012 Gràcia · Barcelona<br><span class="mute">Metro Diagonal · Fontana</span></dd>
+          </div>
+        </dl>
+      </aside>
+    </div>
+  </section>
+
+  </main>
+
+  <!-- ================== FOOTER ================== -->
+  <footer class="footer">
+    <div class="footer-logo-wrap" aria-hidden="true">
+      <svg class="footer-bike" viewBox="0 0 90 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- rear wheel -->
+        <circle cx="22" cy="62" r="16" stroke="currentColor" stroke-width="2.2"/>
+        <!-- front wheel -->
+        <circle cx="68" cy="62" r="16" stroke="currentColor" stroke-width="2.2"/>
+        <!-- frame: chainstay rear axle to BB -->
+        <line x1="22" y1="62" x2="42" y2="50" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+        <!-- BB to seat tube top -->
+        <line x1="42" y1="50" x2="36" y2="28" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+        <!-- seat tube bottom (BB) to chainstay -->
+        <line x1="42" y1="50" x2="22" y2="62" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+        <!-- top tube: seat to head -->
+        <line x1="36" y1="28" x2="60" y2="28" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+        <!-- down tube: head to BB -->
+        <line x1="60" y1="28" x2="42" y2="50" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+        <!-- fork: head to front axle -->
+        <line x1="60" y1="28" x2="68" y2="62" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+        <!-- seat post + saddle -->
+        <line x1="36" y1="28" x2="34" y2="20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <line x1="28" y1="18" x2="40" y2="18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+        <!-- handlebar stem + bar -->
+        <line x1="60" y1="28" x2="62" y2="20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <line x1="57" y1="18" x2="67" y2="22" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+        <!-- crank + pedals -->
+        <circle cx="42" cy="50" r="3.5" stroke="currentColor" stroke-width="1.8"/>
+        <line x1="38" y1="55" x2="46" y2="45" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        <line x1="35" y1="57" x2="33" y2="59" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <line x1="49" y1="43" x2="51" y2="41" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="footer-mega" aria-hidden="true">
+      <div class="footer-mega-track">
+        <span>El Ciclista</span><span class="mega-dot">·</span>
+        <span>El Ciclista</span><span class="mega-dot">·</span>
+        <span>El Ciclista</span><span class="mega-dot">·</span>
+        <span>El Ciclista</span><span class="mega-dot">·</span>
+        <span>El Ciclista</span><span class="mega-dot">·</span>
+        <span>El Ciclista</span><span class="mega-dot">·</span>
+      </div>
+    </div>
+
+    <div class="footer-grid">
+      <div class="footer-block">
+        <h4>Cómo llegar</h4>
+        <p>Carrer de Mozart, 18<br>08012 Gràcia · Barcelona</p>
+        <p class="footer-mute">Metro Diagonal · Fontana</p>
+      </div>
+      <div class="footer-block">
+        <h4>Contacto</h4>
+        <p>Tel · <a href="tel:+34692805716">+34 692 80 57 16</a></p>
+        <p>WhatsApp · <a href="https://wa.me/34692805716" target="_blank" rel="noopener">+34 692 80 57 16</a></p>
+        <p>IG · <a href="https://www.instagram.com/elciclistabcn/" target="_blank" rel="noopener">@elciclistabcn</a></p>
+        <p>Web · <a href="https://www.elciclista-bar.com/es" target="_blank" rel="noopener">elciclista-bar.com</a></p>
+      </div>
+      <div class="footer-block footer-map">
+        <h4>Mapa</h4>
+        <div class="footer-map-frame">
+          <iframe
+            src="https://www.google.com/maps?q=Carrer%20de%20Mozart%2018%2C%20Gr%C3%A0cia%2C%2008012%20Barcelona&output=embed"
+            title="Mapa de El Ciclista — Mozart 18, Gràcia"
+            loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-legal">
+      <span>&copy; 2026 El Ciclista · Carrer de Mozart 18, Gràcia · Barcelona</span>
+      <span class="footer-legal-dot">·</span>
+      <a href="assets/credits.json" target="_blank" rel="noopener">Créditos de imágenes</a>
+      <span class="footer-legal-dot">·</span>
+      <a href="#top" data-cursor-hover="arriba">↑ Volver arriba</a>
+    </div>
+  </footer>
+
+  <!-- ================== SCRIPTS ================== -->
+  <script defer src="lib/gsap.min.js?v=20260602"></script>
+  <script defer src="lib/ScrollTrigger.min.js?v=20260602"></script>
+  <script defer src="lib/manifest.js?v=20260602"></script>
+  <script defer src="main.js?v=20260602c"></script>
+</body>
+</html>

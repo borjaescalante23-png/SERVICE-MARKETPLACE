@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 1100" preserveAspectRatio="xMidYMid slice">
+<defs><filter id="g23"><feTurbulence type="fractalNoise" baseFrequency="0.95" numOctaves="2" stitchTiles="stitch" seed="23"/><feColorMatrix values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.16 0"/></filter><filter id="bl"><feGaussianBlur stdDeviation="55"/></filter></defs>
+
+<rect width="900" height="1100" fill="#1F1714"/>
+<g opacity="0.78" filter="url(#bl)">
+  <circle cx="450" cy="350" r="280" fill="#D8B458" opacity="0.45"/>
+  <circle cx="450" cy="900" r="320" fill="#75301A" opacity="0.35"/>
+</g>
+<!-- bottles -->
+<g opacity="0.85">
+<g transform="translate(180 380)" opacity="0.85">
+<rect x="0" y="64" width="46" height="295" rx="3" fill="#2A1F19" stroke="#E2D2A8" stroke-width="0.8"/>
+<rect x="12" y="0" width="22" height="68" fill="#2A1F19" stroke="#E2D2A8" stroke-width="0.8"/>
+<rect x="0" y="165" width="46" height="64" fill="#F3E9CC" opacity="0.85"/>
+<text x="23" y="208" font-family="serif" font-size="9" text-anchor="middle" fill="#181210" font-style="italic" letter-spacing="1">GIN 1</text>
+</g>
+<g transform="translate(260 410)" opacity="0.85">
+<rect x="0" y="59" width="46" height="270" rx="3" fill="#75301A" stroke="#E2D2A8" stroke-width="0.8"/>
+<rect x="12" y="0" width="22" height="63" fill="#75301A" stroke="#E2D2A8" stroke-width="0.8"/>
+<rect x="0" y="151" width="46" height="59" fill="#F3E9CC" opacity="0.85"/>
+<text x="23" y="191" font-family="serif" font-size="9" text-anchor="middle" fill="#181210" font-style="italic" letter-spacing="1">GIN 2</text>
+</g>
+<g transform="translate(340 380)" opacity="0.85">
+<rect x="0" y="64" width="46" height="295" rx="3" fill="#2A1F19" stroke="#E2D2A8" stroke-width="0.8"/>
+<rect x="12" y="0" width="22" height="68" fill="#2A1F19" stroke="#E2D2A8" stroke-width="0.8"/>
+<rect x="0" y="165" width="46" height="64" fill="#F3E9CC" opacity="0.85"/>
+<text x="23" y="208" font-family="serif" font-size="9" text-anchor="middle" fill="#181210" font-style="italic" letter-spacing="1">GIN 3</text>
+</g>
+<g transform="translate(420 410)" opacity="0.85">
+<rect x="0" y="59" width="46" height="270" rx="3" fill="#A88536" stroke="#E2D2A8" stroke-width="0.8"/>
+<rect x="12" y="0" width="22" height="63" fill="#A88536" stroke="#E2D2A8" stroke-width="0.8"/>
+<rect x="0" y="151" width="46" height="59" fill="#F3E9CC" opacity="0.85"/>
+<text x="23" y="191" font-family="serif" font-size="9" text-anchor="middle" fill="#181210" font-style="italic" letter-spacing="1">GIN 4</text>
+</g>
+<g transform="translate(500 380)" opacity="0.85">
+<rect x="0" y="64" width="46" height="295" rx="3" fill="#2A1F19" stroke="#E2D2A8" stroke-width="0.8"/>
+<rect x="12" y="0" width="22" height="68" fill="#2A1F19" stroke="#E2D2A8" stroke-width="0.8"/>
+<rect x="0" y="165" width="46" height="64" fill="#F3E9CC" opacity="0.85"/>
+<text x="23" y="208" font-family="serif" font-size="9" text-anchor="middle" fill="#181210" font-style="italic" letter-spacing="1">GIN 5</text>
+</g>
+<g transform="translate(580 410)" opacity="0.85">
+<rect x="0" y="59" width="46" height="270" rx="3" fill="#75301A" stroke="#E2D2A8" stroke-width="0.8"/>
+<rect x="12" y="0" width="22" height="63" fill="#75301A" stroke="#E2D2A8" stroke-width="0.8"/>
+<rect x="0" y="151" width="46" height="59" fill="#F3E9CC" opacity="0.85"/>
+<text x="23" y="191" font-family="serif" font-size="9" text-anchor="middle" fill="#181210" font-style="italic" letter-spacing="1">GIN 6</text>
+</g>
+<g transform="translate(660 380)" opacity="0.85">
+<rect x="0" y="64" width="46" height="295" rx="3" fill="#2A1F19" stroke="#E2D2A8" stroke-width="0.8"/>
+<rect x="12" y="0" width="22" height="68" fill="#2A1F19" stroke="#E2D2A8" stroke-width="0.8"/>
+<rect x="0" y="165" width="46" height="64" fill="#F3E9CC" opacity="0.85"/>
+<text x="23" y="208" font-family="serif" font-size="9" text-anchor="middle" fill="#181210" font-style="italic" letter-spacing="1">GIN 7</text>
+</g>
+</g>
+<!-- bar counter -->
+<rect x="0" y="820" width="900" height="280" fill="#2a1d17" opacity="0.85"/>
+<!-- glass on bar -->
+<g transform="translate(450 880)" opacity="0.95">
+<path d="M -60.50000000000001 -71.5 L 60.50000000000001 -71.5 L 4.4 16.5 L 4.4 77.0 L 30.250000000000004 85.25 L -30.250000000000004 85.25 L -4.4 77.0 L -4.4 16.5 Z"
+      fill="none" stroke="#F3E9CC" stroke-width="1.4"/>
+<path d="M -50.6 -66.0 L 50.6 -66.0 L 3.8500000000000005 9.9 L -3.8500000000000005 9.9 Z" fill="#D8B458" opacity="0.85"/>
+<ellipse cx="0" cy="-66.0" rx="51.7" ry="6" fill="#F3E9CC" opacity="0.6"/>
+<!-- crema espuma -->
+<ellipse cx="0" cy="-63.25000000000001" rx="47.300000000000004" ry="4" fill="#F3E9CC" opacity="0.55"/>
+<circle cx="-8.25" cy="-59.400000000000006" r="1.9250000000000003" fill="#D8B458" opacity="0.85"/>
+<circle cx="6.6000000000000005"  cy="-61.60000000000001" r="1.4300000000000002" fill="#D8B458" opacity="0.75"/>
+<circle cx="-1.1"  cy="-57.75000000000001" r="1.1" fill="#D8B458" opacity="0.6"/>
+</g>
+<rect width="900" height="1100" fill="url(#v3)"/>
+<defs><radialGradient id="v3" cx="50%" cy="50%" r="78%"><stop offset="0" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="0.72"/></radialGradient></defs>
+<rect width="100%" height="100%" filter="url(#g23)" opacity="0.55"/>
+</svg>
