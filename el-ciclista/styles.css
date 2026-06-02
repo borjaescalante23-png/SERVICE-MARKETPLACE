@@ -846,3 +846,138 @@ em { font-style: italic; font-variation-settings: "SOFT" 100; color: var(--gold)
   .marquee-track, .footer-mega-track { animation-duration: 0s !important; animation: none !important; }
   .hero-scroll-line { animation: none !important; }
 }
+
+/* =============================================================
+  23. Mobile & tablet refinements
+  ============================================================= */
+
+/* Tablet (≤ 960px) */
+@media (max-width: 960px) {
+  .section-num { font-size: clamp(6rem, 18vw, 12rem); top: clamp(1.4rem, 4vw, 3rem); }
+  .local-portrait { aspect-ratio: 16/11; max-height: 56vh; }
+  .hero { padding-top: calc(var(--nav-h) + .8rem); padding-bottom: 3rem; }
+  .hero-foot { max-width: 100%; }
+  .privados-card { transform: rotate(-0.3deg); }
+  .privados-card:hover { transform: rotate(0deg) translateY(-2px); }
+}
+
+/* Mobile portrait (≤ 720px) */
+@media (max-width: 720px) {
+  :root { --gutter: 1.1rem; }
+
+  /* Sections: tighter vertical rhythm */
+  .section { padding: clamp(3.5rem, 9vw, 5rem) var(--gutter); }
+  .section-head { margin-bottom: 2.2rem; }
+  .section-title { font-size: clamp(2rem, 9vw, 3rem); max-width: 16ch; }
+  .section-num { font-size: clamp(5rem, 30vw, 10rem); opacity: .035; }
+
+  /* Hero */
+  .hero { padding-top: calc(var(--nav-h) + 1.2rem); padding-bottom: 2.4rem; min-height: 100svh; }
+  .hero-eyebrow { font-size: 10px; letter-spacing: .18em; margin-bottom: 1.4rem; flex-wrap: wrap; }
+  .hero-title { gap: .6rem; margin-bottom: 1rem; }
+  .hero-title-main { font-size: clamp(3rem, 15vw, 4.8rem); line-height: .95; }
+  .hero-title-sub { font-size: 10px; letter-spacing: .26em; margin-left: 0; }
+  .hero-tagline { font-size: 1.05rem; margin-bottom: 1.6rem; max-width: 28ch; }
+  .hero-actions { gap: .7rem; margin-bottom: 2.2rem; width: 100%; }
+  .hero-actions .btn { flex: 1 1 0; min-width: 0; justify-content: center; padding: .85rem 1rem; font-size: .92rem; }
+  .hero-foot { grid-template-columns: 1fr 1fr; gap: 1rem; padding-top: 1.1rem; }
+  .hero-foot-value { font-size: .95rem; }
+
+  /* 01 El local */
+  .local-head-wrap { gap: 1.6rem; margin-bottom: 2.4rem; }
+  .local-portrait { aspect-ratio: 4/3; max-height: 60vh; }
+  .local-body { gap: 1.4rem; }
+  .local-meta { padding-left: 1rem; }
+  .local-meta > div { grid-template-columns: 1fr; gap: .25rem; padding-bottom: .8rem; border-bottom: 1px solid var(--line); }
+  .local-meta > div:last-child { border-bottom: 0; padding-bottom: 0; }
+
+  /* 02 La carta */
+  .carta-grid { gap: 2rem; }
+  .carta-hints li { grid-template-columns: 1fr; gap: .35rem; padding-bottom: 1rem; font-size: 1rem; }
+  .carta-actions { gap: .7rem; }
+  .carta-actions .btn { flex: 1 1 auto; justify-content: center; }
+
+  /* Menu: edge fade hint, larger tap area */
+  .menu-tabs {
+    margin-inline: calc(var(--gutter) * -1);
+    padding-inline: var(--gutter);
+    -webkit-mask: linear-gradient(90deg, transparent 0, #000 14px, #000 calc(100% - 14px), transparent 100%);
+    mask: linear-gradient(90deg, transparent 0, #000 14px, #000 calc(100% - 14px), transparent 100%);
+  }
+  .menu-tab { padding: 1rem 1rem; }
+  .menu-item { padding: 1rem 0; }
+  .menu-item-name { font-size: 1.02rem; }
+  .menu-subsec { margin-top: 1.8rem; padding-top: 1.8rem; }
+
+  /* 03 Detalles: enforce visible card heights when stacked */
+  .detalle { min-height: 240px; }
+
+  /* 04 Privados: no rotation on tiny screens */
+  .privados-card { transform: none; border-radius: 6px; }
+  .privados-card:hover { transform: translateY(-3px); }
+  .privados-inner { padding: 2rem 1.4rem; }
+  .privados-title { font-size: clamp(1.7rem, 8vw, 2.4rem); }
+
+  /* 05 Visitar */
+  .visitar-grid { gap: 2.4rem; }
+  .field { grid-template-columns: auto 1fr; gap: .8rem; padding-top: 1rem; }
+  .field-num { font-size: 10px; }
+  .field input, .field textarea { font-size: 1.05rem; }
+  .field-split-cols { grid-template-columns: 1fr; gap: 1rem; }
+  .hours-row { padding: .75rem 0; }
+  .hours-row dt { font-size: 1rem; }
+  .hours-row dd { font-size: .8rem; }
+
+  /* Reviews strip */
+  .reviews-strip { padding: 2.4rem var(--gutter); }
+  .reviews-inner { gap: 1.4rem; }
+  .reviews-left { gap: 1rem; width: 100%; }
+  .reviews-num { font-size: clamp(2.8rem, 14vw, 4.2rem); }
+  .reviews-stars .star { width: clamp(20px, 6vw, 28px); height: clamp(20px, 6vw, 28px); }
+  .reviews-label { font-size: clamp(1.15rem, 5vw, 1.6rem); }
+  .reviews-meta { font-size: 11px; }
+
+  /* Nav */
+  .nav { gap: .5rem; padding-inline: 1rem; }
+  .nav-brand-name { font-size: .95rem; }
+  .nav-cta { padding: .5rem .85rem; font-size: .82rem; gap: .35rem; }
+  .nav-burger { width: 40px; height: 40px; }
+
+  /* Footer */
+  .footer-grid { padding: 0 var(--gutter); }
+  .footer-mega { margin-bottom: 1.8rem; padding-bottom: 1.4rem; }
+  .footer-legal { font-size: 9px; gap: .35rem .8rem; margin-top: 2rem; }
+  .footer-bike { width: 60px; height: 60px; }
+  .footer-block p { font-size: 1rem; }
+
+  /* Marquee */
+  .marquee-track { animation-duration: 26s; }
+  .footer-mega-track { animation-duration: 30s; }
+}
+
+/* Very small phones (≤ 380px) */
+@media (max-width: 380px) {
+  :root { --gutter: .95rem; }
+  .nav-brand-name { display: none; }
+  .nav-cta { padding: .45rem .7rem; font-size: .78rem; }
+  .hero-title-main { font-size: 2.6rem; }
+  .hero-foot { grid-template-columns: 1fr; }
+  .reviews-num { font-size: 2.6rem; }
+  .section-title { font-size: 1.9rem; }
+}
+
+/* Landscape phones (squat viewport) */
+@media (max-height: 480px) and (orientation: landscape) {
+  .hero { min-height: auto; padding-top: calc(var(--nav-h) + 1.2rem); padding-bottom: 2rem; }
+  .hero-title-main { font-size: clamp(2.4rem, 8vw, 4rem); }
+  .splash-letters { font-size: clamp(2rem, 7vw, 3.6rem); }
+}
+
+/* Touch devices: enlarge tap targets */
+@media (hover: none) and (pointer: coarse) {
+  .menu-tab { min-height: 44px; display: inline-flex; align-items: center; }
+  .nav-list a { padding: .35rem 0; }
+  .footer-block a, .contact-info a { display: inline-block; padding: .15rem 0; }
+  .menu-item { padding-block: 1.05rem; }
+  .hours-row { padding-block: .9rem; }
+}
