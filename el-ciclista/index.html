@@ -204,46 +204,198 @@
   <section class="section section-carta" id="carta">
     <span class="section-num" aria-hidden="true">02</span>
 
-    <div class="carta-grid">
-      <figure class="carta-art" aria-hidden="true">
-        <img src="assets/img/carta-art.svg" alt="" loading="lazy" />
-      </figure>
-
-      <div class="carta-body">
+    <div class="menu-header">
+      <div>
         <p class="kicker reveal"><span class="kicker-num">02</span> La carta</p>
         <h2 class="section-title reveal" data-split="lines">
-          Más de veinte gin tonics <em>con nombres del pelotón</em>.
+          Más de veinte gin tonics <em>del pelotón</em>.
         </h2>
-        <p class="carta-lead reveal">
-          El sello de la casa: una lista larga de gin tonics de autor bautizados con guiños al
-          ciclismo y a sus héroes. Acompañando, los clásicos sin concesiones — Old Fashioned,
-          Negroni, Mojito, Pisco Sour — vermuts de barrio y la Moritz Epidor de tipo.
-        </p>
-
-        <ul class="carta-hints" aria-label="Algunos nombres de la carta">
-          <li><span class="hint-tag">Gin tonic</span> Anti Doping</li>
-          <li><span class="hint-tag">Gin tonic</span> Fixed Sprocket</li>
-          <li><span class="hint-tag">Selección</span> +20 gin tonics</li>
-          <li><span class="hint-tag">Clásicos</span> Old Fashioned · Negroni · Mojito</li>
-          <li><span class="hint-tag">De tipo</span> Moritz Epidor</li>
-        </ul>
-
-        <div class="carta-actions">
-          <a class="btn btn-primary" href="https://www.elciclista-bar.com/menus" target="_blank" rel="noopener" data-cursor-hover="abrir">
-            <span>Ver la carta completa</span>
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M1 8h13M8 1l7 7-7 7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </a>
-          <a class="btn btn-ghost" href="https://www.instagram.com/elciclistabcn/" target="_blank" rel="noopener" data-cursor-hover="instagram">
-            <span>Ver últimas creaciones</span>
-            <span class="btn-ghost-mute">en Instagram</span>
-          </a>
-        </div>
-
-        <p class="carta-footnote">
-          La carta cambia con la temporada y con lo que entra en barra. Lo más fiable: preguntar al bartender.
-        </p>
+        <p class="menu-deck reveal">Clásicos, frutales, sours, mules, especiales y mucho más. Todos los precios son reales.</p>
+      </div>
+      <div class="menu-header-cta">
+        <a class="btn btn-primary" href="https://www.elciclista-bar.com/menus" target="_blank" rel="noopener" data-cursor-hover="PDF">
+          <span>Ver carta en PDF</span>
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M1 8h13M8 1l7 7-7 7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
       </div>
     </div>
+
+    <nav class="menu-tabs" aria-label="Categorías" data-menu-tabs>
+      <button class="menu-tab is-active" data-tab="gintonic" aria-selected="true">Gin Tonics</button>
+      <button class="menu-tab" data-tab="frutales" aria-selected="false">Frutales</button>
+      <button class="menu-tab" data-tab="clasicos" aria-selected="false">Clásicos del Tour</button>
+      <button class="menu-tab" data-tab="sours" aria-selected="false">Sour's</button>
+      <button class="menu-tab" data-tab="mules" aria-selected="false">Mule's</button>
+      <button class="menu-tab" data-tab="especiales" aria-selected="false">Especiales</button>
+      <button class="menu-tab" data-tab="mocktels" aria-selected="false">Mocktels</button>
+      <button class="menu-tab" data-tab="bebidas" aria-selected="false">Cerveza &amp; Vinos</button>
+    </nav>
+
+    <div class="menu-panels" data-menu-panels>
+
+      <!-- GIN TONICS -->
+      <div class="menu-panel is-active" data-panel="gintonic">
+        <div class="menu-grid">
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Tres Cítricos</span><span class="menu-item-price">10€</span></div><p class="menu-item-ing">Seagrams, limón, naranja y lima</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Piñon Fijo</span><span class="menu-item-price">11€</span></div><p class="menu-item-ing">Hendricks, pepino y albahaca</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Biela</span><span class="menu-item-price">11€</span></div><p class="menu-item-ing">Gin Raw, piña y jengibre</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Tour de France</span><span class="menu-item-price">11€</span></div><p class="menu-item-ing">Saffron, canela y naranja</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Antidoping</span><span class="menu-item-price">11€</span></div><p class="menu-item-ing">Portobello, pomelo y menta</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Maillot Amarillo</span><span class="menu-item-price">11€</span></div><p class="menu-item-ing">Martin Millers y piel de lima</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Meta Volante</span><span class="menu-item-price">11€</span></div><p class="menu-item-ing">Nordes, manzana y laurel</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Monkey Bussines</span><span class="menu-item-price">13€</span></div><p class="menu-item-ing">Monkey 47, infusión de lavanda y lima</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Atribute</span><span class="menu-item-price">13€</span></div><p class="menu-item-ing">Le Tribute y lima</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Vuelta 23</span><span class="menu-item-price">11€</span></div><p class="menu-item-ing">Santuna Gin y pomelo</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Giro de Italia</span><span class="menu-item-price">13€</span></div><p class="menu-item-ing">Bombay premier CRU, miel, pepino y antica</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Vuelta de Alemania</span><span class="menu-item-price">13€</span></div><p class="menu-item-ing">The Botanist, St Germain y lima</p></article>
+        </div>
+        <div class="menu-subsec">
+          <h3 class="menu-subsec-title">Gin Tonics de la casa</h3>
+          <div class="menu-grid">
+            <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Ciclista</span><span class="menu-item-price">7€</span></div></article>
+            <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Macerado</span><span class="menu-item-price">9€</span></div></article>
+          </div>
+        </div>
+        <div class="menu-subsec">
+          <h3 class="menu-subsec-title">Vodkas tónics</h3>
+          <div class="menu-grid">
+            <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Canela</span><span class="menu-item-price">11€</span></div><p class="menu-item-ing">Purity, canela y naranja</p></article>
+            <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Trigo</span><span class="menu-item-price">11€</span></div><p class="menu-item-ing">Zubrowka, menta y zumo de manzana</p></article>
+            <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Balsamo</span><span class="menu-item-price">11€</span></div><p class="menu-item-ing">Ciroc, fresa y albahaca</p></article>
+          </div>
+        </div>
+      </div>
+
+      <!-- FRUTALES -->
+      <div class="menu-panel" data-panel="frutales">
+        <div class="menu-grid">
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Mojito</span><span class="menu-item-price">8€</span></div><p class="menu-item-ing">Bacardi, Santa Teresa, lima, limón, menta, sour</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Mojito Frutal</span><span class="menu-item-price">9€</span></div><p class="menu-item-ing">Fresa, mango o maracuyá</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Caipirinha</span><span class="menu-item-price">8€</span></div></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Caipiroska</span><span class="menu-item-price">8€</span></div><p class="menu-item-ing">Vodka Eristoff, lima, limón, azúcar</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Caipiroska Frutal</span><span class="menu-item-price">9€</span></div><p class="menu-item-ing">Fresa, mango o maracuyá</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Caipitopo</span><span class="menu-item-price">11€</span></div><p class="menu-item-ing">Bacardi, malibu, lima, piña y azúcar</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Daiquiri</span><span class="menu-item-price">8€</span></div><p class="menu-item-ing">Bacardi, limón y azúcar</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Daiquiri Frutal</span><span class="menu-item-price">9€</span></div><p class="menu-item-ing">Fresa, mango o maracuyá</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Piña Colada</span><span class="menu-item-price">8€</span></div><p class="menu-item-ing">Bacardi, leche condensada, coco y piña</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Margarita</span><span class="menu-item-price">8€</span></div><p class="menu-item-ing">Cazadores, cointreau, limón</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Frozen Margarita</span><span class="menu-item-price">8€</span></div></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Margarita Fresa</span><span class="menu-item-price">9€</span></div></article>
+        </div>
+      </div>
+
+      <!-- CLÁSICOS DEL TOUR -->
+      <div class="menu-panel" data-panel="clasicos">
+        <div class="menu-grid">
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Dry Martini</span><span class="menu-item-price">9€</span></div><p class="menu-item-ing">Gin, Martini Dry, olivas</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Apple Martini</span><span class="menu-item-price">10€</span></div><p class="menu-item-ing">Vodka Eristoff, licor manzana</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Expresso Martini</span><span class="menu-item-price">11€</span></div><p class="menu-item-ing">Vodka Eristoff, Kahlua, café</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Old Fashioned</span><span class="menu-item-price">11€</span></div><p class="menu-item-ing">Bourbon, bitter Angostura</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Negroni</span><span class="menu-item-price">9€</span></div><p class="menu-item-ing">Gin, Campari, Martini Rosso</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Tom Collins</span><span class="menu-item-price">9€</span></div><p class="menu-item-ing">Gin, limón, bitter angostura, azúcar y soda</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Boulevardier</span><span class="menu-item-price">9€</span></div><p class="menu-item-ing">Dewar's caribbean, Campari, Martini Rosso</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Cosmopolitan</span><span class="menu-item-price">9€</span></div><p class="menu-item-ing">Vodka, Cointreau, arándanos</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Bloody Mary</span><span class="menu-item-price">9€</span></div><p class="menu-item-ing">Vodka, tomate, Tabasco y salsa de tomate</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Aperol Spritz</span><span class="menu-item-price">7€</span></div><p class="menu-item-ing">Aperol, cava y soda</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Americano</span><span class="menu-item-price">8€</span></div><p class="menu-item-ing">Campari, Martini Rosso</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Manhattan</span><span class="menu-item-price">9€</span></div><p class="menu-item-ing">Bourbon, Martini Rosso</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Aperol Gin Tonic</span><span class="menu-item-price">8€</span></div></article>
+        </div>
+      </div>
+
+      <!-- SOUR'S -->
+      <div class="menu-panel" data-panel="sours">
+        <div class="menu-grid">
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Amaretto</span><span class="menu-item-price">9€</span></div><p class="menu-item-ing">Disaronno, clara de huevo, lima y limón</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Pisco</span><span class="menu-item-price">9€</span></div><p class="menu-item-ing">Pisco, clara de huevo, lima y limón</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Tequila Golden</span><span class="menu-item-price">9€</span></div><p class="menu-item-ing">Cazadores Reposado, clara de huevo, lima y limón</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Mezcal Spicy</span><span class="menu-item-price">13€</span></div><p class="menu-item-ing">Mezcal, clara de huevo, lima, limón y tabasco</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Bourbon</span><span class="menu-item-price">9€</span></div><p class="menu-item-ing">Four Roses, clara de huevo, lima y limón</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Bullet</span><span class="menu-item-price">10€</span></div><p class="menu-item-ing">Bullet Bourbon, clara de huevo, lima y limón</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Bullet Rye</span><span class="menu-item-price">11€</span></div><p class="menu-item-ing">Bullet Rye Bourbon, clara de huevo, lima y limón</p></article>
+        </div>
+      </div>
+
+      <!-- MULE'S -->
+      <div class="menu-panel" data-panel="mules">
+        <div class="menu-grid">
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Jamaica</span><span class="menu-item-price">11€</span></div><p class="menu-item-ing">Bacardi, lima, jengibre, cardamomo y ginger ale</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Moscow</span><span class="menu-item-price">11€</span></div><p class="menu-item-ing">Vodka, lima, jengibre, cardamomo y ginger beer</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Jagger</span><span class="menu-item-price">11€</span></div><p class="menu-item-ing">Jagermeister, lima, jengibre, cardamomo y ginger beer</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Mezcal</span><span class="menu-item-price">13€</span></div><p class="menu-item-ing">Mezcal, lima, limón, jengibre, chili y ginger beer</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">London</span><span class="menu-item-price">11€</span></div><p class="menu-item-ing">Gin, lima, limón, jengibre y ginger beer</p></article>
+        </div>
+      </div>
+
+      <!-- ESPECIALES + SUGERENCIAS -->
+      <div class="menu-panel" data-panel="especiales">
+        <div class="menu-subsec">
+          <h3 class="menu-subsec-title">Especiales</h3>
+          <div class="menu-grid">
+            <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Yuzu</span><span class="menu-item-price">13€</span></div><p class="menu-item-ing">Sake de yuzu, gin, lima y licor de bergamota</p></article>
+            <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">KM 50</span><span class="menu-item-price">11€</span></div><p class="menu-item-ing">Vodka, lima, fresa y pepino</p></article>
+            <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Billy Coco Expreso</span><span class="menu-item-price">11€</span></div><p class="menu-item-ing">Tequila, malibu, Kahlua y espresso</p></article>
+            <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">La Bicla</span><span class="menu-item-price">13€</span></div><p class="menu-item-ing">Mezcal, orgeat, chilly y piña</p></article>
+          </div>
+        </div>
+        <div class="menu-subsec">
+          <h3 class="menu-subsec-title">Sugerencias</h3>
+          <div class="menu-grid">
+            <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Mojito Azteca</span><span class="menu-item-price">11€</span></div><p class="menu-item-ing">Tequila, naranja, lima, maracuyá, canela y tabasco</p></article>
+            <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Caipi Power</span><span class="menu-item-price">11€</span></div><p class="menu-item-ing">Cachaça, naranja, pomelo y maracuyá</p></article>
+            <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Ron Cooler</span><span class="menu-item-price">11€</span></div><p class="menu-item-ing">Bacardi, lima, limón, bitter angostura y 7up</p></article>
+            <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Ron Fresh</span><span class="menu-item-price">11€</span></div><p class="menu-item-ing">Bacardi, naranja, maracuyá, fresa, canela y soda</p></article>
+            <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Draque Melocotón</span><span class="menu-item-price">11€</span></div><p class="menu-item-ing">Vodka melocotón, lima, menta y cava</p></article>
+            <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Pera Mint</span><span class="menu-item-price">11€</span></div><p class="menu-item-ing">Vodka pera, lima, menta y 7up</p></article>
+            <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Mezcal Margarita Spicy</span><span class="menu-item-price">11€</span></div><p class="menu-item-ing">Mezcal, cointreau, limón y chilly</p></article>
+            <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Poloma Mezcal</span><span class="menu-item-price">13€</span></div><p class="menu-item-ing">Mezcal, lima, pomelo, naranja, chile y sal ahumada</p></article>
+          </div>
+        </div>
+      </div>
+
+      <!-- MOCKTELS -->
+      <div class="menu-panel" data-panel="mocktels">
+        <div class="menu-grid">
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Mojito</span><span class="menu-item-price">7€</span></div><p class="menu-item-ing">Lima, limón, menta y 7up</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Piña Colada</span><span class="menu-item-price">7€</span></div><p class="menu-item-ing">Jugo de piña, leche condensada, piña y coco</p></article>
+          <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Gin Tonic s/a</span><span class="menu-item-price">9€</span></div><p class="menu-item-ing">Seedlip Spirit, tónica</p></article>
+        </div>
+      </div>
+
+      <!-- CERVEZA & VINOS -->
+      <div class="menu-panel" data-panel="bebidas">
+        <div class="menu-subsec">
+          <h3 class="menu-subsec-title">De la casa</h3>
+          <div class="menu-grid">
+            <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Gin Tonic</span><span class="menu-item-price">7€</span></div></article>
+            <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Vodka Tonic</span><span class="menu-item-price">7€</span></div></article>
+            <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Whisky Cola</span><span class="menu-item-price">7€</span></div></article>
+            <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Bacardi Cola</span><span class="menu-item-price">7€</span></div></article>
+            <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Santa Teresa Cola</span><span class="menu-item-price">8€</span></div></article>
+          </div>
+        </div>
+        <div class="menu-subsec">
+          <h3 class="menu-subsec-title">Cerveza</h3>
+          <div class="menu-grid">
+            <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Brutus (tirador)</span><span class="menu-item-price">4€</span></div><p class="menu-item-ing">Copa 33cl</p></article>
+            <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Alhambra Roja</span><span class="menu-item-price">4€</span></div></article>
+            <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Alhambra Verde</span><span class="menu-item-price">4€</span></div></article>
+            <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Corona</span><span class="menu-item-price">4€</span></div></article>
+          </div>
+        </div>
+        <div class="menu-subsec">
+          <h3 class="menu-subsec-title">Vinos y Cavas</h3>
+          <div class="menu-grid">
+            <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Copa de Rioja</span><span class="menu-item-price">4€</span></div></article>
+            <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Copa de Verdejo</span><span class="menu-item-price">4€</span></div></article>
+            <article class="menu-item"><div class="menu-item-row"><span class="menu-item-name">Copa de Cava</span><span class="menu-item-price">5€</span></div></article>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <p class="menu-footnote">La carta cambia con la temporada y con lo que entra en barra. Lo más fiable: preguntar al bartender.</p>
   </section>
 
   <!-- ================== 03 MÚSICA ================== -->

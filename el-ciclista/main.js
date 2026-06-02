@@ -347,6 +347,28 @@
   }
 
   /* ============================================================
+     MENU TABS
+     ============================================================ */
+  function initMenu() {
+    var tabsEl = $("[data-menu-tabs]");
+    var panelsEl = $("[data-menu-panels]");
+    if (!tabsEl || !panelsEl) return;
+    tabsEl.addEventListener("click", function (e) {
+      var tab = e.target.closest("[data-tab]");
+      if (!tab) return;
+      var id = tab.getAttribute("data-tab");
+      $$("[data-tab]", tabsEl).forEach(function (t) {
+        var on = t === tab;
+        t.classList.toggle("is-active", on);
+        t.setAttribute("aria-selected", on ? "true" : "false");
+      });
+      $$("[data-panel]", panelsEl).forEach(function (p) {
+        p.classList.toggle("is-active", p.getAttribute("data-panel") === id);
+      });
+    });
+  }
+
+  /* ============================================================
      RESERVA → WhatsApp
      ============================================================ */
   function initReserva() {
@@ -408,6 +430,7 @@
     safe(initHours, "initHours");
     safe(initCollageHover, "initCollageHover");
     safe(initDetalles, "initDetalles");
+    safe(initMenu, "initMenu");
     safe(initReserva, "initReserva");
     safe(initAurora, "initAurora");
 

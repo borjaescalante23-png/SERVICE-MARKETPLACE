@@ -683,7 +683,90 @@ em { font-style: italic; font-variation-settings: "SOFT" 100; color: var(--gold)
 .footer-legal-dot { color: var(--gold); }
 
 /* =============================================================
-  20. Reduced motion
+  20. Menu — tabs + panels
+  ============================================================= */
+.section-carta { max-width: none; }
+.menu-header {
+  display: grid; gap: 2rem;
+  margin-bottom: 2.8rem; position: relative; z-index: 1;
+}
+@media (min-width: 960px) {
+  .menu-header { grid-template-columns: 1fr auto; align-items: end; }
+}
+.menu-deck {
+  font-family: var(--serif); font-style: italic; font-variation-settings: "SOFT" 100;
+  font-size: clamp(1.05rem, 1.5vw, 1.2rem);
+  color: var(--cream-2); max-width: 52ch; margin-top: 1rem;
+}
+.menu-header-cta { display: flex; align-items: flex-end; padding-bottom: .2rem; }
+
+.menu-tabs {
+  display: flex; overflow-x: auto; -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; border-bottom: 1px solid var(--line);
+  margin-bottom: 2.4rem; position: relative; z-index: 1;
+}
+.menu-tabs::-webkit-scrollbar { display: none; }
+.menu-tab {
+  flex-shrink: 0;
+  font-family: var(--mono); font-size: 11px; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--cream-3);
+  padding: .9rem 1.1rem;
+  border-bottom: 2px solid transparent; margin-bottom: -1px;
+  transition: color .22s var(--ease-out), border-color .22s var(--ease-out);
+  white-space: nowrap;
+}
+.menu-tab:hover { color: var(--cream-2); }
+.menu-tab.is-active { color: var(--gold); border-bottom-color: var(--gold); }
+
+.menu-panels { position: relative; z-index: 1; }
+.menu-panel { display: none; animation: panelIn .35s var(--ease-out); }
+.menu-panel.is-active { display: block; }
+@keyframes panelIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+.menu-grid {
+  display: grid; grid-template-columns: 1fr;
+}
+@media (min-width: 720px)  { .menu-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1100px) { .menu-grid { grid-template-columns: repeat(3, 1fr); } }
+
+.menu-item {
+  padding: .95rem 1.4rem .95rem 0;
+  border-bottom: 1px dashed var(--line);
+}
+.menu-item:last-child { border-bottom: 0; }
+
+.menu-item-row {
+  display: flex; justify-content: space-between; align-items: baseline; gap: .8rem;
+}
+.menu-item-name {
+  font-family: var(--serif); font-style: italic; font-variation-settings: "SOFT" 100;
+  font-size: 1.08rem; color: var(--cream); line-height: 1.2;
+}
+.menu-item-price {
+  font-family: var(--mono); font-size: 11px; letter-spacing: .08em;
+  color: var(--gold); white-space: nowrap; flex-shrink: 0;
+}
+.menu-item-ing {
+  font-size: .84rem; color: var(--cream-3); margin-top: .22rem; line-height: 1.4;
+}
+
+.menu-subsec { margin-top: 2.4rem; padding-top: 2.4rem; border-top: 1px solid var(--line); }
+.menu-subsec:first-child { margin-top: 0; padding-top: 0; border-top: 0; }
+.menu-subsec-title {
+  font-family: var(--mono); font-size: 10px; letter-spacing: .22em;
+  text-transform: uppercase; color: var(--cream-3); font-weight: 400;
+  margin-bottom: 1.4rem; padding-bottom: .7rem; border-bottom: 1px solid var(--line);
+}
+
+.menu-footnote {
+  font-family: var(--serif); font-style: italic; font-variation-settings: "SOFT" 100;
+  color: var(--cream-3); font-size: .95rem;
+  margin-top: 2.8rem; padding-top: 1.6rem;
+  border-top: 1px solid var(--line); position: relative; z-index: 1;
+}
+
+/* =============================================================
+  21. Reduced motion
   ============================================================= */
 @media (prefers-reduced-motion: reduce) {
   .aurora, .hero-mesh, .splash-bar-fill, .splash-letters span,
