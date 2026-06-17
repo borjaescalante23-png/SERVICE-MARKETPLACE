@@ -1,0 +1,1262 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Reformas G3 | Reformas Integrales Barcelona</title>
+  <meta name="description" content="Reformas integrales, cocinas, baños y urgencias 24h en Barcelona. Presupuesto gratis, sin sorpresas."/>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=Hanken+Grotesk:wght@400;500;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          "primary": "#023626",
+          "primary-container": "#1f4d3b",
+          "on-primary": "#ffffff",
+          "on-primary-container": "#8dbda6",
+          "primary-fixed": "#bcedd5",
+          "secondary-container": "#d4a574",
+          "on-secondary-container": "#3d2000",
+          "surface": "#f8f9fa",
+          "background": "#f8f9fa",
+          "on-surface": "#191c1d",
+          "on-surface-variant": "#414944",
+          "surface-container-low": "#f3f4f5",
+          "surface-container": "#edeeef",
+          "outline-variant": "#c0c8c2",
+          "outline": "#717974"
+        },
+        fontFamily: {
+          "display-lg": ["Sora"],
+          "headline-md": ["Sora"],
+          "headline-sm": ["Sora"],
+          "body-lg": ["Hanken Grotesk"],
+          "body-md": ["Hanken Grotesk"],
+          "label-bold": ["Hanken Grotesk"],
+          "label-md": ["Hanken Grotesk"]
+        },
+        fontSize: {
+          "display-lg": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+          "display-lg-mobile": ["32px", {"lineHeight": "1.2", "fontWeight": "700"}],
+          "headline-md": ["32px", {"lineHeight": "1.3", "fontWeight": "600"}],
+          "headline-sm": ["24px", {"lineHeight": "1.4", "fontWeight": "600"}],
+          "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+          "body-md": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+          "label-bold": ["14px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "700"}],
+          "label-md": ["14px", {"lineHeight": "1", "fontWeight": "500"}]
+        },
+        spacing: {
+          "xs": "8px", "sm": "16px", "md": "24px", "lg": "48px", "xl": "80px",
+          "gutter": "24px", "container-max": "1200px"
+        }
+      }
+    }
+  }
+  </script>
+  <style>
+  .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+  .service-card:hover { transform: translateY(-6px); border-color: rgba(2,54,38,0.3); }
+  .bg-hero-overlay { background: linear-gradient(rgba(2,54,38,0.85), rgba(2,54,38,0.6)); }
+  </style>
+
+  
+  <meta name="description" content="Reformas integrales, cocinas, baños y urgencias 24h en Barcelona. Presupuesto gratis, sin sorpresas.">
+  <style>
+    html { scroll-behavior: smooth; }
+    .nav-link.active { color: #023626; border-bottom: 2px solid #023626; padding-bottom: 2px; }
+  </style>
+</head>
+<body class="bg-background text-on-surface font-body-md">
+
+<!-- ========== PASSWORD GATE ========== -->
+<div id="password-gate" style="position:fixed;inset:0;z-index:9999;background:#f8f9fa;display:flex;align-items:center;justify-content:center;">
+  <div style="text-align:center;max-width:380px;width:90%;padding:48px 40px;border:1px solid #c0c8c2;background:#fff;border-radius:8px;">
+    <span class="material-symbols-outlined" style="font-size:40px;color:#023626;margin-bottom:16px;display:block;">construction</span>
+    <div style="font-family:'Sora',sans-serif;font-size:22px;font-weight:700;color:#023626;margin-bottom:4px;">Reformas G3</div>
+    <p style="font-family:'Hanken Grotesk',sans-serif;font-size:13px;letter-spacing:0.08em;text-transform:uppercase;color:#717974;margin-bottom:28px;">Vista previa privada</p>
+    <input id="pw-input" type="password" placeholder="Contraseña" style="width:100%;padding:14px 16px;border:1px solid #023626;border-radius:6px;font-family:'Hanken Grotesk',sans-serif;font-size:16px;outline:none;box-sizing:border-box;margin-bottom:10px;">
+    <p id="pw-error" style="display:none;color:#ba1a1a;font-family:'Hanken Grotesk',sans-serif;font-size:13px;margin-bottom:10px;">Contraseña incorrecta</p>
+    <button onclick="checkPw()" style="width:100%;padding:14px;background:#023626;color:#fff;font-family:'Hanken Grotesk',sans-serif;font-size:13px;letter-spacing:0.08em;text-transform:uppercase;font-weight:700;border:none;border-radius:6px;cursor:pointer;">Acceder</button>
+  </div>
+</div>
+<script>
+(function(){
+  const PW = 'reformasg3';
+  const gate = document.getElementById('password-gate');
+  if(sessionStorage.getItem('g3_auth')==='1'){ gate.style.display='none'; }
+  else { document.body.style.overflow='hidden'; }
+  document.getElementById('pw-input').addEventListener('keydown',function(e){ if(e.key==='Enter') checkPw(); });
+  window.checkPw = function(){
+    if(document.getElementById('pw-input').value === PW){
+      sessionStorage.setItem('g3_auth','1');
+      gate.style.display='none';
+      document.body.style.overflow='';
+    } else {
+      document.getElementById('pw-error').style.display='block';
+      document.getElementById('pw-input').value='';
+      document.getElementById('pw-input').focus();
+    }
+  };
+})();
+</script>
+
+<!-- HEADER -->
+<header class="fixed top-0 w-full z-50 bg-white shadow-sm border-b border-primary/10 transition-all duration-300" id="main-header">
+  <nav class="flex justify-between items-center max-w-container-max mx-auto px-gutter py-4">
+    <a class="font-headline-sm text-headline-sm font-bold text-primary flex items-center gap-2" href="#inicio">
+      <span class="material-symbols-outlined text-3xl">construction</span>
+      Reformas G3
+    </a>
+    <div class="hidden md:flex items-center gap-6">
+      <a class="nav-link font-label-bold text-label-bold text-on-surface-variant hover:text-primary transition-colors" href="#inicio" data-section="inicio">Inicio</a>
+      <a class="nav-link font-label-bold text-label-bold text-on-surface-variant hover:text-primary transition-colors" href="#servicios" data-section="servicios">Servicios</a>
+      <a class="nav-link font-label-bold text-label-bold text-on-surface-variant hover:text-primary transition-colors" href="#urgencias" data-section="urgencias">Urgencias 24h</a>
+      <a class="nav-link font-label-bold text-label-bold text-on-surface-variant hover:text-primary transition-colors" href="#nosotros" data-section="nosotros">Quiénes somos</a>
+      <a class="nav-link font-label-bold text-label-bold text-on-surface-variant hover:text-primary transition-colors" href="#contacto" data-section="contacto">Contacto</a>
+    </div>
+    <div class="flex items-center gap-3">
+      <a class="hidden lg:flex items-center gap-2 text-primary font-bold text-sm" href="tel:34660043332">
+        <span class="material-symbols-outlined text-lg">call</span>660 04 33 32
+      </a>
+      <a class="bg-secondary-container text-on-secondary-container px-4 py-2 rounded-full font-label-bold text-label-bold hover:opacity-90 flex items-center gap-2" href="https://wa.me/34660043332" target="_blank">
+        <span class="material-symbols-outlined text-base">chat</span>WhatsApp
+      </a>
+      <button class="md:hidden text-primary p-2" id="mobile-menu-btn">
+        <span class="material-symbols-outlined">menu</span>
+      </button>
+    </div>
+  </nav>
+  <div class="hidden md:hidden bg-white border-t border-primary/10 px-gutter py-4 space-y-3" id="mobile-menu">
+    <a class="block font-label-bold text-label-bold text-on-surface-variant hover:text-primary py-2" href="#inicio">Inicio</a>
+    <a class="block font-label-bold text-label-bold text-on-surface-variant hover:text-primary py-2" href="#servicios">Servicios</a>
+    <a class="block font-label-bold text-label-bold text-on-surface-variant hover:text-primary py-2" href="#urgencias">Urgencias 24h</a>
+    <a class="block font-label-bold text-label-bold text-on-surface-variant hover:text-primary py-2" href="#nosotros">Quiénes somos</a>
+    <a class="block font-label-bold text-label-bold text-on-surface-variant hover:text-primary py-2" href="#contacto">Contacto</a>
+    <div class="pt-2 border-t border-primary/10">
+      <a class="flex items-center gap-2 text-primary font-bold text-sm py-2" href="tel:34660043332">
+        <span class="material-symbols-outlined text-base">call</span>660 04 33 32
+      </a>
+    </div>
+  </div>
+</header>
+
+<main class="pt-20">
+  <!-- ===== INICIO ===== -->
+  <section id="inicio">
+    <!-- Hero Section -->
+  <section class="relative min-h-screen flex items-center justify-center overflow-hidden">
+    <div class="absolute inset-0">
+      <img src="https://images.unsplash.com/photo-1600210492493-0946911123ea?w=1600&auto=format&fit=crop" alt="Reforma de hogar en Barcelona" class="w-full h-full object-cover"/>
+      <div class="absolute inset-0 bg-hero-overlay"></div>
+    </div>
+    <div class="relative z-10 text-center text-white max-w-4xl mx-auto px-gutter py-xl">
+      <span class="inline-block bg-secondary-container text-on-secondary-container px-4 py-1.5 rounded-full text-label-bold font-bold mb-6 uppercase tracking-wider">Especialistas en reformas en Barcelona</span>
+      <h1 class="text-4xl md:text-display-lg font-display-lg font-bold mb-6 leading-tight">Reformas Integrales<br>en Barcelona</h1>
+      <p class="text-body-lg text-white/90 max-w-2xl mx-auto mb-10">Transformamos tu hogar en el espacio de tus sueños. Cocinas, baños, reformas integrales y urgencias 24h. Presupuesto gratis, sin sorpresas.</p>
+      <div class="flex flex-col sm:flex-row gap-4 justify-center">
+        <a href="#contacto" class="bg-secondary-container text-on-secondary-container px-8 py-4 rounded-full font-label-bold text-base hover:opacity-90 transition-all flex items-center justify-center gap-2 font-bold">
+          <span class="material-symbols-outlined">description</span>Pedir presupuesto gratis
+        </a>
+        <a href="#urgencias" class="bg-white/10 backdrop-blur border border-white/30 text-white px-8 py-4 rounded-full font-label-bold text-base hover:bg-white/20 transition-all flex items-center justify-center gap-2 font-bold">
+          <span class="material-symbols-outlined">emergency</span>Urgencias 24h
+        </a>
+      </div>
+    </div>
+    <!-- Trust strip -->
+    <div class="absolute bottom-0 left-0 right-0 bg-white/10 backdrop-blur-sm border-t border-white/20">
+      <div class="max-w-container-max mx-auto px-gutter py-4 flex flex-wrap justify-center gap-8 text-white text-sm font-bold">
+        <span class="flex items-center gap-2"><span class="material-symbols-outlined text-secondary-container text-base">verified</span>Años de experiencia en el sector</span>
+        <span class="flex items-center gap-2"><span class="material-symbols-outlined text-secondary-container text-base">groups</span>Proyectos realizados con éxito</span>
+        <span class="flex items-center gap-2"><span class="material-symbols-outlined text-secondary-container text-base">star</span>Clientes satisfechos</span>
+        <span class="flex items-center gap-2"><span class="material-symbols-outlined text-secondary-container text-base">schedule</span>Urgencias 24h disponibles</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Services Grid Section -->
+  <section class="py-xl bg-background">
+    <div class="max-w-container-max mx-auto px-gutter">
+      <div class="text-center mb-12">
+        <span class="text-label-bold font-bold text-primary uppercase tracking-wider">Lo que hacemos</span>
+        <h2 class="text-headline-md font-headline-md font-bold text-on-surface mt-2 mb-4">Nuestros Servicios</h2>
+        <p class="text-body-lg text-on-surface-variant max-w-2xl mx-auto">Soluciones completas para transformar cualquier espacio de tu hogar o negocio.</p>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <!-- Card 1 -->
+        <div class="service-card bg-white border border-outline-variant rounded-2xl p-6 transition-all duration-300 cursor-pointer group">
+          <div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
+            <span class="material-symbols-outlined text-primary text-2xl">home_work</span>
+          </div>
+          <h3 class="font-headline-sm text-headline-sm font-bold text-on-surface mb-2">Reformas Integrales</h3>
+          <p class="text-on-surface-variant text-sm leading-relaxed mb-4">Gestión completa de tu reforma desde el primer boceto hasta la entrega de llaves.</p>
+          <a href="#servicios" class="text-primary font-bold text-sm flex items-center gap-1 hover:gap-2 transition-all">Ver más <span class="material-symbols-outlined text-base">arrow_forward</span></a>
+        </div>
+        <!-- Card 2 -->
+        <div class="service-card bg-white border border-outline-variant rounded-2xl p-6 transition-all duration-300 cursor-pointer group">
+          <div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
+            <span class="material-symbols-outlined text-primary text-2xl">countertops</span>
+          </div>
+          <h3 class="font-headline-sm text-headline-sm font-bold text-on-surface mb-2">Reformas de Cocinas</h3>
+          <p class="text-on-surface-variant text-sm leading-relaxed mb-4">Cocinas modernas y funcionales, aprovechando cada centímetro disponible.</p>
+          <a href="#servicios" class="text-primary font-bold text-sm flex items-center gap-1 hover:gap-2 transition-all">Ver más <span class="material-symbols-outlined text-base">arrow_forward</span></a>
+        </div>
+        <!-- Card 3 -->
+        <div class="service-card bg-white border border-outline-variant rounded-2xl p-6 transition-all duration-300 cursor-pointer group">
+          <div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
+            <span class="material-symbols-outlined text-primary text-2xl">bathtub</span>
+          </div>
+          <h3 class="font-headline-sm text-headline-sm font-bold text-on-surface mb-2">Reformas de Baños</h3>
+          <p class="text-on-surface-variant text-sm leading-relaxed mb-4">Renovamos baños completos o parciales con sanitarios y griferías de última generación.</p>
+          <a href="#servicios" class="text-primary font-bold text-sm flex items-center gap-1 hover:gap-2 transition-all">Ver más <span class="material-symbols-outlined text-base">arrow_forward</span></a>
+        </div>
+        <!-- Card 4 -->
+        <div class="service-card bg-white border border-outline-variant rounded-2xl p-6 transition-all duration-300 cursor-pointer group">
+          <div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
+            <span class="material-symbols-outlined text-primary text-2xl">format_paint</span>
+          </div>
+          <h3 class="font-headline-sm text-headline-sm font-bold text-on-surface mb-2">Reformas Interiores</h3>
+          <p class="text-on-surface-variant text-sm leading-relaxed mb-4">Pintura, pladur, techos, suelos y carpintería para renovar cualquier estancia.</p>
+          <a href="#servicios" class="text-primary font-bold text-sm flex items-center gap-1 hover:gap-2 transition-all">Ver más <span class="material-symbols-outlined text-base">arrow_forward</span></a>
+        </div>
+        <!-- Card 5 -->
+        <div class="service-card bg-white border border-outline-variant rounded-2xl p-6 transition-all duration-300 cursor-pointer group">
+          <div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
+            <span class="material-symbols-outlined text-primary text-2xl">bolt</span>
+          </div>
+          <h3 class="font-headline-sm text-headline-sm font-bold text-on-surface mb-2">Electricidad y Fontanería</h3>
+          <p class="text-on-surface-variant text-sm leading-relaxed mb-4">Instalaciones certificadas conforme a normativa. Cuadros, tuberías, desagües y más.</p>
+          <a href="#servicios" class="text-primary font-bold text-sm flex items-center gap-1 hover:gap-2 transition-all">Ver más <span class="material-symbols-outlined text-base">arrow_forward</span></a>
+        </div>
+        <!-- Card 6 -->
+        <div class="service-card bg-white border border-outline-variant rounded-2xl p-6 transition-all duration-300 cursor-pointer group">
+          <div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
+            <span class="material-symbols-outlined text-primary text-2xl">add_box</span>
+          </div>
+          <h3 class="font-headline-sm text-headline-sm font-bold text-on-surface mb-2">Ampliaciones y Redistribuciones</h3>
+          <p class="text-on-surface-variant text-sm leading-relaxed mb-4">Aprovechamos el espacio derribando muros, redistribuyendo estancias y ampliando.</p>
+          <a href="#servicios" class="text-primary font-bold text-sm flex items-center gap-1 hover:gap-2 transition-all">Ver más <span class="material-symbols-outlined text-base">arrow_forward</span></a>
+        </div>
+        <!-- Card 7 -->
+        <div class="service-card bg-white border border-outline-variant rounded-2xl p-6 transition-all duration-300 cursor-pointer group">
+          <div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
+            <span class="material-symbols-outlined text-primary text-2xl">ac_unit</span>
+          </div>
+          <h3 class="font-headline-sm text-headline-sm font-bold text-on-surface mb-2">Aislamientos y Eficiencia Energética</h3>
+          <p class="text-on-surface-variant text-sm leading-relaxed mb-4">Mejora el confort y reduce tu factura energética con aislamientos de alta eficiencia.</p>
+          <a href="#servicios" class="text-primary font-bold text-sm flex items-center gap-1 hover:gap-2 transition-all">Ver más <span class="material-symbols-outlined text-base">arrow_forward</span></a>
+        </div>
+        <!-- CTA Card -->
+        <div class="bg-primary rounded-2xl p-6 flex flex-col justify-between text-white">
+          <div>
+            <h3 class="font-headline-sm text-headline-sm font-bold mb-2">¿Tienes un proyecto?</h3>
+            <p class="text-white/80 text-sm leading-relaxed mb-6">Cuéntanos tu idea y te damos presupuesto gratis sin compromiso.</p>
+          </div>
+          <a href="#contacto" class="bg-secondary-container text-on-secondary-container px-5 py-3 rounded-full font-label-bold text-sm hover:opacity-90 transition-all text-center font-bold">
+            Solicitar presupuesto
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Urgencias 24h Section -->
+  <section class="py-xl bg-primary-container text-white">
+    <div class="max-w-container-max mx-auto px-gutter">
+      <div class="flex flex-col lg:flex-row items-center gap-12">
+        <div class="flex-1">
+          <span class="inline-block bg-secondary-container text-on-secondary-container px-4 py-1.5 rounded-full text-label-bold font-bold mb-6 uppercase tracking-wider">Disponible ahora</span>
+          <h2 class="text-headline-md font-headline-md font-bold mb-4">Urgencias 24 horas</h2>
+          <p class="text-white/80 text-body-lg mb-6">¿Tienes una fuga de agua, una avería eléctrica o un desagüe atascado? No esperes. Estamos disponibles las 24 horas, los 7 días de la semana.</p>
+          <ul class="space-y-3 mb-8">
+            <li class="flex items-center gap-3 text-white/90"><span class="material-symbols-outlined text-secondary-container">check_circle</span>Respuesta rápida garantizada</li>
+            <li class="flex items-center gap-3 text-white/90"><span class="material-symbols-outlined text-secondary-container">check_circle</span>Profesionales cualificados y certificados</li>
+            <li class="flex items-center gap-3 text-white/90"><span class="material-symbols-outlined text-secondary-container">check_circle</span>Precio cerrado antes de empezar</li>
+            <li class="flex items-center gap-3 text-white/90"><span class="material-symbols-outlined text-secondary-container">check_circle</span>Atención personalizada, no un call center</li>
+          </ul>
+          <div class="flex flex-col sm:flex-row gap-4">
+            <a href="tel:34660043332" class="bg-secondary-container text-on-secondary-container px-8 py-4 rounded-full font-bold text-base hover:opacity-90 transition-all flex items-center justify-center gap-2">
+              <span class="material-symbols-outlined">call</span>Llamar: 660 04 33 32
+            </a>
+            <a href="#urgencias" class="border-2 border-white/30 text-white px-8 py-4 rounded-full font-bold text-base hover:bg-white/10 transition-all flex items-center justify-center gap-2">
+              <span class="material-symbols-outlined">info</span>Ver más información
+            </a>
+          </div>
+        </div>
+        <div class="flex-shrink-0 grid grid-cols-2 gap-4 max-w-sm w-full">
+          <div class="bg-white/10 rounded-2xl p-5 text-center">
+            <span class="material-symbols-outlined text-secondary-container text-4xl mb-2 block">water_damage</span>
+            <p class="font-bold text-sm">Fugas de agua</p>
+          </div>
+          <div class="bg-white/10 rounded-2xl p-5 text-center">
+            <span class="material-symbols-outlined text-secondary-container text-4xl mb-2 block">electrical_services</span>
+            <p class="font-bold text-sm">Averías eléctricas</p>
+          </div>
+          <div class="bg-white/10 rounded-2xl p-5 text-center">
+            <span class="material-symbols-outlined text-secondary-container text-4xl mb-2 block">plumbing</span>
+            <p class="font-bold text-sm">Desagües atascados</p>
+          </div>
+          <div class="bg-white/10 rounded-2xl p-5 text-center">
+            <span class="material-symbols-outlined text-secondary-container text-4xl mb-2 block">rainy</span>
+            <p class="font-bold text-sm">Goteras y filtraciones</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- About/Nosotros Section -->
+  <section class="py-xl bg-background">
+    <div class="max-w-container-max mx-auto px-gutter">
+      <div class="flex flex-col lg:flex-row items-center gap-16">
+        <div class="flex-1 relative">
+          <img src="https://images.unsplash.com/photo-1503387837-b154d5074bd2?w=800&auto=format&fit=crop" alt="Equipo de Reformas G3" class="w-full h-96 object-cover rounded-3xl"/>
+          <div class="absolute -bottom-4 -right-4 bg-primary text-white px-6 py-4 rounded-2xl shadow-xl">
+            <p class="text-2xl font-bold">Experiencia</p>
+            <p class="text-sm text-white/80">Años de experiencia</p>
+          </div>
+        </div>
+        <div class="flex-1">
+          <span class="text-label-bold font-bold text-primary uppercase tracking-wider">Quiénes somos</span>
+          <h2 class="text-headline-md font-headline-md font-bold text-on-surface mt-2 mb-6">Un equipo comprometido con tu hogar</h2>
+          <p class="text-body-lg text-on-surface-variant mb-6">En Reformas G3 somos un equipo apasionado de profesionales con una sólida experiencia en el sector de reformas y construcción. Trabajamos con comunicación constante y un enfoque personalizado en cada proyecto.</p>
+          <p class="text-body-md text-on-surface-variant mb-8">No solo renovamos espacios: construimos relaciones basadas en la confianza y la satisfacción.</p>
+          <div class="grid grid-cols-3 gap-6 mb-8">
+            <div class="text-center">
+              <p class="text-3xl font-bold text-primary">Muchos</p>
+              <p class="text-sm text-on-surface-variant">Proyectos</p>
+            </div>
+            <div class="text-center">
+              <p class="text-3xl font-bold text-primary"></p>
+              <p class="text-sm text-on-surface-variant">Satisfacción</p>
+            </div>
+            <div class="text-center">
+              <p class="text-3xl font-bold text-primary">24h</p>
+              <p class="text-sm text-on-surface-variant">Urgencias</p>
+            </div>
+          </div>
+          <a href="#nosotros" class="bg-primary text-white px-8 py-4 rounded-full font-bold text-sm hover:opacity-90 transition-all inline-flex items-center gap-2">
+            Conocer el equipo <span class="material-symbols-outlined text-base">arrow_forward</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact Form Section -->
+  <section class="py-xl bg-surface-container-low">
+    <div class="max-w-container-max mx-auto px-gutter">
+      <div class="text-center mb-12">
+        <span class="text-label-bold font-bold text-primary uppercase tracking-wider">Presupuesto gratis</span>
+        <h2 class="text-headline-md font-headline-md font-bold text-on-surface mt-2 mb-4">Cuéntanos tu proyecto</h2>
+        <p class="text-body-lg text-on-surface-variant max-w-xl mx-auto">Te respondemos en menos de 24 horas. Visita gratuita a tu domicilio, sin compromiso.</p>
+      </div>
+      <div class="max-w-2xl mx-auto bg-white rounded-3xl p-8 shadow-sm border border-outline-variant">
+        <form action="https://formspree.io/f/YOUR_FORM_ID" method="POST" id="contact-form-home">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div>
+              <label class="block text-sm font-bold text-on-surface mb-2">Nombre completo *</label>
+              <input type="text" name="nombre" required placeholder="Tu nombre" class="w-full border border-outline-variant rounded-xl px-4 py-3 text-on-surface focus:outline-none focus:border-primary transition-colors"/>
+            </div>
+            <div>
+              <label class="block text-sm font-bold text-on-surface mb-2">Teléfono *</label>
+              <input type="tel" name="telefono" required placeholder="6XX XXX XXX" class="w-full border border-outline-variant rounded-xl px-4 py-3 text-on-surface focus:outline-none focus:border-primary transition-colors"/>
+            </div>
+          </div>
+          <div class="mb-6">
+            <label class="block text-sm font-bold text-on-surface mb-2">Tipo de servicio</label>
+            <select name="servicio" class="w-full border border-outline-variant rounded-xl px-4 py-3 text-on-surface focus:outline-none focus:border-primary transition-colors bg-white">
+              <option value="">Selecciona un servicio</option>
+              <option>Reforma Integral</option>
+              <option>Reforma de Cocina</option>
+              <option>Reforma de Baño</option>
+              <option>Reformas Interiores</option>
+              <option>Instalaciones Eléctricas y Fontanería</option>
+              <option>Ampliaciones y Redistribuciones</option>
+              <option>Aislamientos y Eficiencia Energética</option>
+              <option>Urgencia 24h</option>
+              <option>Otro</option>
+            </select>
+          </div>
+          <div class="mb-6">
+            <label class="block text-sm font-bold text-on-surface mb-2">Mensaje</label>
+            <textarea name="mensaje" rows="4" placeholder="Describe brevemente tu proyecto..." class="w-full border border-outline-variant rounded-xl px-4 py-3 text-on-surface focus:outline-none focus:border-primary transition-colors resize-none"></textarea>
+          </div>
+          <button type="submit" class="w-full bg-primary text-white py-4 rounded-full font-bold text-sm hover:opacity-90 transition-all flex items-center justify-center gap-2">
+            <span class="material-symbols-outlined text-base">send</span>Enviar solicitud
+          </button>
+          <div id="form-success-home" class="hidden mt-4 bg-green-50 border border-green-200 text-green-800 rounded-xl px-4 py-3 text-sm font-bold text-center">
+            Gracias! Te contactamos en menos de 24 horas.
+          </div>
+        </form>
+        <p class="mt-6 text-center text-sm text-on-surface-variant">O si prefieres, escríbenos por <a href="https://wa.me/34660043332" target="_blank" class="text-primary font-bold hover:underline">WhatsApp</a></p>
+      </div>
+    </div>
+  </section>
+  </section>
+
+  <!-- ===== SERVICIOS ===== -->
+  <section id="servicios">
+    <!-- Page Hero -->
+  <section class="bg-primary-container py-20 text-white text-center">
+    <div class="max-w-container-max mx-auto px-gutter">
+      <span class="inline-block bg-secondary-container text-on-secondary-container px-4 py-1.5 rounded-full text-label-bold font-bold mb-6 uppercase tracking-wider">Lo que hacemos</span>
+      <h1 class="text-4xl md:text-display-lg font-display-lg font-bold mb-4">Nuestros Servicios</h1>
+      <p class="text-body-lg text-white/80 max-w-2xl mx-auto">Soluciones integrales para tu hogar y negocio. Presupuesto claro, sin sorpresas.</p>
+    </div>
+  </section>
+
+  <!-- Service 1: Reformas Integrales -->
+  <section class="py-xl bg-background">
+    <div class="max-w-container-max mx-auto px-gutter">
+      <div class="flex flex-col lg:flex-row items-center gap-16">
+        <div class="flex-1">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
+              <span class="material-symbols-outlined text-primary text-2xl">home_work</span>
+            </div>
+            <span class="text-label-bold font-bold text-primary uppercase tracking-wider">Servicio 01</span>
+          </div>
+          <h2 class="text-headline-md font-headline-md font-bold text-on-surface mb-4">Reformas Integrales</h2>
+          <p class="text-body-lg text-on-surface-variant mb-6">Gestión completa de tu reforma desde el primer boceto hasta la entrega de llaves. Coordinamos todos los gremios para que no tengas que preocuparte de nada.</p>
+          <ul class="space-y-3 mb-8">
+            <li class="flex items-center gap-3 text-on-surface-variant"><span class="material-symbols-outlined text-primary text-lg">check_circle</span>Dirección de obra completa</li>
+            <li class="flex items-center gap-3 text-on-surface-variant"><span class="material-symbols-outlined text-primary text-lg">check_circle</span>Gestión de permisos y licencias</li>
+            <li class="flex items-center gap-3 text-on-surface-variant"><span class="material-symbols-outlined text-primary text-lg">check_circle</span>Coordinación de todos los oficios</li>
+            <li class="flex items-center gap-3 text-on-surface-variant"><span class="material-symbols-outlined text-primary text-lg">check_circle</span>Plazos garantizados por escrito</li>
+            <li class="flex items-center gap-3 text-on-surface-variant"><span class="material-symbols-outlined text-primary text-lg">check_circle</span>Presupuesto cerrado sin sorpresas</li>
+          </ul>
+          <a href="#contacto" class="bg-primary text-white px-8 py-4 rounded-full font-bold text-sm hover:opacity-90 transition-all inline-flex items-center gap-2">
+            Solicitar presupuesto <span class="material-symbols-outlined text-base">arrow_forward</span>
+          </a>
+        </div>
+        <div class="flex-1">
+          <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&auto=format&fit=crop" alt="Reformas Integrales Barcelona" class="w-full h-96 object-cover rounded-3xl shadow-lg"/>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Service 2: Cocinas -->
+  <section class="py-xl bg-surface-container-low">
+    <div class="max-w-container-max mx-auto px-gutter">
+      <div class="flex flex-col lg:flex-row-reverse items-center gap-16">
+        <div class="flex-1">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
+              <span class="material-symbols-outlined text-primary text-2xl">countertops</span>
+            </div>
+            <span class="text-label-bold font-bold text-primary uppercase tracking-wider">Servicio 02</span>
+          </div>
+          <h2 class="text-headline-md font-headline-md font-bold text-on-surface mb-4">Reformas de Cocinas</h2>
+          <p class="text-body-lg text-on-surface-variant mb-6">Diseñamos y ejecutamos cocinas modernas y funcionales, aprovechando cada centímetro. Desde la demolición hasta el último azulejo.</p>
+          <ul class="space-y-3 mb-8">
+            <li class="flex items-center gap-3 text-on-surface-variant"><span class="material-symbols-outlined text-primary text-lg">check_circle</span>Demolición y gestión de residuos</li>
+            <li class="flex items-center gap-3 text-on-surface-variant"><span class="material-symbols-outlined text-primary text-lg">check_circle</span>Instalación de fontanería y electricidad</li>
+            <li class="flex items-center gap-3 text-on-surface-variant"><span class="material-symbols-outlined text-primary text-lg">check_circle</span>Montaje de muebles y electrodomésticos</li>
+            <li class="flex items-center gap-3 text-on-surface-variant"><span class="material-symbols-outlined text-primary text-lg">check_circle</span>Alicatado y solado</li>
+            <li class="flex items-center gap-3 text-on-surface-variant"><span class="material-symbols-outlined text-primary text-lg">check_circle</span>Pintura y acabados finales</li>
+          </ul>
+          <a href="#contacto" class="bg-primary text-white px-8 py-4 rounded-full font-bold text-sm hover:opacity-90 transition-all inline-flex items-center gap-2">
+            Solicitar presupuesto <span class="material-symbols-outlined text-base">arrow_forward</span>
+          </a>
+        </div>
+        <div class="flex-1">
+          <img src="https://images.unsplash.com/photo-1556911220-bff31c812dba?w=800&auto=format&fit=crop" alt="Reforma de Cocina Barcelona" class="w-full h-96 object-cover rounded-3xl shadow-lg"/>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Service 3: Baños -->
+  <section class="py-xl bg-background">
+    <div class="max-w-container-max mx-auto px-gutter">
+      <div class="flex flex-col lg:flex-row items-center gap-16">
+        <div class="flex-1">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
+              <span class="material-symbols-outlined text-primary text-2xl">bathtub</span>
+            </div>
+            <span class="text-label-bold font-bold text-primary uppercase tracking-wider">Servicio 03</span>
+          </div>
+          <h2 class="text-headline-md font-headline-md font-bold text-on-surface mb-4">Reformas de Baños</h2>
+          <p class="text-body-lg text-on-surface-variant mb-6">Renovamos baños completos o parciales: cambio de bañera por plato de ducha, renovación de azulejos, sanitarios y griferías de última generación.</p>
+          <ul class="space-y-3 mb-8">
+            <li class="flex items-center gap-3 text-on-surface-variant"><span class="material-symbols-outlined text-primary text-lg">check_circle</span>Cambio de bañera por ducha a ras de suelo</li>
+            <li class="flex items-center gap-3 text-on-surface-variant"><span class="material-symbols-outlined text-primary text-lg">check_circle</span>Impermeabilización y alicatado</li>
+            <li class="flex items-center gap-3 text-on-surface-variant"><span class="material-symbols-outlined text-primary text-lg">check_circle</span>Instalación de sanitarios y griferías</li>
+            <li class="flex items-center gap-3 text-on-surface-variant"><span class="material-symbols-outlined text-primary text-lg">check_circle</span>Reformas adaptadas para movilidad reducida</li>
+            <li class="flex items-center gap-3 text-on-surface-variant"><span class="material-symbols-outlined text-primary text-lg">check_circle</span>Ventilación y electricidad</li>
+          </ul>
+          <a href="#contacto" class="bg-primary text-white px-8 py-4 rounded-full font-bold text-sm hover:opacity-90 transition-all inline-flex items-center gap-2">
+            Solicitar presupuesto <span class="material-symbols-outlined text-base">arrow_forward</span>
+          </a>
+        </div>
+        <div class="flex-1">
+          <img src="https://images.unsplash.com/photo-1620626011761-996317b8d101?w=800&auto=format&fit=crop" alt="Reforma de Baño Barcelona" class="w-full h-96 object-cover rounded-3xl shadow-lg"/>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Service 4: Interiores -->
+  <section class="py-xl bg-surface-container-low">
+    <div class="max-w-container-max mx-auto px-gutter">
+      <div class="flex flex-col lg:flex-row-reverse items-center gap-16">
+        <div class="flex-1">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
+              <span class="material-symbols-outlined text-primary text-2xl">format_paint</span>
+            </div>
+            <span class="text-label-bold font-bold text-primary uppercase tracking-wider">Servicio 04</span>
+          </div>
+          <h2 class="text-headline-md font-headline-md font-bold text-on-surface mb-4">Reformas Interiores</h2>
+          <p class="text-body-lg text-on-surface-variant mb-6">Pintura, pladur, techos, suelos y carpintería. Renovamos el aspecto de cualquier estancia sin necesidad de obra mayor.</p>
+          <ul class="space-y-3 mb-8">
+            <li class="flex items-center gap-3 text-on-surface-variant"><span class="material-symbols-outlined text-primary text-lg">check_circle</span>Pintura interior y exterior</li>
+            <li class="flex items-center gap-3 text-on-surface-variant"><span class="material-symbols-outlined text-primary text-lg">check_circle</span>Tabiques de pladur y falsos techos</li>
+            <li class="flex items-center gap-3 text-on-surface-variant"><span class="material-symbols-outlined text-primary text-lg">check_circle</span>Instalación de suelos (parquet, gres, vinilo)</li>
+            <li class="flex items-center gap-3 text-on-surface-variant"><span class="material-symbols-outlined text-primary text-lg">check_circle</span>Carpintería de madera y aluminio</li>
+            <li class="flex items-center gap-3 text-on-surface-variant"><span class="material-symbols-outlined text-primary text-lg">check_circle</span>Restauración de elementos decorativos</li>
+          </ul>
+          <a href="#contacto" class="bg-primary text-white px-8 py-4 rounded-full font-bold text-sm hover:opacity-90 transition-all inline-flex items-center gap-2">
+            Solicitar presupuesto <span class="material-symbols-outlined text-base">arrow_forward</span>
+          </a>
+        </div>
+        <div class="flex-1">
+          <img src="https://images.unsplash.com/photo-1616137422495-1e9e46e2aa77?w=800&auto=format&fit=crop" alt="Reformas Interiores Barcelona" class="w-full h-96 object-cover rounded-3xl shadow-lg"/>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Service 5: Electricidad y Fontanería -->
+  <section class="py-xl bg-background">
+    <div class="max-w-container-max mx-auto px-gutter">
+      <div class="flex flex-col lg:flex-row items-center gap-16">
+        <div class="flex-1">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
+              <span class="material-symbols-outlined text-primary text-2xl">bolt</span>
+            </div>
+            <span class="text-label-bold font-bold text-primary uppercase tracking-wider">Servicio 05</span>
+          </div>
+          <h2 class="text-headline-md font-headline-md font-bold text-on-surface mb-4">Instalaciones Eléctricas y Fontanería</h2>
+          <p class="text-body-lg text-on-surface-variant mb-6">Instalaciones certificadas conforme a normativa. Cuadros eléctricos, puntos de luz, tomas de corriente, tuberías, desagües y más.</p>
+          <ul class="space-y-3 mb-8">
+            <li class="flex items-center gap-3 text-on-surface-variant"><span class="material-symbols-outlined text-primary text-lg">check_circle</span>Instalación y reforma de cuadros eléctricos</li>
+            <li class="flex items-center gap-3 text-on-surface-variant"><span class="material-symbols-outlined text-primary text-lg">check_circle</span>Puntos de luz y tomas de corriente</li>
+            <li class="flex items-center gap-3 text-on-surface-variant"><span class="material-symbols-outlined text-primary text-lg">check_circle</span>Instalación de fontanería y desagües</li>
+            <li class="flex items-center gap-3 text-on-surface-variant"><span class="material-symbols-outlined text-primary text-lg">check_circle</span>Calefacción y climatización</li>
+            <li class="flex items-center gap-3 text-on-surface-variant"><span class="material-symbols-outlined text-primary text-lg">check_circle</span>Certificados de instalaciones</li>
+          </ul>
+          <a href="#contacto" class="bg-primary text-white px-8 py-4 rounded-full font-bold text-sm hover:opacity-90 transition-all inline-flex items-center gap-2">
+            Solicitar presupuesto <span class="material-symbols-outlined text-base">arrow_forward</span>
+          </a>
+        </div>
+        <div class="flex-1">
+          <img src="https://images.unsplash.com/photo-1621905251918-48416bd8575a?w=800&auto=format&fit=crop" alt="Instalaciones Eléctricas y Fontanería" class="w-full h-96 object-cover rounded-3xl shadow-lg"/>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Service 6: Ampliaciones -->
+  <section class="py-xl bg-surface-container-low">
+    <div class="max-w-container-max mx-auto px-gutter">
+      <div class="flex flex-col lg:flex-row-reverse items-center gap-16">
+        <div class="flex-1">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
+              <span class="material-symbols-outlined text-primary text-2xl">add_box</span>
+            </div>
+            <span class="text-label-bold font-bold text-primary uppercase tracking-wider">Servicio 06</span>
+          </div>
+          <h2 class="text-headline-md font-headline-md font-bold text-on-surface mb-4">Ampliaciones y Redistribuciones</h2>
+          <p class="text-body-lg text-on-surface-variant mb-6">Aprovechamos al máximo el espacio disponible: derribamos muros no estructurales, redistribuimos estancias y ampliamos con estructuras sólidas y seguras.</p>
+          <ul class="space-y-3 mb-8">
+            <li class="flex items-center gap-3 text-on-surface-variant"><span class="material-symbols-outlined text-primary text-lg">check_circle</span>Derribo de muros no estructurales</li>
+            <li class="flex items-center gap-3 text-on-surface-variant"><span class="material-symbols-outlined text-primary text-lg">check_circle</span>Redistribución de espacios</li>
+            <li class="flex items-center gap-3 text-on-surface-variant"><span class="material-symbols-outlined text-primary text-lg">check_circle</span>Ampliaciones de viviendas</li>
+            <li class="flex items-center gap-3 text-on-surface-variant"><span class="material-symbols-outlined text-primary text-lg">check_circle</span>Terrazas y balcones</li>
+            <li class="flex items-center gap-3 text-on-surface-variant"><span class="material-symbols-outlined text-primary text-lg">check_circle</span>Gestión de licencias de obra</li>
+          </ul>
+          <a href="#contacto" class="bg-primary text-white px-8 py-4 rounded-full font-bold text-sm hover:opacity-90 transition-all inline-flex items-center gap-2">
+            Solicitar presupuesto <span class="material-symbols-outlined text-base">arrow_forward</span>
+          </a>
+        </div>
+        <div class="flex-1">
+          <img src="https://images.unsplash.com/photo-1503387837-b154d5074bd2?w=800&auto=format&fit=crop" alt="Ampliaciones y Redistribuciones" class="w-full h-96 object-cover rounded-3xl shadow-lg"/>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Service 7: Aislamientos -->
+  <section class="py-xl bg-background">
+    <div class="max-w-container-max mx-auto px-gutter">
+      <div class="flex flex-col lg:flex-row items-center gap-16">
+        <div class="flex-1">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
+              <span class="material-symbols-outlined text-primary text-2xl">ac_unit</span>
+            </div>
+            <span class="text-label-bold font-bold text-primary uppercase tracking-wider">Servicio 07</span>
+          </div>
+          <h2 class="text-headline-md font-headline-md font-bold text-on-surface mb-4">Aislamientos y Soluciones Energéticas</h2>
+          <p class="text-body-lg text-on-surface-variant mb-6">Mejora el confort y reduce tu factura energética. Aislamientos térmicos y acústicos, ventanas de alta eficiencia y sistemas de renovación de aire.</p>
+          <ul class="space-y-3 mb-8">
+            <li class="flex items-center gap-3 text-on-surface-variant"><span class="material-symbols-outlined text-primary text-lg">check_circle</span>Aislamiento térmico de fachadas (SATE)</li>
+            <li class="flex items-center gap-3 text-on-surface-variant"><span class="material-symbols-outlined text-primary text-lg">check_circle</span>Aislamiento acústico interior</li>
+            <li class="flex items-center gap-3 text-on-surface-variant"><span class="material-symbols-outlined text-primary text-lg">check_circle</span>Ventanas de doble y triple acristalamiento</li>
+            <li class="flex items-center gap-3 text-on-surface-variant"><span class="material-symbols-outlined text-primary text-lg">check_circle</span>Sistemas de ventilación mecánica</li>
+            <li class="flex items-center gap-3 text-on-surface-variant"><span class="material-symbols-outlined text-primary text-lg">check_circle</span>Rehabilitación energética</li>
+          </ul>
+          <a href="#contacto" class="bg-primary text-white px-8 py-4 rounded-full font-bold text-sm hover:opacity-90 transition-all inline-flex items-center gap-2">
+            Solicitar presupuesto <span class="material-symbols-outlined text-base">arrow_forward</span>
+          </a>
+        </div>
+        <div class="flex-1">
+          <img src="https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=800&auto=format&fit=crop" alt="Aislamientos y Eficiencia Energética" class="w-full h-96 object-cover rounded-3xl shadow-lg"/>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Banner -->
+  <section class="bg-primary py-20 text-white text-center">
+    <div class="max-w-container-max mx-auto px-gutter">
+      <h2 class="text-headline-md font-headline-md font-bold mb-4">¿No encuentras lo que buscas? Cuéntanoslo.</h2>
+      <p class="text-white/80 text-body-lg mb-8 max-w-xl mx-auto">Realizamos todo tipo de trabajos de reforma y construcción. Si no ves tu caso, consúltanos sin compromiso.</p>
+      <a href="#contacto" class="bg-secondary-container text-on-secondary-container px-10 py-4 rounded-full font-bold text-base hover:opacity-90 transition-all inline-flex items-center gap-2">
+        <span class="material-symbols-outlined">description</span>Pedir presupuesto gratis
+      </a>
+    </div>
+  </section>
+  </section>
+
+  <!-- ===== URGENCIAS ===== -->
+  <section id="urgencias">
+    <!-- Hero: Full-screen dark green -->
+  <section class="min-h-screen bg-primary-container flex items-center justify-center text-white text-center px-gutter py-20">
+    <div class="max-w-3xl mx-auto">
+      <span class="inline-block bg-secondary-container text-on-secondary-container px-6 py-2 rounded-full font-bold text-sm mb-8 uppercase tracking-widest">SERVICIO DE URGENCIAS 24 HORAS / 7 DIAS</span>
+      <h1 class="text-4xl md:text-6xl font-display-lg font-bold mb-6 leading-tight">Reparaciones urgentes 24/7</h1>
+      <p class="text-xl text-white/80 max-w-2xl mx-auto mb-10">¿Fuga de agua o avería eléctrica? No esperes. Te atendemos a cualquier hora, cualquier día.</p>
+      <div class="flex flex-col sm:flex-row gap-4 justify-center mb-8">
+        <a href="tel:34660043332" class="bg-secondary-container text-on-secondary-container px-10 py-5 rounded-full font-bold text-lg hover:opacity-90 transition-all flex items-center justify-center gap-3 shadow-2xl">
+          <span class="material-symbols-outlined text-2xl">call</span>Llamar ahora: 660 04 33 32
+        </a>
+        <a href="https://wa.me/34660043332" target="_blank" class="bg-[#25D366] text-white px-10 py-5 rounded-full font-bold text-lg hover:opacity-90 transition-all flex items-center justify-center gap-3 shadow-2xl">
+          <span class="material-symbols-outlined text-2xl">chat</span>WhatsApp
+        </a>
+      </div>
+      <p class="text-white/60 text-sm flex items-center justify-center gap-2">
+        <span class="material-symbols-outlined text-secondary-container text-base">timer</span>
+        Respuesta rápida garantizada en toda el área de Barcelona
+      </p>
+    </div>
+  </section>
+
+  <!-- Tipos de urgencias -->
+  <section class="py-xl bg-primary text-white">
+    <div class="max-w-container-max mx-auto px-gutter">
+      <div class="text-center mb-12">
+        <h2 class="text-headline-md font-headline-md font-bold mb-4">Tipos de urgencias que resolvemos</h2>
+        <p class="text-white/70 text-body-lg max-w-2xl mx-auto">Disponibles las 24 horas para resolver cualquier emergencia en tu hogar o negocio.</p>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="bg-white/10 hover:bg-white/15 transition-colors rounded-2xl p-8 text-center">
+          <span class="material-symbols-outlined text-secondary-container text-5xl mb-4 block">water_damage</span>
+          <h3 class="font-bold text-xl mb-2">Fugas de agua</h3>
+          <p class="text-white/70 text-sm leading-relaxed">Detectamos y reparamos fugas en tuberías, grifos y conexiones. Actuación inmediata para evitar daños mayores.</p>
+        </div>
+        <div class="bg-white/10 hover:bg-white/15 transition-colors rounded-2xl p-8 text-center">
+          <span class="material-symbols-outlined text-secondary-container text-5xl mb-4 block">electrical_services</span>
+          <h3 class="font-bold text-xl mb-2">Averías eléctricas</h3>
+          <p class="text-white/70 text-sm leading-relaxed">Cortocircuitos, bajada de tensión, cuadros fundidos. Electricistas certificados disponibles ahora mismo.</p>
+        </div>
+        <div class="bg-white/10 hover:bg-white/15 transition-colors rounded-2xl p-8 text-center">
+          <span class="material-symbols-outlined text-secondary-container text-5xl mb-4 block">plumbing</span>
+          <h3 class="font-bold text-xl mb-2">Desagües atascados</h3>
+          <p class="text-white/70 text-sm leading-relaxed">Destascamos tuberías, fregaderos, bañeras, lavabos y bajantes con maquinaria profesional.</p>
+        </div>
+        <div class="bg-white/10 hover:bg-white/15 transition-colors rounded-2xl p-8 text-center">
+          <span class="material-symbols-outlined text-secondary-container text-5xl mb-4 block">settings_input_component</span>
+          <h3 class="font-bold text-xl mb-2">Roturas de tuberías</h3>
+          <p class="text-white/70 text-sm leading-relaxed">Reparación de tuberías rotas o dañadas. Corte de suministro y reparación en la misma intervención.</p>
+        </div>
+        <div class="bg-white/10 hover:bg-white/15 transition-colors rounded-2xl p-8 text-center">
+          <span class="material-symbols-outlined text-secondary-container text-5xl mb-4 block">rainy</span>
+          <h3 class="font-bold text-xl mb-2">Goteras y filtraciones</h3>
+          <p class="text-white/70 text-sm leading-relaxed">Identificamos el origen y aplicamos soluciones temporales y definitivas para goteras y humedades.</p>
+        </div>
+        <div class="bg-white/10 hover:bg-white/15 transition-colors rounded-2xl p-8 text-center">
+          <span class="material-symbols-outlined text-secondary-container text-5xl mb-4 block">store</span>
+          <h3 class="font-bold text-xl mb-2">Urgencias en negocios</h3>
+          <p class="text-white/70 text-sm leading-relaxed">Minimizamos el tiempo de inactividad en locales y negocios. Discreción y rapidez garantizadas.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Por qué elegirnos -->
+  <section class="py-xl bg-white">
+    <div class="max-w-container-max mx-auto px-gutter">
+      <div class="flex flex-col lg:flex-row items-center gap-16">
+        <div class="flex-1">
+          <span class="text-label-bold font-bold text-primary uppercase tracking-wider">Nuestra garantía</span>
+          <h2 class="text-headline-md font-headline-md font-bold text-on-surface mt-2 mb-8">¿Por qué elegirnos para urgencias?</h2>
+          <ul class="space-y-6">
+            <li class="flex items-start gap-4">
+              <div class="w-10 h-10 bg-primary rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                <span class="material-symbols-outlined text-white text-lg">check</span>
+              </div>
+              <div>
+                <h3 class="font-bold text-on-surface text-lg mb-1">Disponibilidad 24 horas, 365 días al año</h3>
+                <p class="text-on-surface-variant text-sm leading-relaxed">No importa si es de noche, fin de semana o festivo. Siempre hay alguien al teléfono para atenderte.</p>
+              </div>
+            </li>
+            <li class="flex items-start gap-4">
+              <div class="w-10 h-10 bg-primary rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                <span class="material-symbols-outlined text-white text-lg">check</span>
+              </div>
+              <div>
+                <h3 class="font-bold text-on-surface text-lg mb-1">Respuesta rápida garantizada</h3>
+                <p class="text-on-surface-variant text-sm leading-relaxed">Nuestros técnicos llegan a tu domicilio en menos de una hora en toda el área metropolitana de Barcelona.</p>
+              </div>
+            </li>
+            <li class="flex items-start gap-4">
+              <div class="w-10 h-10 bg-primary rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                <span class="material-symbols-outlined text-white text-lg">check</span>
+              </div>
+              <div>
+                <h3 class="font-bold text-on-surface text-lg mb-1">Profesionales cualificados y certificados</h3>
+                <p class="text-on-surface-variant text-sm leading-relaxed">Todos nuestros técnicos tienen certificaciones oficiales y experiencia contrastada en su especialidad.</p>
+              </div>
+            </li>
+            <li class="flex items-start gap-4">
+              <div class="w-10 h-10 bg-primary rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                <span class="material-symbols-outlined text-white text-lg">check</span>
+              </div>
+              <div>
+                <h3 class="font-bold text-on-surface text-lg mb-1">Precio cerrado antes de empezar — sin sorpresas</h3>
+                <p class="text-on-surface-variant text-sm leading-relaxed">Te damos el presupuesto antes de comenzar. Lo que acordamos es lo que pagas, sin cargos adicionales.</p>
+              </div>
+            </li>
+            <li class="flex items-start gap-4">
+              <div class="w-10 h-10 bg-primary rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                <span class="material-symbols-outlined text-white text-lg">check</span>
+              </div>
+              <div>
+                <h3 class="font-bold text-on-surface text-lg mb-1">Atención personalizada, no un call center</h3>
+                <p class="text-on-surface-variant text-sm leading-relaxed">Hablas directamente con nuestro equipo técnico, no con un operador que no conoce tu problema.</p>
+              </div>
+            </li>
+          </ul>
+        </div>
+        <div class="flex-1 bg-surface-container-low rounded-3xl p-10 text-center">
+          <div class="relative inline-block mb-6">
+            <div class="w-28 h-28 bg-secondary-container rounded-full flex items-center justify-center mx-auto relative pulse-ring">
+              <span class="material-symbols-outlined text-on-secondary-container text-6xl">timer</span>
+            </div>
+          </div>
+          <p class="text-5xl font-bold text-primary mb-2">&lt;60 min</p>
+          <p class="text-on-surface-variant text-lg mb-8">Tiempo de respuesta garantizado</p>
+          <div class="grid grid-cols-2 gap-4">
+            <div class="bg-white rounded-2xl p-4 shadow-sm">
+              <p class="text-2xl font-bold text-primary">24/7</p>
+              <p class="text-xs text-on-surface-variant mt-1">Disponibilidad</p>
+            </div>
+            <div class="bg-white rounded-2xl p-4 shadow-sm">
+              <p class="text-2xl font-bold text-primary">365</p>
+              <p class="text-xs text-on-surface-variant mt-1">Días al año</p>
+            </div>
+            <div class="bg-white rounded-2xl p-4 shadow-sm">
+              <p class="text-2xl font-bold text-primary">0€</p>
+              <p class="text-xs text-on-surface-variant mt-1">Desplazamiento</p>
+            </div>
+            <div class="bg-white rounded-2xl p-4 shadow-sm">
+              <p class="text-2xl font-bold text-primary">100%</p>
+              <p class="text-xs text-on-surface-variant mt-1">Garantía</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Zona de cobertura -->
+  <section class="py-xl bg-surface-container-low">
+    <div class="max-w-container-max mx-auto px-gutter text-center">
+      <span class="text-label-bold font-bold text-primary uppercase tracking-wider">Dónde trabajamos</span>
+      <h2 class="text-headline-md font-headline-md font-bold text-on-surface mt-2 mb-4">Zona de cobertura</h2>
+      <p class="text-body-lg text-on-surface-variant max-w-2xl mx-auto mb-10">Cubrimos toda el área metropolitana de Barcelona. Llegamos rápido a:</p>
+      <div class="flex flex-wrap justify-center gap-3 max-w-3xl mx-auto">
+        <span class="bg-primary text-white px-5 py-2.5 rounded-full font-bold text-sm flex items-center gap-2"><span class="material-symbols-outlined text-sm">location_on</span>Barcelona</span>
+        <span class="bg-white border border-outline-variant text-on-surface px-5 py-2.5 rounded-full font-bold text-sm flex items-center gap-2"><span class="material-symbols-outlined text-primary text-sm">location_on</span>Esplugues de Llobregat</span>
+        <span class="bg-white border border-outline-variant text-on-surface px-5 py-2.5 rounded-full font-bold text-sm flex items-center gap-2"><span class="material-symbols-outlined text-primary text-sm">location_on</span>L'Hospitalet de Llobregat</span>
+        <span class="bg-white border border-outline-variant text-on-surface px-5 py-2.5 rounded-full font-bold text-sm flex items-center gap-2"><span class="material-symbols-outlined text-primary text-sm">location_on</span>Cornellà de Llobregat</span>
+        <span class="bg-white border border-outline-variant text-on-surface px-5 py-2.5 rounded-full font-bold text-sm flex items-center gap-2"><span class="material-symbols-outlined text-primary text-sm">location_on</span>Sant Just Desvern</span>
+        <span class="bg-white border border-outline-variant text-on-surface px-5 py-2.5 rounded-full font-bold text-sm flex items-center gap-2"><span class="material-symbols-outlined text-primary text-sm">location_on</span>Gavà</span>
+        <span class="bg-white border border-outline-variant text-on-surface px-5 py-2.5 rounded-full font-bold text-sm flex items-center gap-2"><span class="material-symbols-outlined text-primary text-sm">location_on</span>Castelldefels</span>
+        <span class="bg-white border border-outline-variant text-on-surface px-5 py-2.5 rounded-full text-sm flex items-center gap-2 text-on-surface-variant">Y más municipios...</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Final CTA -->
+  <section class="bg-secondary-container py-20 text-center px-gutter">
+    <div class="max-w-3xl mx-auto">
+      <h2 class="text-3xl md:text-5xl font-display-lg font-bold text-on-secondary-container mb-4">¿Tienes una urgencia ahora mismo?</h2>
+      <p class="text-on-secondary-container/80 text-lg mb-10">No esperes. Cada minuto cuenta. Llámanos y estaremos en tu puerta en la mayor brevedad posible.</p>
+      <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+        <a href="tel:34660043332" class="bg-primary-container text-white px-12 py-6 rounded-full font-bold text-2xl hover:opacity-90 transition-all flex items-center gap-4 shadow-2xl">
+          <span class="material-symbols-outlined text-3xl">call</span>660 04 33 32
+        </a>
+        <a href="https://wa.me/34660043332" target="_blank" class="bg-[#25D366] text-white px-10 py-6 rounded-full font-bold text-xl hover:opacity-90 transition-all flex items-center gap-3 shadow-2xl">
+          <span class="material-symbols-outlined text-2xl">chat</span>WhatsApp
+        </a>
+      </div>
+      <p class="mt-6 text-on-secondary-container/60 text-sm">Disponibles ahora mismo. Respuesta inmediata garantizada.</p>
+    </div>
+  </section>
+  </section>
+
+  <!-- ===== NOSOTROS ===== -->
+  <section id="nosotros">
+    <!-- Page Hero -->
+  <section class="bg-primary-container py-20 text-white text-center">
+    <div class="max-w-container-max mx-auto px-gutter">
+      <span class="inline-block bg-secondary-container text-on-secondary-container px-4 py-1.5 rounded-full text-label-bold font-bold mb-6 uppercase tracking-wider">Nuestro equipo</span>
+      <h1 class="text-4xl md:text-display-lg font-display-lg font-bold mb-4">Quiénes somos</h1>
+      <p class="text-body-lg text-white/80 max-w-2xl mx-auto">Profesionales apasionados con más de amplia experiencia transformando hogares en Barcelona con honestidad, precisión y compromiso.</p>
+    </div>
+  </section>
+
+  <!-- About Section -->
+  <section class="py-xl bg-background">
+    <div class="max-w-container-max mx-auto px-gutter">
+      <div class="flex flex-col lg:flex-row items-center gap-16">
+        <div class="flex-1 relative">
+          <img src="https://images.unsplash.com/photo-1581094288338-2314dddb7ece?w=800&auto=format&fit=crop" alt="Equipo de Reformas G3 en obra" class="w-full h-[480px] object-cover rounded-3xl shadow-xl"/>
+          <div class="absolute -bottom-5 -right-5 bg-primary text-white px-8 py-5 rounded-2xl shadow-2xl">
+            <p class="text-3xl font-bold leading-none">Experiencia</p>
+            <p class="text-sm text-white/80 mt-1">Años de experiencia</p>
+          </div>
+        </div>
+        <div class="flex-1">
+          <span class="text-label-bold font-bold text-primary uppercase tracking-wider">Nuestra historia</span>
+          <h2 class="text-headline-md font-headline-md font-bold text-on-surface mt-2 mb-6">Un equipo apasionado por las reformas</h2>
+          <p class="text-body-lg text-on-surface-variant mb-5">En Reformas G3 somos un equipo apasionado de profesionales con una sólida experiencia en el sector de reformas y construcción. Trabajamos con comunicación constante y un enfoque personalizado en cada proyecto, desde reformas integrales hasta pequeñas remodelaciones.</p>
+          <p class="text-body-md text-on-surface-variant mb-8">No solo renovamos espacios: construimos relaciones basadas en la confianza y la satisfacción.</p>
+          <div class="grid grid-cols-2 gap-4">
+            <div class="bg-surface-container-low rounded-2xl p-5">
+              <p class="text-3xl font-bold text-primary">Muchos</p>
+              <p class="text-sm text-on-surface-variant mt-1">Proyectos completados</p>
+            </div>
+            <div class="bg-surface-container-low rounded-2xl p-5">
+              <p class="text-3xl font-bold text-primary"></p>
+              <p class="text-sm text-on-surface-variant mt-1">Clientes satisfechos</p>
+            </div>
+            <div class="bg-surface-container-low rounded-2xl p-5">
+              <p class="text-3xl font-bold text-primary">15+</p>
+              <p class="text-sm text-on-surface-variant mt-1">Años en el sector</p>
+            </div>
+            <div class="bg-surface-container-low rounded-2xl p-5">
+              <p class="text-3xl font-bold text-primary">24h</p>
+              <p class="text-sm text-on-surface-variant mt-1">Servicio de urgencias</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 Trust Badges -->
+  <section class="py-xl bg-surface-container-low">
+    <div class="max-w-container-max mx-auto px-gutter">
+      <div class="text-center mb-12">
+        <span class="text-label-bold font-bold text-primary uppercase tracking-wider">Por qué confiar en nosotros</span>
+        <h2 class="text-headline-md font-headline-md font-bold text-on-surface mt-2 mb-4">Nuestros compromisos</h2>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="bg-white rounded-3xl p-8 shadow-sm border border-outline-variant text-center hover:shadow-md transition-shadow">
+          <div class="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
+            <span class="material-symbols-outlined text-primary text-4xl">groups</span>
+          </div>
+          <h3 class="font-headline-sm text-headline-sm font-bold text-on-surface mb-3">Equipo de profesionales</h3>
+          <p class="text-on-surface-variant text-sm leading-relaxed">Especialistas cualificados en todas las áreas de la construcción: electricistas, fontaneros, pintores, alicatadores y más.</p>
+        </div>
+        <div class="bg-white rounded-3xl p-8 shadow-sm border border-outline-variant text-center hover:shadow-md transition-shadow">
+          <div class="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
+            <span class="material-symbols-outlined text-primary text-4xl">receipt_long</span>
+          </div>
+          <h3 class="font-headline-sm text-headline-sm font-bold text-on-surface mb-3">Presupuesto claro antes de empezar</h3>
+          <p class="text-on-surface-variant text-sm leading-relaxed">Sin letra pequeña ni costes ocultos. Lo que presupuestamos es lo que pagas. El precio queda fijado por escrito antes de iniciar la obra.</p>
+        </div>
+        <div class="bg-white rounded-3xl p-8 shadow-sm border border-outline-variant text-center hover:shadow-md transition-shadow">
+          <div class="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
+            <span class="material-symbols-outlined text-primary text-4xl">person_pin</span>
+          </div>
+          <h3 class="font-headline-sm text-headline-sm font-bold text-on-surface mb-3">Atención personalizada en cada proyecto</h3>
+          <p class="text-on-surface-variant text-sm leading-relaxed">Seguimiento constante y comunicación directa con el equipo técnico. Siempre sabrás en qué fase está tu reforma.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Values Section -->
+  <section class="py-xl bg-background">
+    <div class="max-w-container-max mx-auto px-gutter">
+      <div class="text-center mb-12">
+        <span class="text-label-bold font-bold text-primary uppercase tracking-wider">Lo que nos define</span>
+        <h2 class="text-headline-md font-headline-md font-bold text-on-surface mt-2 mb-4">Nuestros valores</h2>
+        <p class="text-body-lg text-on-surface-variant max-w-xl mx-auto">Estos principios guían cada decisión que tomamos en cada proyecto que emprendemos.</p>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="relative overflow-hidden rounded-3xl bg-primary text-white p-10">
+          <div class="absolute -top-6 -right-6 w-32 h-32 bg-white/5 rounded-full"></div>
+          <div class="absolute -bottom-8 -left-8 w-40 h-40 bg-white/5 rounded-full"></div>
+          <div class="relative">
+            <span class="material-symbols-outlined text-secondary-container text-4xl mb-4 block">visibility</span>
+            <h3 class="text-2xl font-bold mb-3">Transparencia</h3>
+            <p class="text-white/70 text-sm leading-relaxed">Comunicación honesta en todo momento. Te informamos de cada decisión, cada imprevisto y cada avance en tu reforma.</p>
+          </div>
+        </div>
+        <div class="relative overflow-hidden rounded-3xl bg-primary-container text-white p-10">
+          <div class="absolute -top-6 -right-6 w-32 h-32 bg-white/5 rounded-full"></div>
+          <div class="absolute -bottom-8 -left-8 w-40 h-40 bg-white/5 rounded-full"></div>
+          <div class="relative">
+            <span class="material-symbols-outlined text-secondary-container text-4xl mb-4 block">precision_manufacturing</span>
+            <h3 class="text-2xl font-bold mb-3">Precisión</h3>
+            <p class="text-white/70 text-sm leading-relaxed">Los detalles marcan la diferencia. Ejecutamos cada trabajo con el máximo cuidado y atención al acabado final.</p>
+          </div>
+        </div>
+        <div class="relative overflow-hidden rounded-3xl bg-secondary-container text-on-secondary-container p-10">
+          <div class="absolute -top-6 -right-6 w-32 h-32 bg-black/5 rounded-full"></div>
+          <div class="absolute -bottom-8 -left-8 w-40 h-40 bg-black/5 rounded-full"></div>
+          <div class="relative">
+            <span class="material-symbols-outlined text-on-secondary-container/80 text-4xl mb-4 block">handshake</span>
+            <h3 class="text-2xl font-bold mb-3">Compromiso</h3>
+            <p class="text-on-secondary-container/70 text-sm leading-relaxed">Cumplimos los plazos acordados y entregamos exactamente lo que prometemos. Tu satisfacción es nuestra mejor carta de presentación.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats Strip -->
+  <section class="bg-primary py-16 text-white">
+    <div class="max-w-container-max mx-auto px-gutter">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+        <div>
+          <p class="text-5xl font-bold text-secondary-container">15+</p>
+          <p class="text-white/70 text-sm mt-2 uppercase tracking-wider">Años de experiencia</p>
+        </div>
+        <div>
+          <p class="text-5xl font-bold text-secondary-container">Muchos</p>
+          <p class="text-white/70 text-sm mt-2 uppercase tracking-wider">Proyectos realizados</p>
+        </div>
+        <div>
+          <p class="text-5xl font-bold text-secondary-container"></p>
+          <p class="text-white/70 text-sm mt-2 uppercase tracking-wider">Clientes satisfechos</p>
+        </div>
+        <div>
+          <p class="text-5xl font-bold text-secondary-container">24h</p>
+          <p class="text-white/70 text-sm mt-2 uppercase tracking-wider">Servicio de urgencias</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="py-xl bg-surface-container-low text-center">
+    <div class="max-w-container-max mx-auto px-gutter">
+      <h2 class="text-headline-md font-headline-md font-bold text-on-surface mb-4">¿Listo para empezar tu proyecto?</h2>
+      <p class="text-body-lg text-on-surface-variant max-w-xl mx-auto mb-8">Cuéntanos tu idea y te hacemos un presupuesto gratis. Sin compromiso, con visita a domicilio incluida.</p>
+      <div class="flex flex-col sm:flex-row gap-4 justify-center">
+        <a href="#contacto" class="bg-primary text-white px-10 py-4 rounded-full font-bold text-base hover:opacity-90 transition-all inline-flex items-center justify-center gap-2">
+          <span class="material-symbols-outlined">description</span>Solicitar presupuesto gratis
+        </a>
+        <a href="https://wa.me/34660043332" target="_blank" class="bg-secondary-container text-on-secondary-container px-10 py-4 rounded-full font-bold text-base hover:opacity-90 transition-all inline-flex items-center justify-center gap-2">
+          <span class="material-symbols-outlined">chat</span>Escribir por WhatsApp
+        </a>
+      </div>
+    </div>
+  </section>
+  </section>
+
+  <!-- ===== CONTACTO ===== -->
+  <section id="contacto">
+    <!-- Page Hero -->
+  <section class="bg-primary-container py-20 text-white text-center">
+    <div class="max-w-container-max mx-auto px-gutter">
+      <span class="inline-block bg-secondary-container text-on-secondary-container px-4 py-1.5 rounded-full text-label-bold font-bold mb-6 uppercase tracking-wider">Gratis y sin compromiso</span>
+      <h1 class="text-4xl md:text-display-lg font-display-lg font-bold mb-4">Presupuesto sin compromiso</h1>
+      <p class="text-body-lg text-white/80 max-w-2xl mx-auto">Te respondemos en menos de 24 horas. Visita gratuita a tu domicilio.</p>
+    </div>
+  </section>
+
+  <!-- Main contact section -->
+  <section class="py-xl bg-background">
+    <div class="max-w-container-max mx-auto px-gutter">
+      <div class="flex flex-col lg:flex-row gap-12 items-start">
+
+        <!-- LEFT: Form -->
+        <div class="flex-1 min-w-0">
+          <div class="bg-white rounded-3xl p-8 shadow-sm border border-outline-variant">
+            <h2 class="text-headline-sm font-headline-sm font-bold text-on-surface mb-2">Cuéntanos tu proyecto</h2>
+            <p class="text-on-surface-variant text-sm mb-8">Rellena el formulario y te contactamos en menos de 24 horas con un presupuesto personalizado.</p>
+
+            <form action="https://formspree.io/f/YOUR_FORM_ID" method="POST" id="contact-form">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
+                <div>
+                  <label class="block text-sm font-bold text-on-surface mb-2" for="nombre">Nombre completo *</label>
+                  <input type="text" id="nombre" name="nombre" required placeholder="Tu nombre y apellidos" class="w-full border border-outline-variant rounded-xl px-4 py-3 text-on-surface text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors"/>
+                </div>
+                <div>
+                  <label class="block text-sm font-bold text-on-surface mb-2" for="telefono">Teléfono *</label>
+                  <input type="tel" id="telefono" name="telefono" required placeholder="6XX XXX XXX" class="w-full border border-outline-variant rounded-xl px-4 py-3 text-on-surface text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors"/>
+                </div>
+              </div>
+
+              <div class="mb-5">
+                <label class="block text-sm font-bold text-on-surface mb-2" for="email">Email *</label>
+                <input type="email" id="email" name="email" required placeholder="tu@email.com" class="w-full border border-outline-variant rounded-xl px-4 py-3 text-on-surface text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors"/>
+              </div>
+
+              <div class="mb-5">
+                <label class="block text-sm font-bold text-on-surface mb-2" for="servicio">Tipo de servicio</label>
+                <select id="servicio" name="servicio" class="w-full border border-outline-variant rounded-xl px-4 py-3 text-on-surface text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors bg-white">
+                  <option value="">Selecciona un servicio</option>
+                  <option>Reforma Integral</option>
+                  <option>Reforma de Cocina</option>
+                  <option>Reforma de Baño</option>
+                  <option>Reformas Interiores</option>
+                  <option>Instalaciones Eléctricas y Fontanería</option>
+                  <option>Ampliaciones y Redistribuciones</option>
+                  <option>Aislamientos y Eficiencia Energética</option>
+                  <option>Urgencia 24h</option>
+                  <option>Otro</option>
+                </select>
+              </div>
+
+              <div class="mb-6">
+                <label class="block text-sm font-bold text-on-surface mb-2" for="mensaje">Mensaje</label>
+                <textarea id="mensaje" name="mensaje" rows="4" placeholder="Describe brevemente tu proyecto: qué quieres hacer, en qué zona, si tienes plazos..." class="w-full border border-outline-variant rounded-xl px-4 py-3 text-on-surface text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors resize-none"></textarea>
+              </div>
+
+              <button type="submit" class="w-full bg-primary text-white py-4 rounded-full font-bold text-sm hover:opacity-90 transition-all flex items-center justify-center gap-2">
+                <span class="material-symbols-outlined text-base">send</span>Enviar solicitud
+              </button>
+
+              <div id="form-success" class="hidden mt-4 bg-green-50 border border-green-200 text-green-800 rounded-xl px-5 py-4 text-sm font-bold text-center flex items-center justify-center gap-2">
+                <span class="material-symbols-outlined text-lg">check_circle</span>
+                Gracias! Te contactamos en menos de 24 horas.
+              </div>
+            </form>
+
+            <div class="mt-6 pt-6 border-t border-outline-variant text-center">
+              <p class="text-sm text-on-surface-variant mb-3">O si prefieres, escríbenos directamente por WhatsApp</p>
+              <a href="https://wa.me/34660043332" target="_blank" class="inline-flex items-center gap-2 bg-[#25D366] text-white px-6 py-3 rounded-full font-bold text-sm hover:opacity-90 transition-all">
+                <span class="material-symbols-outlined text-base">chat</span>Escribir por WhatsApp
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: Info card + map -->
+        <div class="w-full lg:w-80 xl:w-96 flex-shrink-0">
+          <div class="bg-primary-container text-white rounded-3xl p-8 mb-6">
+            <h3 class="font-bold text-lg mb-6">Información de contacto</h3>
+            <ul class="space-y-5">
+              <li class="flex items-start gap-3">
+                <span class="material-symbols-outlined text-secondary-container text-xl mt-0.5">location_on</span>
+                <div>
+                  <p class="font-bold text-sm">Dirección</p>
+                  <p class="text-white/70 text-sm mt-0.5">C/Angel Guimerà 146<br/>08950 Esplugues de Llobregat<br/>Barcelona</p>
+                </div>
+              </li>
+              <li class="flex items-start gap-3">
+                <span class="material-symbols-outlined text-secondary-container text-xl mt-0.5">call</span>
+                <div>
+                  <p class="font-bold text-sm">Teléfono</p>
+                  <a href="tel:34660043332" class="text-white/70 text-sm hover:text-secondary-container transition-colors mt-0.5 block">660 04 33 32</a>
+                </div>
+              </li>
+              <li class="flex items-start gap-3">
+                <span class="material-symbols-outlined text-secondary-container text-xl mt-0.5">chat</span>
+                <div>
+                  <p class="font-bold text-sm">WhatsApp</p>
+                  <a href="https://wa.me/34660043332" target="_blank" class="text-white/70 text-sm hover:text-secondary-container transition-colors mt-0.5 block">Escribir ahora</a>
+                </div>
+              </li>
+              <li class="flex items-start gap-3">
+                <span class="material-symbols-outlined text-secondary-container text-xl mt-0.5">mail</span>
+                <div>
+                  <p class="font-bold text-sm">Email</p>
+                  <a href="mailto:" class="text-white/70 text-sm hover:text-secondary-container transition-colors mt-0.5 block"></a>
+                </div>
+              </li>
+              <li class="flex items-start gap-3">
+                <span class="material-symbols-outlined text-secondary-container text-xl mt-0.5">schedule</span>
+                <div>
+                  <p class="font-bold text-sm">Horario</p>
+                  <p class="text-white/70 text-sm mt-0.5">Lun – Vie: 09:00–14:00 y 15:30–20:00</p>
+                  <p class="text-secondary-container text-sm font-bold mt-1">Urgencias: 24h todos los días</p>
+                </div>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Map -->
+          <div class="rounded-2xl overflow-hidden border border-outline-variant shadow-sm">
+            <iframe
+              src="https://maps.google.com/maps?q=C%2FAngel+Guimer%C3%A0+146+Esplugues+de+Llobregat&t=&z=16&ie=UTF8&iwloc=&output=embed"
+              width="100%"
+              height="250"
+              frameborder="0"
+              loading="lazy"
+              title="Ubicación de Reformas G3 en Esplugues de Llobregat">
+            </iframe>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- SECCIÓN FAQ ELIMINADA - CONTENIDO A VALIDAR CON EL CLIENTE -->
+<!-- SECCIÓN FAQ ELIMINADA - CONTENIDO A VALIDAR CON EL CLIENTE -->
+<!-- SECCIÓN FAQ ELIMINADA - CONTENIDO A VALIDAR CON EL CLIENTE -->
+<!-- SECCIÓN FAQ ELIMINADA - CONTENIDO A VALIDAR CON EL CLIENTE -->
+<!-- SECCIÓN FAQ ELIMINADA - CONTENIDO A VALIDAR CON EL CLIENTE -->
+<footer class="bg-primary-container text-on-primary py-xl">
+  <div class="max-w-container-max mx-auto px-gutter">
+    <div class="flex flex-col md:flex-row justify-between gap-12 mb-12">
+      <div class="max-w-xs">
+        <a class="font-headline-sm text-headline-sm font-bold text-white mb-3 block" href="#inicio">Reformas G3</a>
+        <p class="opacity-70 text-sm leading-relaxed">Transformamos tu hogar en el espacio de tus sueños. Especialistas en reformas integrales en Barcelona.</p>
+        <a class="mt-4 inline-flex items-center gap-2 bg-secondary-container text-on-secondary-container px-5 py-2.5 rounded-full font-label-bold text-label-bold hover:opacity-90 transition-all" href="https://wa.me/34660043332" target="_blank">
+          <span class="material-symbols-outlined text-base">chat</span>WhatsApp
+        </a>
+      </div>
+      <div class="grid grid-cols-2 md:grid-cols-3 gap-10">
+        <div>
+          <h4 class="font-label-bold text-label-bold text-secondary-container mb-4 uppercase tracking-wider">Páginas</h4>
+          <ul class="space-y-3 text-sm opacity-80">
+            <li><a class="hover:text-secondary-container transition-colors" href="#inicio">Inicio</a></li>
+            <li><a class="hover:text-secondary-container transition-colors" href="#servicios">Servicios</a></li>
+            <li><a class="hover:text-secondary-container transition-colors" href="#urgencias">Urgencias 24h</a></li>
+            <li><a class="hover:text-secondary-container transition-colors" href="#nosotros">Quiénes somos</a></li>
+            <li><a class="hover:text-secondary-container transition-colors" href="#contacto">Contacto</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="font-label-bold text-label-bold text-secondary-container mb-4 uppercase tracking-wider">Contacto</h4>
+          <ul class="space-y-3 text-sm opacity-80">
+            <li class="flex items-start gap-2"><span class="material-symbols-outlined text-sm mt-0.5">location_on</span>C/Angel Guimerà 146, Esplugues de Llobregat</li>
+            <li><a class="hover:text-secondary-container flex items-center gap-2" href="tel:34660043332"><span class="material-symbols-outlined text-sm">call</span>660 04 33 32</a></li>
+            <li><a class="hover:text-secondary-container flex items-center gap-2" href="https://wa.me/34660043332" target="_blank"><span class="material-symbols-outlined text-sm">chat</span>WhatsApp</a></li>
+            <li class="flex items-center gap-2"><span class="material-symbols-outlined text-sm">schedule</span>Lun–Vie 09:00–14:00 y 15:30–20:00</li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="font-label-bold text-label-bold text-secondary-container mb-4 uppercase tracking-wider">Legal</h4>
+          <ul class="space-y-3 text-sm opacity-80">
+            <li><a class="hover:text-secondary-container" href="#">Aviso legal</a></li>
+            <li><a class="hover:text-secondary-container" href="#">Política de privacidad</a></li>
+            <li><a class="hover:text-secondary-container" href="#">Configuración de cookies</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="pt-6 border-t border-white/10 text-center text-sm opacity-50">
+      <p>© 2025 Reformas G3. Todos los derechos reservados. · Urgencias 24h: <a class="underline hover:text-secondary-container" href="tel:34660043332">660 04 33 32</a></p>
+    </div>
+  </div>
+</footer>
+
+<!-- Floating WhatsApp -->
+<a class="md:hidden fixed bottom-6 right-6 z-50 bg-[#25D366] text-white p-4 rounded-full shadow-2xl active:scale-90 transition-transform" href="https://wa.me/34660043332" target="_blank">
+  <span class="material-symbols-outlined text-2xl">chat</span>
+</a>
+
+<script>
+  // Header shrink
+  window.addEventListener('scroll', () => {
+    document.getElementById('main-header').classList.toggle('shadow-md', window.scrollY > 50);
+  });
+
+  // Mobile menu
+  document.getElementById('mobile-menu-btn').addEventListener('click', () => {
+    document.getElementById('mobile-menu').classList.toggle('hidden');
+  });
+  document.querySelectorAll('#mobile-menu a').forEach(a => {
+    a.addEventListener('click', () => document.getElementById('mobile-menu').classList.add('hidden'));
+  });
+
+  // Smooth scroll with header offset
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', function(e) {
+      const href = this.getAttribute('href');
+      if (href === '#') return;
+      const target = document.querySelector(href);
+      if (target) {
+        e.preventDefault();
+        window.scrollTo({ top: target.getBoundingClientRect().top + window.pageYOffset - 80, behavior: 'smooth' });
+      }
+    });
+  });
+
+  // Active nav link on scroll
+  const sections = document.querySelectorAll('section[id]');
+  const navLinks = document.querySelectorAll('.nav-link[data-section]');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        navLinks.forEach(l => l.classList.remove('active'));
+        const active = document.querySelector(`.nav-link[data-section="${entry.target.id}"]`);
+        if (active) active.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+  sections.forEach(s => observer.observe(s));
+
+  // FAQ accordion
+  document.querySelectorAll('.faq-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const answer = btn.nextElementSibling;
+      const icon = btn.querySelector('.faq-icon');
+      answer.classList.toggle('hidden');
+      if (icon) icon.textContent = answer.classList.contains('hidden') ? 'expand_more' : 'expand_less';
+    });
+  });
+
+  // Contact form
+  const form = document.getElementById('contact-form');
+  if (form) {
+    form.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const btn = form.querySelector('button[type="submit"]');
+      btn.textContent = 'Enviando...';
+      btn.disabled = true;
+      try {
+        const res = await fetch(form.action, { method: 'POST', body: new FormData(form), headers: { 'Accept': 'application/json' } });
+        if (res.ok) {
+          form.innerHTML = '<div class="text-center py-12"><span class="material-symbols-outlined text-5xl text-primary mb-4 block">check_circle</span><h3 class="font-headline-sm text-headline-sm text-primary mb-2">¡Mensaje enviado!</h3><p class="text-on-surface-variant">Te contactamos en menos de 24 horas.</p></div>';
+        }
+      } catch(err) {
+        btn.textContent = 'Enviar solicitud';
+        btn.disabled = false;
+      }
+    });
+  }
+</script>
+</body>
+</html>
