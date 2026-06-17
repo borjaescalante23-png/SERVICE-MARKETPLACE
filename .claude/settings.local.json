@@ -6,7 +6,9 @@
       "Bash(command -v node)",
       "Bash(/usr/local/bin/node --version)",
       "Bash(/opt/homebrew/bin/node --version)",
-      "Bash(~/.nvm/nvm.sh)"
+      "Bash(~/.nvm/nvm.sh)",
+      "Bash(cp /root/.claude/uploads/38d0a2e4-f5b0-52ac-8c88-764b763889f8/b3767b9e-REFORMAS_G3.html /tmp/reformas_g3.html)",
+      "Read(//tmp/**)"
     ]
   }
 }
