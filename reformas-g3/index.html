@@ -74,36 +74,6 @@
 <body class="bg-background text-on-surface font-body-md">
 
 <!-- ========== PASSWORD GATE ========== -->
-<div id="password-gate" style="position:fixed;inset:0;z-index:9999;background:#f8f9fa;display:flex;align-items:center;justify-content:center;">
-  <div style="text-align:center;max-width:380px;width:90%;padding:48px 40px;border:1px solid #c0c8c2;background:#fff;border-radius:8px;">
-    <span class="material-symbols-outlined" style="font-size:40px;color:#023626;margin-bottom:16px;display:block;">construction</span>
-    <div style="font-family:'Sora',sans-serif;font-size:22px;font-weight:700;color:#023626;margin-bottom:4px;">Reformas G3</div>
-    <p style="font-family:'Hanken Grotesk',sans-serif;font-size:13px;letter-spacing:0.08em;text-transform:uppercase;color:#717974;margin-bottom:28px;">Vista previa privada</p>
-    <input id="pw-input" type="password" placeholder="Contraseña" style="width:100%;padding:14px 16px;border:1px solid #023626;border-radius:6px;font-family:'Hanken Grotesk',sans-serif;font-size:16px;outline:none;box-sizing:border-box;margin-bottom:10px;">
-    <p id="pw-error" style="display:none;color:#ba1a1a;font-family:'Hanken Grotesk',sans-serif;font-size:13px;margin-bottom:10px;">Contraseña incorrecta</p>
-    <button onclick="checkPw()" style="width:100%;padding:14px;background:#023626;color:#fff;font-family:'Hanken Grotesk',sans-serif;font-size:13px;letter-spacing:0.08em;text-transform:uppercase;font-weight:700;border:none;border-radius:6px;cursor:pointer;">Acceder</button>
-  </div>
-</div>
-<script>
-(function(){
-  const PW = 'reformasg3';
-  const gate = document.getElementById('password-gate');
-  if(sessionStorage.getItem('g3_auth')==='1'){ gate.style.display='none'; }
-  else { document.body.style.overflow='hidden'; }
-  document.getElementById('pw-input').addEventListener('keydown',function(e){ if(e.key==='Enter') checkPw(); });
-  window.checkPw = function(){
-    if(document.getElementById('pw-input').value === PW){
-      sessionStorage.setItem('g3_auth','1');
-      gate.style.display='none';
-      document.body.style.overflow='';
-    } else {
-      document.getElementById('pw-error').style.display='block';
-      document.getElementById('pw-input').value='';
-      document.getElementById('pw-input').focus();
-    }
-  };
-})();
-</script>
 
 <!-- HEADER -->
 <header class="fixed top-0 w-full z-50 bg-white shadow-sm border-b border-primary/10 transition-all duration-300" id="main-header">
